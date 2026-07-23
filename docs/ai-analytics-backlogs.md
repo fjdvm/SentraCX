@@ -134,11 +134,33 @@ FastAPI auto-generates the OpenAPI/Swagger spec from route + Pydantic model defi
 
 ## EPIC F: Feature Backlog (carried over, now dependent on A–E)
 
-> Original feature stories from `sentracx-crm-backlog-improved.md` Epics 4–7. Each should reference:
-- [ ] The specific `api-ai-analytics` endpoint from Epic B it implements
-- [ ] The confidence/fallback behavior from Epic C
-- [ ] Any admin-configurable value from Epic D it uses
-- [ ] Whether it reads hot from Redis cache or MongoDB directly
+**F.1 Customer Profiles (from Epic 4)**
+- [ ] **Customer segmentation**: Implements `GET /api/ai/customers/{id}/segment` (B.1). Fallback: Mark as "Unclassified" if confidence is below threshold (C). Config: Uses `confidence-thresholds` (D). Storage: Hot-read from Redis cache (A.6), invalidated on recalculation.
+- [ ] **Churn / at-risk prediction**: Implements `GET /api/ai/customers/{id}/churn-score` (B.1). Fallback: Output withheld/Unclassified on low confidence (C). Config: Uses `churn-threshold` (D). Storage: Hot-read from Redis with TTL (A.6).
+- [ ] **CLV prediction**: Implements `GET /api/ai/customers/{id}/clv` (B.1). Config: Uses `confidence-thresholds` (D). Storage: Hot-read from Redis cache (A.6).
+- [ ] **Next-best-action**: Implements `GET /api/ai/customers/{id}/next-action` and feedback `POST` (B.1). Fallback: Includes `confidence` score (C). Storage: Hot-read from Redis, with feedback actions directly persisted to MongoDB.
+
+**F.2 Tickets & Conversations (from Epic 5)**
+- [ ] **Sentiment analysis**: Implements `POST /api/ai/tickets/analyze` (B.2). Fallback: "Neutral/Unclassified" when confidence is low (C). Config: Uses `confidence-thresholds` (D). Storage: Synchronous execution, directly reading/writing to MongoDB without hot cache.
+- [ ] **Auto-categorization**: Implements `POST /api/ai/tickets/analyze` (B.2). Fallback: "Uncategorized" + manual tagging on low confidence (C). Config: Uses `confidence-thresholds` (D). Storage: Synchronous execution, directly reading/writing to MongoDB.
+- [ ] **Urgency/priority scoring**: Implements `POST /api/ai/tickets/analyze` (B.2). Fallback: Confidence value included (C). Config: Uses admin-defined `priority-weights` (D). Storage: Synchronous execution.
+- [ ] **Resolution time prediction**: Implements `GET /api/ai/tickets/{id}/resolution-estimate` (B.2). Fallback: Included confidence score (C). Storage: MongoDB.
+- [ ] **Ticket volume forecasting**: Implements `GET /api/ai/tickets/volume-forecast?range=` (B.2). Config: Alert triggered based on `anomaly-sensitivity` (D). Storage: MongoDB aggregation pipeline.
+- [ ] **Real-time sentiment tracking**: Implements `POST /api/ai/conversations/{id}/analyze-message` (B.3). Fallback: Escalation flag when sentiment trends negative; degradation via circuit breaker if unavailable (C). Storage: Uses Redis for low-latency state and pub/sub events (A.6).
+- [ ] **Auto-summarization**: Implements `GET /api/ai/conversations/{id}/summary` (B.3). Storage: On-demand + Redis-cached summary (B.3).
+- [ ] **Smart reply suggestions**: Implements `POST /api/ai/conversations/{id}/suggest-replies` (B.3). Fallback: Graceful degradation if AI down (C). Storage: Short-TTL Redis cache (A.6).
+- [ ] **Intent detection**: Implements `POST /api/ai/conversations/{id}/detect-intent` (B.3). Config: Uses `confidence-thresholds` (D) to determine bot vs. human handoff. Storage: Real-time.
+- [ ] **Key entity/topic extraction**: Implements `GET /api/ai/conversations/{id}/entities` (B.3). Storage: MongoDB.
+- [ ] **AI chatbot (virtual assistant)**: Uses above B.3 endpoints. Fallback: Escalates to human agent when intent/confidence is low (C). Storage: Uses Redis for short-TTL conversation state (A.6).
+
+**F.3 Campaigns (from Epic 6 - P2)**
+- [ ] *Note: Campaign endpoints are not defined in Epic B.* They will require new endpoints (e.g., `GET /api/ai/campaigns/{id}/forecast`), reading from MongoDB, utilizing `confidence-thresholds` (D).
+
+**F.4 Dashboard (from Epic 7)**
+- [ ] **Unified dashboard**: Implements `GET /api/ai/dashboard/summary?from=&to=` (B.4). Storage: MongoDB aggregation pipeline (B.4).
+- [ ] **Campaign ROI / trend analytics**: Sourced from `GET /api/ai/dashboard/summary?from=&to=` (B.4). Storage: MongoDB aggregation.
+- [ ] **Anomaly detection**: Implements `GET /api/ai/anomalies?from=&to=&status=` (B.4). Config: Uses `anomaly-sensitivity` (D). Storage: MongoDB aggregation.
+- [ ] **Natural language query**: Implements `POST /api/ai/query` (B.4). Fallback: Standardized "no results" handling when confidence is extremely low (C).
 
 ---
 
