@@ -1,8 +1,8 @@
-"""Dashboard, anomaly, and query analysis API endpoints."""
-
 from datetime import datetime, timezone
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Query, status, Depends
 
+from app.api.v1.deps import get_dashboard_service
+from app.services.dashboard_service import DashboardService
 from app.schemas.dashboard_schemas import (
     DashboardSummaryResponse,
     AnomalyListResponse,
@@ -23,17 +23,11 @@ router = APIRouter(tags=["dashboard"])
 async def get_dashboard_summary(
     from_date: datetime = Query(alias="from", default=None, description="Start datetime filter"),
     to_date: datetime = Query(alias="to", default=None, description="End datetime filter"),
+    service: DashboardService = Depends(get_dashboard_service),
 ) -> DashboardSummaryResponse:
     """Get aggregate metrics over a timeframe for the analytics dashboard."""
-    # Mock response
-    return DashboardSummaryResponse(
-        churn_rate=0.18,
-        average_sentiment=0.35,
-        total_tickets=150,
-        resolved_tickets=130,
-        active_campaigns=3,
-        computed_at=datetime.now(timezone.utc),
-    )
+    data = await service.get_summary(from_date, to_date)
+    return DashboardSummaryResponse(**data)
 
 
 @router.get(
@@ -46,21 +40,11 @@ async def get_anomalies(
     from_date: datetime = Query(alias="from", default=None, description="Start datetime filter"),
     to_date: datetime = Query(alias="to", default=None, description="End datetime filter"),
     status_val: str = Query(alias="status", default=None, description="Status filter (open/investigating/resolved)"),
+    service: DashboardService = Depends(get_dashboard_service),
 ) -> AnomalyListResponse:
     """Get list of identified anomalous trends or behaviors."""
-    # Mock response
-    now = datetime.now(timezone.utc)
-    anomalies = [
-        AnomalyItem(
-            anomaly_id="anom-001",
-            anomaly_type="ticket_volume_spike",
-            description="Spike in ticket volume regarding billing errors",
-            severity="high",
-            status="open",
-            detected_at=now,
-        )
-    ]
-    return AnomalyListResponse(anomalies=anomalies)
+    anomalies = await service.get_anomalies(from_date, to_date, status_val)
+    return AnomalyListResponse(anomalies=[AnomalyItem(**anom) for anom in anomalies])
 
 
 @router.post(
@@ -71,12 +55,8 @@ async def get_anomalies(
 )
 async def execute_natural_language_query(
     request: NaturalLanguageQueryRequest,
+    service: DashboardService = Depends(get_dashboard_service),
 ) -> NaturalLanguageQueryResponse:
     """Process natural language request and return structured data results."""
-    # Mock response
-    return NaturalLanguageQueryResponse(
-        query=request.query,
-        interpreted_query="SELECT COUNT(*) FROM tickets WHERE category = 'billing' AND sentiment = 'negative'",
-        result={"count": 14, "timeframe": "last_30_days"},
-        computed_at=datetime.now(timezone.utc),
-    )
+    data = await service.execute_nl_query(request.query)
+    return NaturalLanguageQueryResponse(**data)

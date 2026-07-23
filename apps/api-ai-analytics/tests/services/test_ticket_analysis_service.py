@@ -128,3 +128,37 @@ async def test_analyze_ticket_low_confidence_overrides(
     assert saved_mongo_data["predicted_category"] == "technical_issue"
     assert saved_mongo_data["confidence"] == 0.5
 
+
+class MockCursor:
+    def __init__(self, items):
+        self.items = items.copy()
+    def __aiter__(self):
+        return self
+    async def __anext__(self):
+        if not self.items:
+            raise StopAsyncIteration
+        return self.items.pop(0)
+
+
+async def test_get_resolution_estimate(service: TicketAnalysisService, redis_repo: AsyncMock) -> None:
+    redis_repo.get_cached_analysis.return_value = {
+        "predicted_category": "billing",
+        "confidence": 0.9,
+    }
+    
+    resp = await service.get_resolution_estimate("tick-1")
+    assert resp["estimated_hours"] == 4.0
+    assert resp["confidence"] == 0.9
+
+
+async def test_get_volume_forecast(service: TicketAnalysisService, mongo_repo: AsyncMock) -> None:
+    mongo_repo._collection = AsyncMock()
+    mongo_repo._collection.aggregate.return_value = MockCursor([{"count": 10}, {"count": 20}])
+
+    resp = await service.get_volume_forecast("7d")
+    
+    assert "forecast_series" in resp
+    assert len(resp["forecast_series"]) == 7
+    assert resp["threshold"] == 25.0
+    assert isinstance(resp["alert_triggered"], bool)
+

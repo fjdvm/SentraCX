@@ -1,9 +1,10 @@
 """Customer Insights API routes."""
 
 from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 
 from app.api.v1.deps import get_customer_insights_service
+from app.services.customer_insights_service import CustomerInsightsService
 from app.schemas.customer_schemas import (
     CustomerInsightsResponse,
     CustomerSegmentResponse,
@@ -26,9 +27,11 @@ router = APIRouter(prefix="/customers", tags=["customers"])
     summary="Get customer insights",
     description="Returns churn score, CLV prediction, and next-best-action for a customer.",
 )
-async def get_customer_insights(customer_id: str) -> CustomerInsightsResponse:
+async def get_customer_insights(
+    customer_id: str,
+    service: CustomerInsightsService = Depends(get_customer_insights_service),
+) -> CustomerInsightsResponse:
     """Get AI-powered insights for a specific customer."""
-    service = get_customer_insights_service()
     try:
         return await service.get_insights(customer_id)
     except CustomerNotFoundError:
@@ -49,14 +52,24 @@ async def get_customer_insights(customer_id: str) -> CustomerInsightsResponse:
     summary="Get customer segment",
     description="Returns the AI-predicted customer segment.",
 )
-async def get_customer_segment(customer_id: str) -> CustomerSegmentResponse:
+async def get_customer_segment(
+    customer_id: str,
+    service: CustomerInsightsService = Depends(get_customer_insights_service),
+) -> CustomerSegmentResponse:
     """Get the customer segment category and model confidence."""
-    # Mock response
-    return CustomerSegmentResponse(
-        segment="VIP",
-        computed_at=datetime.now(timezone.utc),
-        confidence=0.92,
-    )
+    try:
+        data = await service.get_segment(customer_id)
+        return CustomerSegmentResponse(**data)
+    except CustomerNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Customer {customer_id} not found in CRM",
+        )
+    except CrmUnavailableError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="CRM service is currently unavailable",
+        )
 
 
 @router.get(
@@ -65,15 +78,24 @@ async def get_customer_segment(customer_id: str) -> CustomerSegmentResponse:
     summary="Get customer churn score",
     description="Returns the churn risk score, risk level, and contributing factors.",
 )
-async def get_customer_churn_score(customer_id: str) -> ChurnScoreResponse:
+async def get_customer_churn_score(
+    customer_id: str,
+    service: CustomerInsightsService = Depends(get_customer_insights_service),
+) -> ChurnScoreResponse:
     """Get customer churn score details."""
-    # Mock response
-    return ChurnScoreResponse(
-        score=0.15,
-        risk_level="low",
-        contributing_factors=["recent ticket resolved successfully"],
-        computed_at=datetime.now(timezone.utc),
-    )
+    try:
+        data = await service.get_churn_score(customer_id)
+        return ChurnScoreResponse(**data)
+    except CustomerNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Customer {customer_id} not found in CRM",
+        )
+    except CrmUnavailableError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="CRM service is currently unavailable",
+        )
 
 
 @router.get(
@@ -82,14 +104,24 @@ async def get_customer_churn_score(customer_id: str) -> ChurnScoreResponse:
     summary="Get customer lifetime value",
     description="Returns the predicted customer lifetime value (CLV).",
 )
-async def get_customer_clv(customer_id: str) -> ClvResponse:
+async def get_customer_clv(
+    customer_id: str,
+    service: CustomerInsightsService = Depends(get_customer_insights_service),
+) -> ClvResponse:
     """Get customer predicted lifetime value."""
-    # Mock response
-    return ClvResponse(
-        predicted_clv=1250.00,
-        currency="USD",
-        computed_at=datetime.now(timezone.utc),
-    )
+    try:
+        data = await service.get_clv(customer_id)
+        return ClvResponse(**data)
+    except CustomerNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Customer {customer_id} not found in CRM",
+        )
+    except CrmUnavailableError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="CRM service is currently unavailable",
+        )
 
 
 @router.get(
@@ -98,15 +130,24 @@ async def get_customer_clv(customer_id: str) -> ClvResponse:
     summary="Get customer next action",
     description="Returns the recommended next-best-action for the customer.",
 )
-async def get_customer_next_action(customer_id: str) -> NextActionResponse:
+async def get_customer_next_action(
+    customer_id: str,
+    service: CustomerInsightsService = Depends(get_customer_insights_service),
+) -> NextActionResponse:
     """Get customer next action recommendation."""
-    # Mock response
-    return NextActionResponse(
-        action="offer_loyalty_discount",
-        reason="Customer has low churn risk and high value, but hasn't ordered in 30 days.",
-        confidence=0.85,
-        computed_at=datetime.now(timezone.utc),
-    )
+    try:
+        data = await service.get_next_action(customer_id)
+        return NextActionResponse(**data)
+    except CustomerNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Customer {customer_id} not found in CRM",
+        )
+    except CrmUnavailableError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="CRM service is currently unavailable",
+        )
 
 
 @router.post(
@@ -118,11 +159,18 @@ async def get_customer_next_action(customer_id: str) -> NextActionResponse:
 async def submit_next_action_feedback(
     customer_id: str,
     request: NextActionFeedbackRequest,
+    service: CustomerInsightsService = Depends(get_customer_insights_service),
 ) -> dict[str, str]:
     """Submit next-best-action feedback for model tuning."""
-    # Mock logging feedback
-    return {
-        "status": "success",
-        "message": f"Feedback '{request.feedback}' logged for customer {customer_id}",
-    }
+    try:
+        await service.submit_next_action_feedback(customer_id, request.feedback)
+        return {
+            "status": "success",
+            "message": f"Feedback '{request.feedback}' logged for customer {customer_id}",
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
 

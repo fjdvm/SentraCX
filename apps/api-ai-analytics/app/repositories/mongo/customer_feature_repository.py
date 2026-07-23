@@ -14,7 +14,7 @@ class CustomerFeatureRepository:
         self._collection = database[_COLLECTION]
 
     async def save_feature_log(
-        self, customer_id: str, features: dict, model_versions: dict | None = None
+        self, customer_id: str, features: dict, derived_segments: list[str] | None = None, model_versions: dict | None = None
     ) -> str:
         """Save a feature snapshot for a customer.
 
@@ -23,6 +23,7 @@ class CustomerFeatureRepository:
         document = {
             "customer_id": customer_id,
             "features": features,
+            "derived_segments": derived_segments or [],
             "recorded_at": datetime.now(timezone.utc),
             "model_versions": model_versions,
         }
@@ -43,3 +44,14 @@ class CustomerFeatureRepository:
         if document is None:
             return None
         return document.get("features")
+
+    async def save_action_feedback(self, customer_id: str, feedback: str) -> str:
+        """Log next-best-action feedback for model tuning."""
+        document = {
+            "customer_id": customer_id,
+            "feedback": feedback,
+            "recorded_at": datetime.now(timezone.utc),
+        }
+        result = await self._collection.database["nba_feedback"].insert_one(document)
+        return str(result.inserted_id)
+

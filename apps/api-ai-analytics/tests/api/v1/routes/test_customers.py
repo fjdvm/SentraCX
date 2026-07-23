@@ -1,4 +1,4 @@
-"""Integration tests for GET /api/v1/customers/{customer_id}/insights."""
+"""Integration tests for customer insights routes."""
 
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, patch
@@ -11,10 +11,8 @@ from app.services.customer_insights_service import (
     CrmUnavailableError,
     CustomerNotFoundError,
 )
-
-_DEPS_PATCH_TARGET = (
-    "app.api.v1.routes.customers.get_customer_insights_service"
-)
+from app.api.v1.deps import get_customer_insights_service
+from app.main import app
 
 
 @pytest.fixture()
@@ -43,8 +41,6 @@ async def client():
         patch("app.db.redis.connect_redis", new_callable=AsyncMock),
         patch("app.db.redis.close_redis", new_callable=AsyncMock),
     ):
-        from app.main import app
-
         transport = ASGITransport(app=app)
         async with AsyncClient(
             transport=transport, base_url="http://test"
@@ -62,8 +58,11 @@ class TestGetCustomerInsights:
         mock_service = AsyncMock()
         mock_service.get_insights.return_value = sample_insights
 
-        with patch(_DEPS_PATCH_TARGET, return_value=mock_service):
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
             response = await client.get("/api/v1/customers/cust-001/insights")
+        finally:
+            app.dependency_overrides.clear()
 
         assert response.status_code == 200
         body = response.json()
@@ -80,8 +79,11 @@ class TestGetCustomerInsights:
         mock_service = AsyncMock()
         mock_service.get_insights.return_value = sample_insights
 
-        with patch(_DEPS_PATCH_TARGET, return_value=mock_service):
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
             response = await client.get("/api/v1/customers/cust-001/insights")
+        finally:
+            app.dependency_overrides.clear()
 
         body = response.json()
         parsed = CustomerInsightsResponse(**body)
@@ -99,8 +101,11 @@ class TestGetCustomerInsights:
         mock_service = AsyncMock()
         mock_service.get_insights.return_value = sample_insights
 
-        with patch(_DEPS_PATCH_TARGET, return_value=mock_service):
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
             response = await client.get("/api/v1/customers/cust-001/insights")
+        finally:
+            app.dependency_overrides.clear()
 
         nba = response.json()["next_best_action"]
         assert nba["action"] == "send_retention_offer"
@@ -114,10 +119,13 @@ class TestGetCustomerInsights:
         mock_service = AsyncMock()
         mock_service.get_insights.side_effect = CustomerNotFoundError()
 
-        with patch(_DEPS_PATCH_TARGET, return_value=mock_service):
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
             response = await client.get(
                 "/api/v1/customers/nonexistent-id/insights"
             )
+        finally:
+            app.dependency_overrides.clear()
 
         assert response.status_code == 404
         assert "nonexistent-id" in response.json()["detail"]
@@ -130,8 +138,11 @@ class TestGetCustomerInsights:
         mock_service = AsyncMock()
         mock_service.get_insights.side_effect = CrmUnavailableError()
 
-        with patch(_DEPS_PATCH_TARGET, return_value=mock_service):
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
             response = await client.get("/api/v1/customers/cust-001/insights")
+        finally:
+            app.dependency_overrides.clear()
 
         assert response.status_code == 503
         assert "unavailable" in response.json()["detail"].lower()
@@ -155,8 +166,11 @@ class TestGetCustomerInsights:
         mock_service = AsyncMock()
         mock_service.get_insights.return_value = cached_insights
 
-        with patch(_DEPS_PATCH_TARGET, return_value=mock_service):
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
             response = await client.get("/api/v1/customers/cust-002/insights")
+        finally:
+            app.dependency_overrides.clear()
 
         assert response.status_code == 200
         assert response.json()["cached"] is True
@@ -166,44 +180,97 @@ class TestCustomerSubInsights:
     """Tests for individual customer insight contracts."""
 
     async def test_get_customer_segment(self, client: AsyncClient):
-        response = await client.get("/api/v1/customers/cust-001/segment")
+        mock_service = AsyncMock()
+        mock_service.get_segment.return_value = {
+            "segment": "VIP",
+            "computed_at": datetime.now(timezone.utc),
+            "confidence": 0.92,
+        }
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
+            response = await client.get("/api/v1/customers/cust-001/segment")
+        finally:
+            app.dependency_overrides.clear()
+
         assert response.status_code == 200
         data = response.json()
-        assert "segment" in data
+        assert data["segment"] == "VIP"
         assert "confidence" in data
         assert "computed_at" in data
 
     async def test_get_customer_churn_score(self, client: AsyncClient):
-        response = await client.get("/api/v1/customers/cust-001/churn-score")
+        mock_service = AsyncMock()
+        mock_service.get_churn_score.return_value = {
+            "score": 0.15,
+            "risk_level": "low",
+            "contributing_factors": ["recent ticket resolved successfully"],
+            "computed_at": datetime.now(timezone.utc),
+        }
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
+            response = await client.get("/api/v1/customers/cust-001/churn-score")
+        finally:
+            app.dependency_overrides.clear()
+
         assert response.status_code == 200
         data = response.json()
-        assert "score" in data
-        assert "risk_level" in data
+        assert data["score"] == 0.15
+        assert data["risk_level"] == "low"
         assert isinstance(data["contributing_factors"], list)
         assert "computed_at" in data
 
     async def test_get_customer_clv(self, client: AsyncClient):
-        response = await client.get("/api/v1/customers/cust-001/clv")
+        mock_service = AsyncMock()
+        mock_service.get_clv.return_value = {
+            "predicted_clv": 1250.00,
+            "currency": "USD",
+            "computed_at": datetime.now(timezone.utc),
+        }
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
+            response = await client.get("/api/v1/customers/cust-001/clv")
+        finally:
+            app.dependency_overrides.clear()
+
         assert response.status_code == 200
         data = response.json()
-        assert "predicted_clv" in data
-        assert "currency" in data
+        assert data["predicted_clv"] == 1250.00
+        assert data["currency"] == "USD"
         assert "computed_at" in data
 
     async def test_get_customer_next_action(self, client: AsyncClient):
-        response = await client.get("/api/v1/customers/cust-001/next-action")
+        mock_service = AsyncMock()
+        mock_service.get_next_action.return_value = {
+            "action": "offer_loyalty_discount",
+            "reason": "Customer has low churn risk and high value, but hasn't ordered in 30 days.",
+            "confidence": 0.85,
+            "computed_at": datetime.now(timezone.utc),
+        }
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
+            response = await client.get("/api/v1/customers/cust-001/next-action")
+        finally:
+            app.dependency_overrides.clear()
+
         assert response.status_code == 200
         data = response.json()
-        assert "action" in data
+        assert data["action"] == "offer_loyalty_discount"
         assert "reason" in data
         assert "confidence" in data
         assert "computed_at" in data
 
     async def test_submit_next_action_feedback(self, client: AsyncClient):
-        response = await client.post(
-            "/api/v1/customers/cust-001/next-action/feedback",
-            json={"feedback": "accept"}
-        )
+        mock_service = AsyncMock()
+        mock_service.submit_next_action_feedback.return_value = None
+        app.dependency_overrides[get_customer_insights_service] = lambda: mock_service
+        try:
+            response = await client.post(
+                "/api/v1/customers/cust-001/next-action/feedback",
+                json={"feedback": "accept"}
+            )
+        finally:
+            app.dependency_overrides.clear()
+
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "success"
@@ -219,4 +286,3 @@ class TestHealthEndpoint:
 
         assert response.status_code == 200
         assert response.json() == {"status": "healthy"}
-

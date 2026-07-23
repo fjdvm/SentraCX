@@ -1,8 +1,8 @@
-"""Conversation analysis API endpoints."""
-
 from datetime import datetime, timezone
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 
+from app.api.v1.deps import get_conversation_analysis_service
+from app.services.conversation_analysis_service import ConversationAnalysisService
 from app.schemas.conversation_schemas import (
     MessageAnalysisRequest,
     MessageAnalysisResponse,
@@ -24,15 +24,14 @@ router = APIRouter(prefix="/conversations", tags=["conversations"])
     summary="Analyze real-time message",
     description="Analyze a single conversation message for sentiment and escalation flag.",
 )
-async def analyze_message(id: str, request: MessageAnalysisRequest) -> MessageAnalysisResponse:
+async def analyze_message(
+    id: str,
+    request: MessageAnalysisRequest,
+    service: ConversationAnalysisService = Depends(get_conversation_analysis_service)
+) -> MessageAnalysisResponse:
     """Analyze real-time conversation message sentiment and escalation risk."""
-    # Mock response
-    return MessageAnalysisResponse(
-        sentiment="neutral",
-        sentiment_score=0.0,
-        escalation_flag=False,
-        reason=None,
-    )
+    res = await service.analyze_message(id, request.text, request.sender_role)
+    return MessageAnalysisResponse(**res)
 
 
 @router.get(
@@ -41,15 +40,13 @@ async def analyze_message(id: str, request: MessageAnalysisRequest) -> MessageAn
     summary="Get conversation summary",
     description="Retrieve an on-demand, potentially cached summary of the conversation.",
 )
-async def get_conversation_summary(id: str) -> ConversationSummaryResponse:
+async def get_conversation_summary(
+    id: str,
+    service: ConversationAnalysisService = Depends(get_conversation_analysis_service)
+) -> ConversationSummaryResponse:
     """Generate or retrieve a summary of a conversation."""
-    # Mock response
-    return ConversationSummaryResponse(
-        summary="Customer inquired about order status and delivery timeline.",
-        key_points=["Inquired about order delivery", "Provided order number OOS-998877"],
-        resolved=True,
-        computed_at=datetime.now(timezone.utc),
-    )
+    res = await service.get_summary(id)
+    return ConversationSummaryResponse(**res)
 
 
 @router.post(
@@ -58,14 +55,14 @@ async def get_conversation_summary(id: str) -> ConversationSummaryResponse:
     summary="Suggest agent replies",
     description="Generate smart replies for the agent based on conversation context.",
 )
-async def suggest_replies(id: str) -> SuggestedRepliesResponse:
+async def suggest_replies(
+    id: str,
+    service: ConversationAnalysisService = Depends(get_conversation_analysis_service)
+) -> SuggestedRepliesResponse:
     """Get AI suggestions for conversation replies."""
-    # Mock response
+    replies = await service.suggest_replies(id)
     return SuggestedRepliesResponse(
-        suggestions=[
-            SuggestedReply(text="Sure, I can help you look up that order status.", confidence=0.91),
-            SuggestedReply(text="Could you please confirm your shipping address?", confidence=0.74),
-        ]
+        suggestions=[SuggestedReply(**r) for r in replies]
     )
 
 
@@ -75,13 +72,14 @@ async def suggest_replies(id: str) -> SuggestedRepliesResponse:
     summary="Detect conversation intent",
     description="Detect customer intent from conversation history.",
 )
-async def detect_intent(id: str, request: IntentDetectionRequest) -> IntentDetectionResponse:
+async def detect_intent(
+    id: str,
+    request: IntentDetectionRequest,
+    service: ConversationAnalysisService = Depends(get_conversation_analysis_service)
+) -> IntentDetectionResponse:
     """Detect intent from text or conversation segment."""
-    # Mock response
-    return IntentDetectionResponse(
-        intent="track_order",
-        confidence=0.88,
-    )
+    res = await service.detect_intent(request.text)
+    return IntentDetectionResponse(**res)
 
 
 @router.get(
@@ -90,15 +88,12 @@ async def detect_intent(id: str, request: IntentDetectionRequest) -> IntentDetec
     summary="Extract conversation entities",
     description="Extract key entities like order numbers, cross-referencing OOS details.",
 )
-async def get_conversation_entities(id: str) -> ConversationEntitiesResponse:
+async def get_conversation_entities(
+    id: str,
+    service: ConversationAnalysisService = Depends(get_conversation_analysis_service)
+) -> ConversationEntitiesResponse:
     """Get entities extracted from the conversation history."""
-    # Mock response
+    entities = await service.get_entities(id)
     return ConversationEntitiesResponse(
-        entities=[
-            EntityReference(
-                entity_type="order_number",
-                value="OOS-998877",
-                meta={"exists_in_oos": True, "status": "shipped"},
-            )
-        ]
+        entities=[EntityReference(**ent) for ent in entities]
     )

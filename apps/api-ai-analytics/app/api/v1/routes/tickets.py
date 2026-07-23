@@ -42,15 +42,23 @@ async def analyze_intent(
     summary="Analyze CRM ticket",
     description="Synchronously analyze a ticket on creation for sentiment, category, and priority.",
 )
-async def analyze_ticket(request: TicketAnalyzeRequest) -> TicketAnalyzeResponse:
+async def analyze_ticket(
+    request: TicketAnalyzeRequest,
+    service: TicketAnalysisService = Depends(get_ticket_analysis_service)
+) -> TicketAnalyzeResponse:
     """Analyze a ticket synchronously for priority and classification."""
-    # Mock response
-    return TicketAnalyzeResponse(
-        sentiment="neutral",
-        category="billing",
-        priority_score=0.45,
-        confidence=0.88,
-    )
+    try:
+        res = await service.analyze_ticket(TicketAnalysisRequest(ticket_id=request.ticket_id, text=request.text))
+        return TicketAnalyzeResponse(
+            sentiment=res.sentiment,
+            category=res.predicted_category,
+            priority_score=res.urgency_score,
+            confidence=res.confidence
+        )
+    except TicketNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except CrmUnavailableError as e:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
 
 
 @router.get(
@@ -59,13 +67,18 @@ async def analyze_ticket(request: TicketAnalyzeRequest) -> TicketAnalyzeResponse
     summary="Get ticket resolution estimate",
     description="Get the estimated hours to resolve a CRM ticket.",
 )
-async def get_ticket_resolution_estimate(ticket_id: str) -> TicketResolutionEstimateResponse:
+async def get_ticket_resolution_estimate(
+    ticket_id: str,
+    service: TicketAnalysisService = Depends(get_ticket_analysis_service)
+) -> TicketResolutionEstimateResponse:
     """Get the estimated resolution time for a specific ticket."""
-    # Mock response
-    return TicketResolutionEstimateResponse(
-        estimated_hours=4.5,
-        confidence=0.78,
-    )
+    try:
+        data = await service.get_resolution_estimate(ticket_id)
+        return TicketResolutionEstimateResponse(**data)
+    except TicketNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get(
@@ -75,18 +88,17 @@ async def get_ticket_resolution_estimate(ticket_id: str) -> TicketResolutionEsti
     description="Get predicted ticket volumes over the specified range.",
 )
 async def get_ticket_volume_forecast(
-    range_val: str = Query(alias="range", default="7d", description="Forecast range (e.g. 7d, 30d)")
+    range_val: str = Query(alias="range", default="7d", description="Forecast range (e.g. 7d, 30d)"),
+    service: TicketAnalysisService = Depends(get_ticket_analysis_service)
 ) -> TicketVolumeForecastResponse:
     """Get a forecast of ticket volume spikes and alerts."""
-    # Mock response with points
-    now = datetime.now(timezone.utc)
-    series = [
-        ForecastPoint(timestamp=now, value=12.5),
-        ForecastPoint(timestamp=now, value=15.0),
-    ]
-    return TicketVolumeForecastResponse(
-        forecast_series=series,
-        threshold=25.0,
-        alert_triggered=False,
-    )
+    try:
+        data = await service.get_volume_forecast(range_val)
+        return TicketVolumeForecastResponse(
+            forecast_series=[ForecastPoint(**pt) for pt in data["forecast_series"]],
+            threshold=data["threshold"],
+            alert_triggered=data["alert_triggered"]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 

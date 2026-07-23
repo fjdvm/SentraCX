@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 
 from app.lib.crm_client import CrmClient
-from app.ml import churn_model, clv_model, nba_model
+from app.ml import churn_model, clv_model, nba_model, segment_model
 from app.repositories.mongo.customer_feature_repository import (
     CustomerFeatureRepository,
 )
@@ -15,6 +15,7 @@ from app.schemas.customer_schemas import (
     CustomerInsightsResponse,
     NextBestAction,
 )
+from app.services.config_service import ConfigService
 
 
 class CustomerNotFoundError(Exception):
@@ -33,10 +34,12 @@ class CustomerInsightsService:
         crm_client: CrmClient,
         cache_repo: CustomerCacheRepository,
         feature_repo: CustomerFeatureRepository,
+        config_service: ConfigService = None,
     ) -> None:
         self._crm = crm_client
         self._cache = cache_repo
         self._features = feature_repo
+        self._config = config_service
 
     async def get_insights(
         self, customer_id: str
@@ -75,6 +78,8 @@ class CustomerInsightsService:
         nba_input["clv_prediction"] = clv_prediction
         nba_result = nba_model.predict(nba_input)
 
+        segment = segment_model.predict(features.model_dump(), churn_score, clv_prediction)
+
         computed_at = datetime.now(timezone.utc)
 
         # 5. Build response
@@ -88,8 +93,10 @@ class CustomerInsightsService:
         )
 
         # 6. Cache result
+        cache_data = response.model_dump(mode="json")
+        cache_data["segment"] = segment
         await self._cache.set_insights(
-            customer_id, response.model_dump(mode="json")
+            customer_id, cache_data
         )
 
         # 7. Log features to MongoDB
@@ -98,6 +105,7 @@ class CustomerInsightsService:
         await self._features.save_feature_log(
             customer_id,
             features.model_dump(),
+            derived_segments=[segment],
             model_versions={
                 "churn": settings.model_version_churn,
                 "clv": settings.model_version_clv,
@@ -105,6 +113,139 @@ class CustomerInsightsService:
         )
 
         return response
+
+    async def get_segment(self, customer_id: str) -> dict:
+        """Get the customer segment category and model confidence."""
+        cached = await self._cache.get_insights(customer_id)
+        if not cached or "segment" not in cached:
+            await self.get_insights(customer_id)
+            cached = await self._cache.get_insights(customer_id)
+
+        segment = cached.get("segment", "Standard")
+        computed_at = cached.get("computed_at")
+        if isinstance(computed_at, str):
+            computed_at = datetime.fromisoformat(computed_at)
+
+        # Segment confidence is 1.0 since it's rule-based heuristic
+        confidence = 1.0
+
+        # Apply confidence thresholds logic
+        nba_threshold = 0.70
+        if self._config:
+            try:
+                thresholds = await self._config.get_config("confidence-thresholds")
+                nba_threshold = thresholds.get("nba_threshold", 0.70)
+            except Exception:
+                pass
+
+        if confidence < nba_threshold:
+            segment = "Unclassified"
+
+        return {
+            "segment": segment,
+            "computed_at": computed_at,
+            "confidence": confidence,
+        }
+
+    async def get_churn_score(self, customer_id: str) -> dict:
+        """Get customer churn score, risk level, and contributing factors."""
+        cached = await self._cache.get_insights(customer_id)
+        if not cached:
+            await self.get_insights(customer_id)
+            cached = await self._cache.get_insights(customer_id)
+
+        score = cached.get("churn_score", 0.0)
+        computed_at = cached.get("computed_at")
+        if isinstance(computed_at, str):
+            computed_at = datetime.fromisoformat(computed_at)
+
+        # Churn threshold check from ConfigService
+        churn_threshold = 0.60
+        if self._config:
+            try:
+                cfg = await self._config.get_config("churn-threshold")
+                churn_threshold = cfg.get("churn_threshold", 0.60)
+            except Exception:
+                pass
+
+        risk_level = "low"
+        if score >= churn_threshold:
+            risk_level = "high"
+        elif score >= churn_threshold * 0.6:
+            risk_level = "medium"
+
+        # Construct contributing factors based on customer stats or NBA
+        factors = []
+        nba_reason = cached.get("next_best_action", {}).get("reason", "")
+        if score >= churn_threshold * 0.6:
+            factors.append(nba_reason)
+        else:
+            factors.append("Recent positive interactions and active orders")
+
+        return {
+            "score": score,
+            "risk_level": risk_level,
+            "contributing_factors": factors,
+            "computed_at": computed_at,
+        }
+
+    async def get_clv(self, customer_id: str) -> dict:
+        """Get customer predicted lifetime value."""
+        cached = await self._cache.get_insights(customer_id)
+        if not cached:
+            await self.get_insights(customer_id)
+            cached = await self._cache.get_insights(customer_id)
+
+        clv = cached.get("clv_prediction", 0.0)
+        computed_at = cached.get("computed_at")
+        if isinstance(computed_at, str):
+            computed_at = datetime.fromisoformat(computed_at)
+
+        return {
+            "predicted_clv": clv,
+            "currency": "USD",
+            "computed_at": computed_at,
+        }
+
+    async def get_next_action(self, customer_id: str) -> dict:
+        """Get the recommended next-best-action for the customer."""
+        cached = await self._cache.get_insights(customer_id)
+        if not cached:
+            await self.get_insights(customer_id)
+            cached = await self._cache.get_insights(customer_id)
+
+        nba = cached.get("next_best_action", {})
+        action = nba.get("action", "continue_nurture_sequence")
+        reason = nba.get("reason", "Customer is stable, continue regular engagement")
+        confidence = nba.get("confidence", 0.5)
+
+        computed_at = cached.get("computed_at")
+        if isinstance(computed_at, str):
+            computed_at = datetime.fromisoformat(computed_at)
+
+        # Apply confidence threshold
+        nba_threshold = 0.70
+        if self._config:
+            try:
+                thresholds = await self._config.get_config("confidence-thresholds")
+                nba_threshold = thresholds.get("nba_threshold", 0.70)
+            except Exception:
+                pass
+
+        if confidence < nba_threshold:
+            action = "continue_nurture_sequence"
+            reason = "Confidence is below the threshold, falling back to standard nurturing"
+
+        return {
+            "action": action,
+            "reason": reason,
+            "confidence": confidence,
+            "computed_at": computed_at,
+        }
+
+    async def submit_next_action_feedback(self, customer_id: str, feedback: str) -> None:
+        """Submit feedback for the recommended next-best-action."""
+        await self._features.save_action_feedback(customer_id, feedback)
 
     def _build_features(
         self, customer_id: str, customer: dict, orders: list[dict]
