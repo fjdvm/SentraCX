@@ -63,14 +63,14 @@ The implementation is broken into **four sub-epics** that map 1-to-1 with backlo
 - [x] Returns `{ data, isLoading, error }`
 
 ##### [MODIFY] DashboardMetricCards.tsx
-- [ ] Accept API data props instead of hardcoded values
-- [ ] Render 6 cards: Active Tickets, Avg Resolution Time, Churn Rate, Avg CLV, Customer Sentiment, Active Campaigns
-- [ ] Each card: value + trend arrow (↑↓) + delta vs. previous period + skeleton loading state
+- [x] Accept API data props instead of hardcoded values
+- [x] Render 6 cards: Active Tickets, Avg Resolution Time, Churn Rate, Avg CLV, Customer Sentiment, Active Campaigns
+- [x] Each card: value + trend arrow (↑↓) + delta vs. previous period + skeleton loading state
 
 ##### [MODIFY] Dashboard.tsx
-- [ ] Wire `useDashboardSummary` hook
-- [ ] Pass live data to `DashboardMetricCards`
-- [ ] Add functional date range picker (replace hardcoded date label)
+- [x] Wire `useDashboardSummary` hook
+- [x] Pass live data to `DashboardMetricCards`
+- [x] Add functional date range picker (replace hardcoded date label)
 
 ---
 
@@ -164,9 +164,9 @@ Four GET endpoints:
 - [x] Quick-action button triggers next-best-action (`POST /api/ai/customers/{id}/next-action`)
 
 ##### [MODIFY] DashboardQuickOps.tsx
-- [ ] Wire anomaly cards to real data (`GET /api/ai/anomalies`)
-- [ ] Anomaly cards: severity badge + description + detected time + acknowledge button
-- [ ] Critical-severity anomalies trigger a toast notification
+- [x] Wire anomaly cards to real data (`GET /api/ai/anomalies`) (implemented in DashboardAnomalies)
+- [x] Anomaly cards: severity badge + description + detected time + acknowledge button (implemented in DashboardAnomalies)
+- [x] Critical-severity anomalies trigger a toast notification (implemented in DashboardAnomalies)
 
 ---
 
@@ -328,10 +328,10 @@ cd apps/web-crm && npm test
 ```
 
 ### Manual Verification Checklist
-- [ ] KPI cards show real data with ↑↓ delta indicators and skeleton on load
-- [ ] All four forecast charts render with correct data shapes
-- [ ] Churn distribution donut clicks navigate to filtered customer list
-- [ ] At-risk watchlist rows link to customer profiles; quick-action fires NBA
-- [ ] Anomaly acknowledge button changes card state; critical anomalies fire toast
-- [ ] LiveMetricsBar updates in real time when a ticket is created/claimed
-- [ ] NL query renders results as table, chart, or value correctly
+- [x] KPI cards show real data with ↑↓ delta indicators and skeleton on load
+- [x] All four forecast charts render with correct data shapes
+- [x] Churn distribution donut clicks navigate to filtered customer list
+- [x] At-risk watchlist rows link to customer profiles; quick-action fires NBA
+- [x] Anomaly acknowledge button changes card state; critical anomalies fire toast
+- [x] LiveMetricsBar updates in real time when a ticket is created/claimed
+- [x] NL query renders results as table, chart, or value correctly
