@@ -16,25 +16,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
         working-directory: .
 
       - name: Run Unit Tests
-        run: pnpm --filter ./apps/web-crm test
+        run: npm run test --workspace=apps/web-crm
         working-directory: .
 
       - name: Build
-        run: pnpm build:web
+        run: npm run build:web
         working-directory: .
 
   test-and-build-api-crm:
