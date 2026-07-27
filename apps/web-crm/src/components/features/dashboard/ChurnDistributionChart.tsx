@@ -24,10 +24,10 @@ export function ChurnDistributionChart({ data, isLoading }: ChurnDistributionCha
   const chartData = useMemo(() => {
     if (!data) return [];
     return [
-      { name: "Low", value: data.low, risk: "low", color: "oklch(var(--success))" },
-      { name: "Medium", value: data.medium, risk: "medium", color: "oklch(var(--warning))" },
-      { name: "High", value: data.high, risk: "high", color: "oklch(var(--info))" },
-      { name: "Critical", value: data.critical, risk: "critical", color: "oklch(0.62 0.18 45)" }, // Rust orange instead of red
+      { name: "Low", value: data.low ?? 0, risk: "low", color: "var(--success)" },
+      { name: "Medium", value: data.medium ?? 0, risk: "medium", color: "var(--warning)" },
+      { name: "High", value: data.high ?? 0, risk: "high", color: "var(--info)" },
+      { name: "Critical", value: data.critical ?? 0, risk: "critical", color: "oklch(0.62 0.18 45)" },
     ].filter((item) => item.value > 0);
   }, [data]);
 
@@ -87,8 +87,8 @@ export function ChurnDistributionChart({ data, isLoading }: ChurnDistributionCha
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "oklch(var(--card))",
-                    borderColor: "oklch(var(--border))",
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
                     borderRadius: "0.5rem",
                     fontSize: "12px",
                   }}
