@@ -2,8 +2,8 @@
 
 import React, { useMemo } from "react";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -43,6 +43,7 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
       });
       const pt: any = {
         date: dateStr,
+        Total: item.value,
       };
 
       Object.entries(data.by_segment).forEach(([segment, series]) => {
@@ -59,10 +60,11 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
   }, [data]);
 
   const segmentColors: Record<string, string> = {
-    "High-Value": "oklch(var(--primary))",
-    "Regular": "oklch(var(--accent-foreground))",
-    "New": "oklch(var(--success))",
-    "At-Risk": "oklch(var(--destructive))",
+    "Total": "oklch(var(--primary))",
+    "High-Value": "oklch(var(--info))",
+    "Regular": "oklch(var(--success))",
+    "New": "oklch(var(--warning))",
+    "At-Risk": "oklch(0.62 0.18 45)", // Orange-brown instead of destructive red
   };
 
   const getSegmentColor = (segment: string) => {
@@ -89,14 +91,14 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
         <CardHeader className="p-lg pb-0">
           <div className="flex items-center gap-sm">
             <Landmark className="w-5 h-5 text-primary" />
-            <CardTitle className="text-headline-sm font-bold text-foreground">Revenue by Segment Forecast</CardTitle>
+            <CardTitle className="text-headline-sm font-bold text-foreground">Expected Revenue</CardTitle>
           </div>
-          <CardDescription>{days}-day projected revenue distribution across customer segments</CardDescription>
+          <CardDescription>Estimated Monthly Recurring Revenue (MRR)</CardDescription>
         </CardHeader>
         <CardContent className="p-lg pt-md space-y-md">
           <div className="bg-muted/30 border border-border/60 rounded-xl p-md flex items-center justify-between gap-md">
             <div className="flex items-center gap-sm">
-              <div className="p-2 bg-success/10 rounded-lg text-success">
+              <div className="p-2 bg-success/10 rounded-lg text-[#10B981]">
                 <DollarSign className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
@@ -112,7 +114,7 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
               <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
                 Model Confidence
               </span>
-              <span className="text-body-md font-bold text-success">
+              <span className="text-body-md font-bold text-[#10B981]">
                 {(data.confidence * 100).toFixed(0)}%
               </span>
             </div>
@@ -120,7 +122,7 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
 
           <div className="h-[200px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="oklch(var(--border) / 0.5)" />
                 <XAxis
                   dataKey="date"
@@ -134,7 +136,7 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(val) => `$${val}`}
+                  tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
                   contentStyle={{
@@ -152,16 +154,26 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
                   iconSize={8}
                   wrapperStyle={{ fontSize: "10px", marginTop: "10px" }}
                 />
+                <Line
+                  type="monotone"
+                  dataKey="Total"
+                  stroke={getSegmentColor("Total")}
+                  strokeWidth={3}
+                  dot={false}
+                  name="Total Projected"
+                />
                 {segments.map((segment) => (
-                  <Bar
+                  <Line
                     key={segment}
+                    type="monotone"
                     dataKey={segment}
-                    stackId="a"
-                    fill={getSegmentColor(segment)}
-                    radius={[2, 2, 0, 0]}
+                    stroke={getSegmentColor(segment)}
+                    strokeWidth={1.5}
+                    dot={false}
+                    name={segment}
                   />
                 ))}
-              </BarChart>
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </CardContent>

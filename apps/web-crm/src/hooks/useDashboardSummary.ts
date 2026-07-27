@@ -10,12 +10,12 @@ export interface DashboardMetricWithDelta {
 }
 
 export interface DashboardSummaryData {
-  churn_rate: DashboardMetricWithDelta;
-  average_clv: DashboardMetricWithDelta;
-  customer_satisfaction: DashboardMetricWithDelta;
-  average_resolution_hours: DashboardMetricWithDelta;
-  active_tickets: DashboardMetricWithDelta;
-  active_campaigns: DashboardMetricWithDelta;
+  churn_rate?: DashboardMetricWithDelta;
+  average_clv?: DashboardMetricWithDelta;
+  customer_satisfaction?: DashboardMetricWithDelta;
+  average_resolution_hours?: DashboardMetricWithDelta;
+  active_tickets?: DashboardMetricWithDelta;
+  active_campaigns?: DashboardMetricWithDelta;
 }
 
 export function useDashboardSummary(from?: string, to?: string) {

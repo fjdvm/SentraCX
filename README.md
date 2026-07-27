@@ -100,10 +100,20 @@ Follow these steps to set up the repository for development or testing.
 
 6. **Run all services**
 
-   Start the entire platform in development mode:
+   Start the entire platform in development mode (databases + all services):
 
    ```bash
-   npm run dev:web
+   npm run dev
+   ```
+
+   This single command ensures PostgreSQL, Redis, and MongoDB are running, then launches all three services concurrently. Press Ctrl+C to stop everything.
+
+   Alternatively, start individual services:
+
+   ```bash
+   npm run dev:web   # web-crm only
+   npm run dev:api   # api-crm only
+   npm run dev:ai    # api-ai-analytics only
    ```
 
 7. **Access the Application**
@@ -121,6 +131,7 @@ All scripts are run from the monorepo root with `npm run <script>`.
 
 | Command | Description |
 |---------|-------------|
+| `npm run dev` | Start all databases and services concurrently |
 | `npm run dev:web` | Start web-crm (Next.js) on port 3005 |
 | `npm run dev:api` | Start api-crm (.NET) on port 5005 |
 | `npm run dev:ai` | Start api-ai-analytics (FastAPI) on port 4005 |

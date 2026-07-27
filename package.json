@@ -9,6 +9,7 @@
   "scripts": {
     "setup": "npm install && npm run setup:ai",
     "setup:ai": "cd apps/api-ai-analytics && rm -rf .venv && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt",
+    "dev": "./scripts/start-dev.sh",
     "dev:web": "npm --workspace=apps/web-crm run dev",
     "dev:api": "./scripts/start-api-dev.sh",
     "dev:ai": "./scripts/start-ai-dev.sh",

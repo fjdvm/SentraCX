@@ -56,3 +56,17 @@ class NaturalLanguageQueryResponse(BaseModel):
     interpreted_query: str = Field(description="Structured translation or interpretation of the query")
     result: dict[str, Any] = Field(description="Structured data results mapping to the query findings")
     computed_at: datetime
+
+
+class AskRequest(BaseModel):
+    """Request schema for Ask SentraCX query."""
+
+    query: str = Field(description="Plain-English question about dashboard metrics or predictions")
+
+
+class AskResponse(BaseModel):
+    """Response schema for Ask SentraCX query."""
+
+    type: str = Field(description="Type of response content: text, chart, table, or value")
+    content: Any = Field(description="The response content matching the type")
+

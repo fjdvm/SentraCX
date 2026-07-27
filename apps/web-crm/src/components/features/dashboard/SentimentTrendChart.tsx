@@ -33,7 +33,7 @@ interface SentimentTrendChartProps {
 }
 
 export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProps) {
-  const threshold = 3.0; // Alert threshold
+  const threshold = 4.0; // 80% threshold
 
   const chartData = useMemo(() => {
     if (!data) return [];
@@ -72,6 +72,17 @@ export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProp
     return result;
   }, [data]);
 
+  const averageCSAT = useMemo(() => {
+    if (!data || data.daily_scores.length === 0) return 0;
+    const sum = data.daily_scores.reduce((acc, curr) => acc + curr.value, 0);
+    return sum / data.daily_scores.length;
+  }, [data]);
+
+  const displayPercentage = useMemo(() => {
+    if (averageCSAT === 0) return "0";
+    return ((averageCSAT / 5.0) * 100).toFixed(0);
+  }, [averageCSAT]);
+
   const alertTriggered = useMemo(() => {
     if (!data) return false;
     return data.forecast_next_7d.some((item) => item.value < threshold);
@@ -94,20 +105,25 @@ export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProp
   return (
     <Card className="bg-card border-border shadow-none flex flex-col justify-between h-full">
       <div>
-        <CardHeader className="p-lg pb-0">
-          <div className="flex items-center gap-sm">
-            <Heart className="w-5 h-5 text-primary" />
-            <CardTitle className="text-headline-sm font-bold text-foreground">Sentiment Trend Forecast</CardTitle>
+        <CardHeader className="p-lg pb-0 flex flex-row items-start justify-between">
+          <div className="space-y-sm">
+            <div className="flex items-center gap-sm">
+              <Heart className="w-5 h-5 text-primary" />
+              <CardTitle className="text-headline-sm font-bold text-foreground">How Customers Are Feeling Over Time</CardTitle>
+            </div>
+            <CardDescription>Daily trend of customer moods</CardDescription>
           </div>
-          <CardDescription>Daily sentiment score with 7-day rolling average & projection</CardDescription>
+          <div className="bg-success/15 text-success font-bold text-body-sm px-sm py-1 rounded-full border border-success/35">
+            😊 {displayPercentage}%
+          </div>
         </CardHeader>
         <CardContent className="p-lg pt-md space-y-md">
           {alertTriggered && (
-            <Alert variant="destructive" className="bg-destructive/10 border-destructive/30 text-destructive-foreground">
-              <AlertCircle className="h-4 w-4 text-destructive" />
-              <AlertTitle className="font-bold text-destructive">Sentiment Decline Alert</AlertTitle>
-              <AlertDescription className="text-body-sm text-destructive-foreground/90">
-                Customer sentiment is projected to fall below the target score of {threshold}.
+            <Alert className="bg-warning/10 border-warning/30 text-warning-foreground">
+              <AlertCircle className="h-4 w-4 text-warning" />
+              <AlertTitle className="font-bold text-warning">Sentiment Decline Alert</AlertTitle>
+              <AlertDescription className="text-body-sm text-warning-foreground/90">
+                Customer sentiment is projected to fall below the target score of 80% (4.0).
               </AlertDescription>
             </Alert>
           )}
@@ -141,12 +157,12 @@ export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProp
                 />
                 <ReferenceLine
                   y={threshold}
-                  stroke="oklch(var(--destructive))"
+                  stroke="oklch(var(--info))"
                   strokeDasharray="4 4"
                   label={{
-                    value: "Target Threshold",
+                    value: "Target 80%",
                     position: "top",
-                    fill: "oklch(var(--destructive))",
+                    fill: "oklch(var(--info-foreground))",
                     fontSize: 9,
                     fontWeight: "bold",
                   }}

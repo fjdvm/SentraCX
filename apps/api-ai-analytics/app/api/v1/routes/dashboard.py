@@ -9,6 +9,8 @@ from app.schemas.dashboard_schemas import (
     AnomalyItem,
     NaturalLanguageQueryRequest,
     NaturalLanguageQueryResponse,
+    AskRequest,
+    AskResponse,
 )
 
 router = APIRouter(tags=["dashboard"])
@@ -60,3 +62,19 @@ async def execute_natural_language_query(
     """Process natural language request and return structured data results."""
     data = await service.execute_nl_query(request.query)
     return NaturalLanguageQueryResponse(**data)
+
+
+@router.post(
+    "/dashboard/ask",
+    response_model=AskResponse,
+    summary="Ask SentraCX query",
+    description="Process natural language question and return text, chart, table, or value.",
+)
+async def ask_dashboard(
+    request: AskRequest,
+    service: DashboardService = Depends(get_dashboard_service),
+) -> AskResponse:
+    """Process natural language dashboard question."""
+    data = await service.execute_dashboard_ask(request.query)
+    return AskResponse(**data)
+
