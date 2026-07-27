@@ -66,16 +66,29 @@ export function AttentionFeed() {
     }
   };
 
+  const formatTimeAgo = (dateStr: string) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const diffMs = Date.now() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  };
+
   const getSeverityBadgeClass = (severity: string) => {
     switch (severity) {
       case "critical":
-        return "bg-[oklch(0.62_0.18_45)/0.15] text-[oklch(0.62_0.18_45)] border-[oklch(0.62_0.18_45)/0.3] font-bold";
+        return "bg-badge-destructive text-badge-destructive-foreground border-badge-destructive/30 font-bold";
       case "high":
-        return "bg-badge-orange/15 text-badge-orange-foreground border-badge-orange/30 font-semibold";
+        return "bg-badge-orange text-badge-orange-foreground border-badge-orange/30 font-semibold";
       case "medium":
-        return "bg-warning/15 text-warning-foreground border-warning/30 font-medium";
+        return "bg-badge-warning text-badge-warning-foreground border-badge-warning/30 font-medium";
       default:
-        return "bg-muted text-muted-foreground border-border/80 font-medium";
+        return "bg-badge-info text-badge-info-foreground border-badge-info/30 font-medium";
     }
   };
 
@@ -107,12 +120,12 @@ export function AttentionFeed() {
             <CardDescription>System anomalies and trend disruptions requiring intervention</CardDescription>
           </div>
           {anomalies.length > 0 && (
-            <Badge className="bg-[oklch(0.62_0.18_45)/0.15] text-[oklch(0.62_0.18_45)] font-bold">
-              {anomalies.length} Alerts
+            <Badge className="bg-badge-destructive text-badge-destructive-foreground font-bold">
+              {anomalies.length} {anomalies.length === 1 ? "Alert" : "Alerts"}
             </Badge>
           )}
         </CardHeader>
-        <CardContent className="p-lg pt-0 space-y-md max-h-[300px] overflow-y-auto">
+        <CardContent className="p-lg pt-0 space-y-md max-h-[340px] overflow-y-auto">
           {anomalies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-xl text-center space-y-sm">
               <CheckCircle2 className="w-8 h-8 text-success" />
@@ -127,13 +140,13 @@ export function AttentionFeed() {
                 key={a.id ?? index}
                 className="flex flex-col md:flex-row md:items-center justify-between gap-md border border-border/80 rounded-xl p-md bg-muted/20 hover:bg-muted/40 transition-all duration-300 animate-in fade-in duration-300"
               >
-                <div className="space-y-sm flex-1">
+                <div className="space-y-xs flex-1">
                   <div className="flex items-center gap-sm flex-wrap">
                     <Badge variant="outline" className={getSeverityBadgeClass(a.severity)}>
                       {a.severity.toUpperCase()}
                     </Badge>
-                    <span className="text-[10px] text-muted-foreground">
-                      Detected {new Date(a.detected_at).toLocaleString()}
+                    <span className="text-[11px] text-muted-foreground font-medium">
+                      {formatTimeAgo(a.detected_at)}
                     </span>
                   </div>
                   <p className="text-body-sm font-medium text-foreground">{a.description}</p>
