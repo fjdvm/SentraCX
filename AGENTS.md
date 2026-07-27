@@ -62,6 +62,7 @@ match exists.
 | Editing anything under `apps/web-crm` | `.agents/skills/web-nextjs-structure/SKILL.md` |
 | Editing anything under `apps/api-crm` | `.agents/skills/crm-dotnet-structure/SKILL.md` |
 | Editing anything under `apps/api-ai-analytics` | `.agents/skills/ai-analytics-fastapi-structure/SKILL.md` |
+| Anything related to components under `apps/web-crm` like installing, needing new components or icons | `.agents/skills/shadcn-ui/SKILL.md` |
 
 ## 5. Key Reference Docs (not skills — read directly if the task needs detail)
 
@@ -92,3 +93,6 @@ SentraCX does not exist in isolation. It integrates with two sibling repos in th
 - `api-crm` exposes webhooks at `/api/v1/webhooks/*` for signup and order events.
 - Auth tokens come from `internal-auth-service` — SentraCX never manages its own user/password store.
 - See `docs/backlogs-integration.md` for the full integration backlog and dependency graph.
+
+**Conventions**
+- all plans must live inside docs/plans/implementations/
