@@ -285,61 +285,61 @@ Organized as Epics → User Stories → Tasks (Backend / Frontend split). Priori
 
 **Backend (`api-ai-analytics`)**
 - [x] `GET /api/ai/dashboard/summary?from=&to=` → combined metrics (MongoDB aggregation pipeline)
-- [ ] Extend summary response to include: `active_tickets`, `avg_resolution_hours`, `churn_rate`, `avg_clv`, `avg_sentiment`, `active_campaigns`, each with `delta_vs_previous_period`
+- [x] Extend summary response to include: `active_tickets`, `avg_resolution_hours`, `churn_rate`, `avg_clv`, `avg_sentiment`, `active_campaigns`, each with `delta_vs_previous_period`
 
 **Frontend (`web-crm`)**
 - [x] Dashboard page with date range filter
-- [ ] KPI cards row: Active Tickets, Avg Resolution Time, Churn Rate, Avg CLV, Customer Sentiment, Active Campaigns
-- [ ] Each card shows value + trend indicator (↑↓) + delta vs. previous period
-- [ ] Cards fetch from `/api/ai/dashboard/summary` with selected date range
+- [x] KPI cards row: Active Tickets, Avg Resolution Time, Churn Rate, Avg CLV, Customer Sentiment, Active Campaigns
+- [x] Each card shows value + trend indicator (↑↓) + delta vs. previous period
+- [x] Cards fetch from `/api/ai/dashboard/summary` with selected date range
 
 ### 8.2 Ticket Volume Forecasting
 
 **Backend (`api-ai-analytics`)**
-- [ ] `GET /api/ai/forecasts/ticket-volume?range=7d|14d|30d` → `{ historical_series[], forecast_series[], confidence_band_upper[], confidence_band_lower[], threshold, alert_triggered }`
-- [ ] Time-series model (Prophet or simple ARIMA) trained on historical ticket volume from MongoDB
-- [ ] Factor in scheduled campaigns (campaign launches historically spike ticket volume)
-- [ ] Configurable staffing threshold — alert when forecast exceeds capacity
+- [x] `GET /api/ai/forecasts/ticket-volume?range=7d|14d|30d` → `{ historical_series[], forecast_series[], confidence_band_upper[], confidence_band_lower[], threshold, alert_triggered }`
+- [x] Time-series model (Prophet or simple ARIMA) trained on historical ticket volume from MongoDB
+- [x] Factor in scheduled campaigns (campaign launches historically spike ticket volume)
+- [x] Configurable staffing threshold — alert when forecast exceeds capacity
 
 **Frontend (`web-crm`)**
-- [ ] Area chart: solid line for historical, dashed line for forecast, shaded confidence band
-- [ ] Threshold line overlay showing staffing capacity
-- [ ] Alert banner: "⚠️ Predicted ticket spike in X days — exceeds current capacity by Y%"
+- [x] Area chart: solid line for historical, dashed line for forecast, shaded confidence band
+- [x] Threshold line overlay showing staffing capacity
+- [x] Alert banner: "⚠️ Predicted ticket spike in X days — exceeds current capacity by Y%"
 
 ### 8.3 Revenue & CLV Forecasting
 
 **Backend (`api-ai-analytics`)**
-- [ ] `GET /api/ai/forecasts/revenue?range=30d|90d|12m` → `{ forecast_series[], by_segment{}, total_projected, confidence }`
-- [ ] Aggregate CLV predictions across active customer base, grouped by segment
-- [ ] Project revenue trajectory based on current customer mix + churn rate
+- [x] `GET /api/ai/forecasts/revenue?range=30d|90d|12m` → `{ forecast_series[], by_segment{}, total_projected, confidence }`
+- [x] Aggregate CLV predictions across active customer base, grouped by segment
+- [x] Project revenue trajectory based on current customer mix + churn rate
 
 **Frontend (`web-crm`)**
-- [ ] Bar chart: projected revenue per segment (High-Value, Regular, New, At-Risk)
-- [ ] Trend line showing revenue trajectory over selected range
-- [ ] Summary card: "Projected 90-day revenue: $X (±Y%)"
+- [x] Bar chart: projected revenue per segment (High-Value, Regular, New, At-Risk)
+- [x] Trend line showing revenue trajectory over selected range
+- [x] Summary card: "Projected 90-day revenue: $X (±Y%)"
 
 ### 8.4 Churn Risk Distribution & Trend
 
 **Backend (`api-ai-analytics`)**
-- [ ] `GET /api/ai/forecasts/churn-distribution` → `{ low: count, medium: count, high: count, critical: count, trend_series[] }`
-- [ ] Aggregate all customer churn scores into risk buckets
-- [ ] Weekly trend of how the distribution shifts over time
+- [x] `GET /api/ai/forecasts/churn-distribution` → `{ low: count, medium: count, high: count, critical: count, trend_series[] }`
+- [x] Aggregate all customer churn scores into risk buckets
+- [x] Weekly trend of how the distribution shifts over time
 
 **Frontend (`web-crm`)**
-- [ ] Donut chart: customer base breakdown by churn risk level (Low / Medium / High / Critical)
+- [x] Donut chart: customer base breakdown by churn risk level (Low / Medium / High / Critical)
 - [ ] Line chart overlay: risk distribution trend over past 4–8 weeks
-- [ ] Clickable segments → filter customer list to that risk bucket
+- [x] Clickable segments → filter customer list to that risk bucket
 
 ### 8.5 Sentiment Trend Analysis
 
 **Backend (`api-ai-analytics`)**
-- [ ] `GET /api/ai/forecasts/sentiment-trend?range=7d|30d|90d` → `{ daily_scores[], moving_average[], forecast_next_7d[] }`
-- [ ] Compute daily average sentiment from conversation transcripts
-- [ ] Simple trend extrapolation for next 7 days
+- [x] `GET /api/ai/forecasts/sentiment-trend?range=7d|30d|90d` → `{ daily_scores[], moving_average[], forecast_next_7d[] }`
+- [x] Compute daily average sentiment from conversation transcripts
+- [x] Simple trend extrapolation for next 7 days
 
 **Frontend (`web-crm`)**
-- [ ] Line chart: daily sentiment score + 7-day moving average + forecast extension
-- [ ] Alert indicator when sentiment trends below configurable threshold
+- [x] Line chart: daily sentiment score + 7-day moving average + forecast extension
+- [x] Alert indicator when sentiment trends below configurable threshold
 
 ### 8.6 Campaign Performance Prediction
 
@@ -356,26 +356,26 @@ Organized as Epics → User Stories → Tasks (Backend / Frontend split). Priori
 ### 8.7 At-Risk Customer Watchlist
 
 **Backend (`api-ai-analytics`)**
-- [ ] `GET /api/ai/dashboard/at-risk-customers?limit=10` → top N customers by churn score with `{ customer_id, name, churn_score, risk_level, contributing_factors[], recommended_action }`
-- [ ] Combines churn model output + next-best-action into a prioritized list
+- [x] `GET /api/ai/dashboard/at-risk-customers?limit=10` → top N customers by churn score with `{ customer_id, name, churn_score, risk_level, contributing_factors[], recommended_action }`
+- [x] Combines churn model output + next-best-action into a prioritized list
 
 **Frontend (`web-crm`)**
-- [ ] Table/card list: top at-risk customers with score, factors, and recommended action
-- [ ] Each row clickable → navigates to customer profile
-- [ ] Quick-action button (e.g., "Send retention offer", "Assign to support") that triggers next-best-action
+- [x] Table/card list: top at-risk customers with score, factors, and recommended action
+- [x] Each row clickable → navigates to customer profile
+- [x] Quick-action button (e.g., "Send retention offer", "Assign to support") that triggers next-best-action
 
 ### 8.8 Anomaly Detection & Alerts
 
 **Backend (`api-ai-analytics`)**
 - [x] `GET /api/ai/anomalies?from=&to=&status=` → anomaly list with severity
-- [ ] Expand anomaly types: ticket volume spike, sentiment drop, churn rate elevation, unusual order cancellations (🔗 `api-oos`), engagement drop
-- [ ] `POST /api/ai/anomalies/{id}/acknowledge` — mark as reviewed
-- [ ] Severity auto-classification: low / medium / high / critical
+- [x] Expand anomaly types: ticket volume spike, sentiment drop, churn rate elevation, unusual order cancellations (🔗 `api-oos`), engagement drop
+- [x] `POST /api/ai/anomalies/{id}/acknowledge` — mark as reviewed
+- [x] Severity auto-classification: low / medium / high / critical
 
 **Frontend (`web-crm`)**
 - [x] Anomaly feed on dashboard
-- [ ] Anomaly cards with severity badge, description, detected time, and acknowledge/dismiss actions
-- [ ] Critical anomalies trigger a toast notification on any dashboard page
+- [x] Anomaly cards with severity badge, description, detected time, and acknowledge/dismiss actions
+- [x] Critical anomalies trigger a toast notification on any dashboard page
 - [ ] Filter by type, severity, status (open/acknowledged)
 
 ### 8.9 Staffing Capacity Alert
@@ -396,20 +396,20 @@ Organized as Epics → User Stories → Tasks (Backend / Frontend split). Priori
 
 **Frontend (`web-crm`)**
 - [x] NL query input box
-- [ ] Results displayed as table, chart, or single-value depending on query type
-- [ ] Query history / saved queries for common questions
-- [ ] Suggested queries: "Show me customers at high churn risk", "Ticket volume last 7 days", "Top performing campaign this month"
+- [x] Results displayed as table, chart, or single-value depending on query type
+- [x] Query history / saved queries for common questions
+- [x] Suggested queries: "Show me customers at high churn risk", "Ticket volume last 7 days", "Top performing campaign this month"
 
 ### 8.11 Real-Time Live Metrics
 
 **Backend (`api-crm`)**
-- [ ] SignalR event `DashboardMetricsUpdated` — broadcast on ticket create/claim/complete, new conversation, escalation
-- [ ] Lightweight payload: `{ active_tickets, pending_escalations, unread_conversations, online_agents }`
+- [x] SignalR event `DashboardMetricsUpdated` — broadcast on ticket create/claim/complete, new conversation, escalation
+- [x] Lightweight payload: `{ active_tickets, pending_escalations, unread_conversations, online_agents }`
 
 **Frontend (`web-crm`)**
-- [ ] Live indicator panel (top of dashboard or sidebar): tickets in queue, pending escalations, unread conversations
-- [ ] Numbers update in real time via SignalR subscription — no polling
-- [ ] Pulse animation on change to draw attention
+- [x] Live indicator panel (top of dashboard or sidebar): tickets in queue, pending escalations, unread conversations
+- [x] Numbers update in real time via SignalR subscription — no polling
+- [x] Pulse animation on change to draw attention
 
 ---
 
