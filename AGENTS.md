@@ -14,7 +14,7 @@ over HTTP APIs — never shared code, never shared DB connections:
    campaigns, tickets, real-time support chat. PostgreSQL primary store.
 2. **AI-Analytics** (`apps/api-ai-analytics`) — Python / FastAPI. Consumes CRM data via API,
    produces predictions/insights (churn, CLV, sentiment, NBA, ticket intelligence).
-   MongoDB + Redis (pgvector planned, not implemented).
+   MongoDB + Redis.
 3. **Web** (`apps/web-crm`) — Next.js 16 / React 19. Calls both APIs.
 
 ## 2. Tech Stack (quick reference)
@@ -63,9 +63,32 @@ match exists.
 | Editing anything under `apps/api-crm` | `.agents/skills/crm-dotnet-structure/SKILL.md` |
 | Editing anything under `apps/api-ai-analytics` | `.agents/skills/ai-analytics-fastapi-structure/SKILL.md` |
 
-## 5. Key Reference Docs (not skills — read directly if the task needs schema/API detail)
+## 5. Key Reference Docs (not skills — read directly if the task needs detail)
 
-- `docs/architecture/crm-data-model.md` — CRM schema, ER diagram, WebSocket+Redis flow
-- `docs/architecture/ai-analytics-data-model.md` — AI-Analytics schema, ER diagram
-- `docs/api/api-crm.md` / `docs/api/api-ai-analytics.md` — API references
-- `apps/api-crm/README.md` / `apps/api-ai-analytics/README.md` — service quick-starts
+**How to use these docs:**
+
+| Doc | When to read | How to read |
+|---|---|---|
+| `docs/backlogs.md` | **Every implementation task** | Read the relevant epic to know what to build — it has the task list, endpoints, and frontend items |
+| `docs/backlogs-integration.md` | **Cross-system work** (auth, webhooks, chat between shop ↔ CRM) | Read the relevant INT-* epic |
+| `docs/prd.md` | **Reference only** — when you need acceptance criteria, NFRs, or scope clarification | Read ONLY the specific section (e.g., §6.3 for chat requirements) — never load the full file |
+| `docs/plans/implementations/` | When implementing a feature that already has a plan | Read the matching plan file |
+| `docs/plans/coming-soon/` | When starting work on an upcoming feature | Read to understand the planned approach |
+
+Service quick-starts: `apps/api-crm/README.md` / `apps/api-ai-analytics/README.md`
+
+## 6. Cross-System Integration Context
+
+SentraCX does not exist in isolation. It integrates with two sibling repos in the monorepo:
+
+| System | Repo | Relationship |
+|---|---|---|
+| **br-online-shop** | `../br-online-shop` | Ecommerce platform. Sends customer signups, tickets, and orders to SentraCX via webhooks/proxy. Customers chat with CRM staff via shared SignalR hub. |
+| **internal-auth-service** | `../internal-auth-service` | OIDC provider (OpenIddict). SentraCX authenticates employees via this service. CRMS client registered as `crms-client`. |
+
+**Integration rules:**
+- `api-oos` (br-online-shop) calls `api-crm` via HTTP — never the reverse.
+- `web-shop` connects directly to `api-crm`'s SignalR ChatHub for live chat (CORS must allow it).
+- `api-crm` exposes webhooks at `/api/v1/webhooks/*` for signup and order events.
+- Auth tokens come from `internal-auth-service` — SentraCX never manages its own user/password store.
+- See `docs/backlogs-integration.md` for the full integration backlog and dependency graph.
