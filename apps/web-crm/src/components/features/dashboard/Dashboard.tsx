@@ -3,50 +3,39 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useDashboardSummary } from "@/hooks/useDashboardSummary";
-import { DashboardMetricCards } from "./DashboardMetricCards";
-import { LiveMetricsBar } from "./LiveMetricsBar";
-import { DashboardAnomalies } from "./DashboardAnomalies";
+import { useDashboardForecasts } from "@/hooks/useDashboardForecasts";
+import { KpiRow } from "./kpi-row";
+import { LiveStatusStrip } from "./live-status-strip";
+import { TicketVolumeForecastChart } from "./TicketVolumeForecastChart";
+import { RevenueBySegmentChart } from "./RevenueBySegmentChart";
+import { ChurnDistributionChart } from "./ChurnDistributionChart";
+import { SentimentTrendChart } from "./SentimentTrendChart";
+import { AttentionFeed } from "./attention-feed";
 import { AtRiskWatchlist } from "./AtRiskWatchlist";
-import { DashboardNLQuery } from "./DashboardNLQuery";
-import { ForecastSection } from "./ForecastSection";
-import { RecentTicketsList } from "./RecentTicketsList";
-import { DashboardQuickOps } from "./DashboardQuickOps";
-import type { TicketType } from "./types";
+import { AskSentraCXPanel } from "./ask-sentracx-panel";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 export function Dashboard() {
-  const [tickets, setTickets] = useState<TicketType[]>([
-    { id: "TCK-1024", customer: "Olivia Vance", issue: "API Integration Error", priority: "High", time: "10 mins ago" },
-    { id: "TCK-1023", customer: "Jackson Reed", issue: "Billing Query & Refund", priority: "Medium", time: "45 mins ago" },
-    { id: "TCK-1022", customer: "Amara Okoro", issue: "Account Lockout", priority: "High", time: "1 hour ago" },
-    { id: "TCK-1021", customer: "Liam Anderson", issue: "Feature Request: Export PDF", priority: "Low", time: "3 hours ago" },
-  ]);
-
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [days, setDays] = useState(7);
 
   const { data: summaryData, isLoading: isSummaryLoading } = useDashboardSummary(
     fromDate ? new Date(fromDate).toISOString() : undefined,
     toDate ? new Date(toDate).toISOString() : undefined
   );
 
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 3000);
-  };
-
-  const handleCreateTicket = (newTicket: TicketType) => {
-    setTickets((prev) => [newTicket, ...prev]);
-  };
+  const {
+    ticketVolume,
+    revenueBySegment,
+    churnDistribution,
+    sentimentTrend,
+    isLoading: isForecastLoading,
+  } = useDashboardForecasts(days);
 
   return (
-    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-2xl">
-      {toastMsg && (
-        <div className="fixed bottom-20 right-6 md:right-10 bg-primary text-primary-foreground px-lg py-sm rounded-lg text-body-sm font-medium z-[100] shadow-md border border-border animate-in fade-in slide-in-from-bottom-5 duration-300">
-          {toastMsg}
-        </div>
-      )}
-
+    <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-2xl animate-in fade-in duration-300">
       {/* Header section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md border-b border-border pb-lg">
         <div className="space-y-sm">
@@ -70,38 +59,59 @@ export function Dashboard() {
           </div>
           <Button
             size="sm"
-            onClick={() => showToast("Downloading CSV reports...")}
+            onClick={() => toast.success("Downloading CSV reports...")}
           >
             Download Report
           </Button>
         </div>
       </div>
 
-      <LiveMetricsBar />
+      <KpiRow data={summaryData} isLoading={isSummaryLoading} />
 
-      <DashboardMetricCards data={summaryData} isLoading={isSummaryLoading} />
+      <LiveStatusStrip />
 
+      {/* Charts Grid */}
+      <div className="space-y-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md border-b border-border pb-md">
+          <div>
+            <h2 className="text-headline-sm font-bold text-foreground">Predictive & Forecast Intelligence</h2>
+            <p className="text-body-sm text-muted-foreground">AI projected workloads, sentiment and financial metrics</p>
+          </div>
+          <div>
+            <Tabs
+              value={days.toString()}
+              onValueChange={(val) => setDays(parseInt(val, 10))}
+              className="w-auto"
+            >
+              <TabsList className="grid grid-cols-3 w-[240px]">
+                <TabsTrigger value="7">7 Days</TabsTrigger>
+                <TabsTrigger value="14">14 Days</TabsTrigger>
+                <TabsTrigger value="30">30 Days</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+          <TicketVolumeForecastChart data={ticketVolume} isLoading={isForecastLoading} days={days} />
+          <RevenueBySegmentChart data={revenueBySegment} isLoading={isForecastLoading} days={days} />
+          <ChurnDistributionChart data={churnDistribution} isLoading={isForecastLoading} />
+          <SentimentTrendChart data={sentimentTrend} isLoading={isForecastLoading} />
+        </div>
+      </div>
+
+      {/* Attention & Watchlist grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg">
         <div className="xl:col-span-2">
-          <AtRiskWatchlist onShowToast={showToast} />
+          <AtRiskWatchlist onShowToast={(msg) => toast.success(msg)} />
         </div>
         <div>
-          <DashboardAnomalies />
+          <AttentionFeed />
         </div>
       </div>
 
-      <ForecastSection />
-
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-lg">
-        <div className="lg:col-span-4">
-          <DashboardNLQuery />
-        </div>
-        <div className="lg:col-span-3">
-          <RecentTicketsList tickets={tickets} />
-        </div>
-      </div>
-
-      <DashboardQuickOps onCreateTicket={handleCreateTicket} onShowToast={showToast} />
+      {/* Floating FAB Ask SentraCX panel */}
+      <AskSentraCXPanel />
     </div>
   );
 }

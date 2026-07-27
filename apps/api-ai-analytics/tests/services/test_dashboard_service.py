@@ -107,3 +107,23 @@ async def test_execute_nl_query(service: DashboardService, groq_client: AsyncMoc
     assert resp["query"] == "How many tickets?"
     assert resp["interpreted_query"] == "SELECT count FROM tickets"
     assert resp["result"]["count"] == 100
+
+
+async def test_execute_dashboard_ask_llm(service: DashboardService, groq_client: AsyncMock) -> None:
+    groq_client.analyze.return_value = {
+        "type": "chart",
+        "content": {"series": [{"name": "Mon", "value": 10}]}
+    }
+
+    resp = await service.execute_dashboard_ask("volume forecast")
+    assert resp["type"] == "chart"
+    assert resp["content"]["series"][0]["name"] == "Mon"
+
+
+async def test_execute_dashboard_ask_fallback(service: DashboardService, groq_client: AsyncMock) -> None:
+    # Disable Groq client to trigger fallback
+    service._groq = None
+    resp = await service.execute_dashboard_ask("Who is at risk of leaving?")
+    assert resp["type"] == "table"
+    assert len(resp["content"]["rows"]) > 0
+

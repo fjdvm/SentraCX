@@ -114,6 +114,11 @@ export const aiClient = {
         method: "POST",
         body: JSON.stringify({ query: queryText }),
       }),
+    ask: (queryText: string) =>
+      request<{ type: "text" | "chart" | "table" | "value"; content: any }>("/api/v1/dashboard/ask", {
+        method: "POST",
+        body: JSON.stringify({ query: queryText }),
+      }),
   },
   forecasts: {
     getTicketVolume: (days?: number) => {

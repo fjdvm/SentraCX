@@ -26,8 +26,8 @@ export function ChurnDistributionChart({ data, isLoading }: ChurnDistributionCha
     return [
       { name: "Low", value: data.low, risk: "low", color: "oklch(var(--success))" },
       { name: "Medium", value: data.medium, risk: "medium", color: "oklch(var(--warning))" },
-      { name: "High", value: data.high, risk: "high", color: "oklch(var(--primary))" },
-      { name: "Critical", value: data.critical, risk: "critical", color: "oklch(var(--destructive))" },
+      { name: "High", value: data.high, risk: "high", color: "oklch(var(--info))" },
+      { name: "Critical", value: data.critical, risk: "critical", color: "oklch(0.62 0.18 45)" }, // Rust orange instead of red
     ].filter((item) => item.value > 0);
   }, [data]);
 
@@ -59,7 +59,7 @@ export function ChurnDistributionChart({ data, isLoading }: ChurnDistributionCha
         <CardHeader className="p-lg pb-0">
           <div className="flex items-center gap-sm">
             <ShieldAlert className="w-5 h-5 text-primary" />
-            <CardTitle className="text-headline-sm font-bold text-foreground">Churn Risk Distribution</CardTitle>
+            <CardTitle className="text-headline-sm font-bold text-foreground">Who's at Risk of Leaving</CardTitle>
           </div>
           <CardDescription>Donut segmentation by churn score range (Click segment to filter)</CardDescription>
         </CardHeader>
@@ -96,13 +96,13 @@ export function ChurnDistributionChart({ data, isLoading }: ChurnDistributionCha
                 />
               </PieChart>
             </ResponsiveContainer>
-            {/* Center Label */}
+            {/* Center Label: <number> Accounts (matching design ref) */}
             <div className="absolute flex flex-col items-center justify-center text-center">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                Total Risked
-              </span>
               <span className="text-headline-md font-bold text-foreground">
                 {total}
+              </span>
+              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                Accounts
               </span>
             </div>
           </div>

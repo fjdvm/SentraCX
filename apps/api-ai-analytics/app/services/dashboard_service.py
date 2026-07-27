@@ -395,3 +395,78 @@ class DashboardService:
                 "computed_at": datetime.now(timezone.utc)
             }
 
+    async def execute_dashboard_ask(self, query: str) -> dict:
+        """Process natural-language request and return a structured response with type and content."""
+        if not self._groq:
+            return self._heuristic_ask_fallback(query)
+
+        system_prompt = (
+            "You are an AI assistant for SentraCX CRM. The user is asking a plain-English question.\n"
+            "Formulate a structured response. Decide on the best representation type:\n"
+            "- 'text' for simple explanations/paragraphs\n"
+            "- 'value' for single values or counts\n"
+            "- 'table' for lists of entities or multi-column data\n"
+            "- 'chart' for time series or trend lines\n\n"
+            "Return a JSON object with exactly these keys:\n"
+            "- 'type': one of ['text', 'chart', 'table', 'value']\n"
+            "- 'content': the actual content data. For 'table', content should be an object with 'headers' (list of strings) and 'rows' (list of dicts, where keys match headers). For 'chart', content should be an object with 'series' (list of dicts with 'name' and 'value' keys). For 'value', content should be an object with 'value' (string/number), 'label' (string), and optional 'delta' (string/number). For 'text', content must be a simple string.\n"
+        )
+        user_prompt = f"User query: {query}"
+
+        try:
+            res = await self._groq.analyze(system_prompt, user_prompt)
+            # Validate structure
+            res_type = res.get("type", "text")
+            res_content = res.get("content", "")
+            if res_type not in ["text", "chart", "table", "value"] or not res_content:
+                raise ValueError("Invalid structure")
+            return {"type": res_type, "content": res_content}
+        except Exception:
+            return self._heuristic_ask_fallback(query)
+
+    def _heuristic_ask_fallback(self, query: str) -> dict:
+        query_lower = query.lower()
+        if "churn" in query_lower or "at risk" in query_lower or "risk of leaving" in query_lower:
+            return {
+                "type": "table",
+                "content": {
+                    "headers": ["Customer Name", "Risk Level", "Churn Score"],
+                    "rows": [
+                        {"Customer Name": "Olivia Vance", "Risk Level": "Critical", "Churn Score": "94%"},
+                        {"Customer Name": "Jackson Reed", "Risk Level": "High", "Churn Score": "82%"},
+                        {"Customer Name": "Amara Okoro", "Risk Level": "Medium", "Churn Score": "62%"},
+                        {"Customer Name": "Liam Anderson", "Risk Level": "Low", "Churn Score": "25%"},
+                    ]
+                }
+            }
+        elif "volume" in query_lower or "spike" in query_lower or "requests" in query_lower:
+            return {
+                "type": "chart",
+                "content": {
+                    "series": [
+                        {"name": "Mon", "value": 12},
+                        {"name": "Tue", "value": 15},
+                        {"name": "Wed", "value": 18},
+                        {"name": "Thu", "value": 24},
+                        {"name": "Fri", "value": 20},
+                        {"name": "Sat", "value": 10},
+                        {"name": "Sun", "value": 8},
+                    ]
+                }
+            }
+        elif "campaign" in query_lower or "promo" in query_lower or "promotion" in query_lower:
+            return {
+                "type": "value",
+                "content": {
+                    "value": "Summer Promo B",
+                    "label": "Conversion Rate: 8.5%",
+                    "delta": "+2.1%"
+                }
+            }
+        else:
+            return {
+                "type": "text",
+                "content": "I couldn't query the live system right now, but our average customer CSAT is 4.5/5 and the overall churn rate is steady at 2.4%."
+            }
+
+

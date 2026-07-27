@@ -32,9 +32,10 @@ interface TicketVolumeForecastData {
 interface TicketVolumeForecastChartProps {
   data: TicketVolumeForecastData | null;
   isLoading: boolean;
+  days?: number;
 }
 
-export function TicketVolumeForecastChart({ data, isLoading }: TicketVolumeForecastChartProps) {
+export function TicketVolumeForecastChart({ data, isLoading, days = 7 }: TicketVolumeForecastChartProps) {
   const chartData = useMemo(() => {
     if (!data) return [];
 
@@ -96,16 +97,16 @@ export function TicketVolumeForecastChart({ data, isLoading }: TicketVolumeForec
         <CardHeader className="p-lg pb-0">
           <div className="flex items-center gap-sm">
             <TrendingUp className="w-5 h-5 text-primary" />
-            <CardTitle className="text-headline-sm font-bold text-foreground">Ticket Volume Forecast</CardTitle>
+            <CardTitle className="text-headline-sm font-bold text-foreground">Expected Support Requests</CardTitle>
           </div>
-          <CardDescription>7-day projected ticket load against capacity threshold</CardDescription>
+          <CardDescription>Predictive workload analysis for next {days} days</CardDescription>
         </CardHeader>
         <CardContent className="p-lg pt-md space-y-md">
           {data.alert_triggered && (
-            <Alert variant="destructive" className="bg-destructive/10 border-destructive/30 text-destructive-foreground">
-              <AlertCircle className="h-4 h-4 text-destructive" />
-              <AlertTitle className="font-bold text-destructive">Capacity Alert</AlertTitle>
-              <AlertDescription className="text-body-sm text-destructive-foreground/90">
+            <Alert className="bg-warning/10 border-warning/30 text-warning-foreground">
+              <AlertCircle className="h-4 w-4 text-warning" />
+              <AlertTitle className="font-bold text-warning">Capacity Alert</AlertTitle>
+              <AlertDescription className="text-body-sm text-warning-foreground/90">
                 Forecasted ticket volume is projected to exceed the SLA capacity threshold of {data.threshold} tickets.
               </AlertDescription>
             </Alert>
@@ -149,12 +150,12 @@ export function TicketVolumeForecastChart({ data, isLoading }: TicketVolumeForec
                 />
                 <ReferenceLine
                   y={data.threshold}
-                  stroke="oklch(var(--destructive))"
+                  stroke="oklch(var(--warning))"
                   strokeDasharray="4 4"
                   label={{
                     value: "SLA Threshold",
                     position: "top",
-                    fill: "oklch(var(--destructive))",
+                    fill: "oklch(var(--warning-foreground))",
                     fontSize: 9,
                     fontWeight: "bold",
                   }}
