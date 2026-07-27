@@ -17,8 +17,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Heart } from "lucide-react";
 
 interface SentimentSeriesItem {
-  timestamp: string;
-  value: number;
+  timestamp?: string;
+  date?: string;
+  value?: number;
+  score?: number;
 }
 
 interface SentimentTrendData {
@@ -35,37 +37,34 @@ interface SentimentTrendChartProps {
 export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProps) {
   const threshold = 4.0; // 80% threshold
 
+  const getItemDate = (item: SentimentSeriesItem) => {
+    const raw = item.date || item.timestamp;
+    if (!raw) return "";
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? raw : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  };
+  const getItemVal = (item?: SentimentSeriesItem) => item?.score ?? item?.value ?? 0;
+
   const chartData = useMemo(() => {
     if (!data) return [];
 
     const result: any[] = [];
     
-    // Push daily scores
-    data.daily_scores.forEach((item, idx) => {
-      const dateStr = new Date(item.timestamp).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      });
+    data.daily_scores?.forEach((item, idx) => {
       result.push({
-        date: dateStr,
-        daily: item.value,
-        ma: data.moving_average[idx]?.value,
+        date: getItemDate(item),
+        daily: getItemVal(item),
+        ma: getItemVal(data.moving_average?.[idx]),
       });
     });
 
-    const lastMA = data.moving_average[data.moving_average.length - 1];
+    const lastMA = data.moving_average?.[data.moving_average.length - 1];
 
-    // Push forecast
-    data.forecast_next_7d.forEach((item, idx) => {
-      const dateStr = new Date(item.timestamp).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      });
+    data.forecast_next_7d?.forEach((item, idx) => {
       result.push({
-        date: dateStr,
-        forecast: item.value,
-        // Bridge point for continuous visual flow
-        ma: idx === 0 && lastMA ? lastMA.value : undefined,
+        date: getItemDate(item),
+        forecast: getItemVal(item),
+        ma: idx === 0 && lastMA ? getItemVal(lastMA) : undefined,
       });
     });
 
@@ -73,8 +72,8 @@ export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProp
   }, [data]);
 
   const averageCSAT = useMemo(() => {
-    if (!data || data.daily_scores.length === 0) return 0;
-    const sum = data.daily_scores.reduce((acc, curr) => acc + curr.value, 0);
+    if (!data || !data.daily_scores || data.daily_scores.length === 0) return 0;
+    const sum = data.daily_scores.reduce((acc, curr) => acc + getItemVal(curr), 0);
     return sum / data.daily_scores.length;
   }, [data]);
 
@@ -84,8 +83,8 @@ export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProp
   }, [averageCSAT]);
 
   const alertTriggered = useMemo(() => {
-    if (!data) return false;
-    return data.forecast_next_7d.some((item) => item.value < threshold);
+    if (!data || !data.forecast_next_7d) return false;
+    return data.forecast_next_7d.some((item) => getItemVal(item) < threshold);
   }, [data]);
 
   if (isLoading || !data) {
@@ -131,16 +130,16 @@ export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProp
           <div className="h-[220px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="oklch(var(--border) / 0.5)" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" strokeOpacity={0.5} />
                 <XAxis
                   dataKey="date"
-                  stroke="oklch(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
-                  stroke="oklch(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
@@ -149,20 +148,20 @@ export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProp
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "oklch(var(--card))",
-                    borderColor: "oklch(var(--border))",
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
                     borderRadius: "0.5rem",
                     fontSize: "12px",
                   }}
                 />
                 <ReferenceLine
                   y={threshold}
-                  stroke="oklch(var(--info))"
+                  stroke="var(--info)"
                   strokeDasharray="4 4"
                   label={{
                     value: "Target 80%",
                     position: "top",
-                    fill: "oklch(var(--info-foreground))",
+                    fill: "var(--info-foreground)",
                     fontSize: 9,
                     fontWeight: "bold",
                   }}
@@ -174,30 +173,27 @@ export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProp
                   iconSize={8}
                   wrapperStyle={{ fontSize: "10px", marginTop: "10px" }}
                 />
-                {/* Daily Score Dots */}
                 <Line
                   type="monotone"
                   dataKey="daily"
-                  stroke="oklch(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   strokeWidth={1}
                   dot={{ r: 2 }}
                   activeDot={{ r: 4 }}
                   name="Daily Score"
                 />
-                {/* Moving Average Line */}
                 <Line
                   type="monotone"
                   dataKey="ma"
-                  stroke="oklch(var(--primary))"
+                  stroke="var(--primary)"
                   strokeWidth={2}
                   dot={false}
                   name="7d Moving Average"
                 />
-                {/* Forecast Line */}
                 <Line
                   type="monotone"
                   dataKey="forecast"
-                  stroke="oklch(var(--primary))"
+                  stroke="var(--primary)"
                   strokeWidth={2}
                   strokeDasharray="5 5"
                   dot={false}

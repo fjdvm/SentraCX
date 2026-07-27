@@ -15,13 +15,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { DollarSign, Landmark } from "lucide-react";
 
 interface SegmentSeriesItem {
-  timestamp: string;
-  value: number;
+  timestamp?: string;
+  date?: string;
+  value?: number;
+  revenue?: number;
 }
 
 interface RevenueForecastData {
   forecast_series: SegmentSeriesItem[];
-  by_segment: Record<string, SegmentSeriesItem[]>;
+  by_segment: Record<string, number | SegmentSeriesItem[]>;
   total_projected: number;
   confidence: number;
 }
@@ -36,39 +38,50 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
   const chartData = useMemo(() => {
     if (!data) return [];
 
-    return data.forecast_series.map((item, idx) => {
-      const dateStr = new Date(item.timestamp).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      });
+    return data.forecast_series?.map((item, idx) => {
+      const raw = item.date || item.timestamp;
+      const dateStr = raw
+        ? isNaN(new Date(raw).getTime())
+          ? raw
+          : new Date(raw).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+        : "";
+
+      const totalVal = item.revenue ?? item.value ?? 0;
       const pt: any = {
         date: dateStr,
-        Total: item.value,
+        Total: totalVal,
       };
 
-      Object.entries(data.by_segment).forEach(([segment, series]) => {
-        pt[segment] = series[idx]?.value ?? 0;
-      });
+      if (data.by_segment) {
+        Object.entries(data.by_segment).forEach(([segment, val]) => {
+          if (typeof val === "number") {
+            pt[segment] = val;
+          } else if (Array.isArray(val)) {
+            const seriesVal = val[idx];
+            pt[segment] = seriesVal?.revenue ?? seriesVal?.value ?? 0;
+          }
+        });
+      }
 
       return pt;
-    });
+    }) || [];
   }, [data]);
 
   const segments = useMemo(() => {
-    if (!data) return [];
+    if (!data || !data.by_segment) return [];
     return Object.keys(data.by_segment);
   }, [data]);
 
   const segmentColors: Record<string, string> = {
-    "Total": "oklch(var(--primary))",
-    "High-Value": "oklch(var(--info))",
-    "Regular": "oklch(var(--success))",
-    "New": "oklch(var(--warning))",
-    "At-Risk": "oklch(0.62 0.18 45)", // Orange-brown instead of destructive red
+    "Total": "var(--primary)",
+    "High-Value": "var(--info)",
+    "Regular": "var(--success)",
+    "New": "var(--warning)",
+    "At-Risk": "oklch(0.62 0.18 45)",
   };
 
   const getSegmentColor = (segment: string) => {
-    return segmentColors[segment] ?? "oklch(var(--muted-foreground))";
+    return segmentColors[segment] ?? "var(--muted-foreground)";
   };
 
   if (isLoading || !data) {
@@ -106,7 +119,7 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
                   Total Projected Revenue
                 </span>
                 <span className="text-headline-sm font-bold text-foreground">
-                  ${data.total_projected.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  ${(data.total_projected ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </span>
               </div>
             </div>
@@ -115,7 +128,7 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
                 Model Confidence
               </span>
               <span className="text-body-md font-bold text-[#10B981]">
-                {(data.confidence * 100).toFixed(0)}%
+                {((data.confidence ?? 0) * 100).toFixed(0)}%
               </span>
             </div>
           </div>
@@ -123,16 +136,16 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
           <div className="h-[200px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="oklch(var(--border) / 0.5)" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" strokeOpacity={0.5} />
                 <XAxis
                   dataKey="date"
-                  stroke="oklch(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
-                  stroke="oklch(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
@@ -140,8 +153,8 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "oklch(var(--card))",
-                    borderColor: "oklch(var(--border))",
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
                     borderRadius: "0.5rem",
                     fontSize: "12px",
                   }}

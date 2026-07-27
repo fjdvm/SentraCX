@@ -16,8 +16,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, TrendingUp } from "lucide-react";
 
 interface SeriesItem {
-  timestamp: string;
-  value: number;
+  timestamp?: string;
+  date?: string;
+  value?: number;
+  count?: number;
 }
 
 interface TicketVolumeForecastData {
@@ -40,37 +42,33 @@ export function TicketVolumeForecastChart({ data, isLoading, days = 7 }: TicketV
     if (!data) return [];
 
     const result: any[] = [];
-    
-    // Push historical
-    data.historical_series.forEach((item) => {
-      const dateStr = new Date(item.timestamp).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      });
+    const getItemDate = (item: SeriesItem) => {
+      const raw = item.date || item.timestamp;
+      if (!raw) return "";
+      const d = new Date(raw);
+      return isNaN(d.getTime()) ? raw : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    };
+    const getItemVal = (item?: SeriesItem) => item?.count ?? item?.value ?? 0;
+
+    data.historical_series?.forEach((item) => {
       result.push({
-        date: dateStr,
-        historical: item.value,
+        date: getItemDate(item),
+        historical: getItemVal(item),
       });
     });
 
-    // We can bridge the last historical and first forecast for a continuous line
-    const lastHist = data.historical_series[data.historical_series.length - 1];
+    const lastHist = data.historical_series?.[data.historical_series.length - 1];
 
-    // Push forecast
-    data.forecast_series.forEach((item, idx) => {
-      const dateStr = new Date(item.timestamp).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      });
-      const upper = data.confidence_band_upper[idx]?.value ?? item.value;
-      const lower = data.confidence_band_lower[idx]?.value ?? item.value;
+    data.forecast_series?.forEach((item, idx) => {
+      const val = getItemVal(item);
+      const upper = getItemVal(data.confidence_band_upper?.[idx]) || val;
+      const lower = getItemVal(data.confidence_band_lower?.[idx]) || val;
 
       result.push({
-        date: dateStr,
-        forecast: item.value,
+        date: getItemDate(item),
+        forecast: val,
         confidenceRange: [lower, upper],
-        // Bridge point for continuous visual flow
-        historical: idx === 0 && lastHist ? lastHist.value : undefined,
+        historical: idx === 0 && lastHist ? getItemVal(lastHist) : undefined,
       });
     });
 
@@ -117,32 +115,32 @@ export function TicketVolumeForecastChart({ data, isLoading, days = 7 }: TicketV
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorHist" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="oklch(var(--primary))" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="oklch(var(--primary))" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorFc" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="oklch(var(--primary))" stopOpacity={0.1} />
-                    <stop offset="95%" stopColor="oklch(var(--primary))" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.1} />
+                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="oklch(var(--border) / 0.5)" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" strokeOpacity={0.5} />
                 <XAxis
                   dataKey="date"
-                  stroke="oklch(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
-                  stroke="oklch(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "oklch(var(--card))",
-                    borderColor: "oklch(var(--border))",
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
                     borderRadius: "0.5rem",
                     fontSize: "12px",
                   }}
@@ -150,40 +148,37 @@ export function TicketVolumeForecastChart({ data, isLoading, days = 7 }: TicketV
                 />
                 <ReferenceLine
                   y={data.threshold}
-                  stroke="oklch(var(--warning))"
+                  stroke="var(--warning)"
                   strokeDasharray="4 4"
                   label={{
                     value: "SLA Threshold",
                     position: "top",
-                    fill: "oklch(var(--warning-foreground))",
+                    fill: "var(--warning-foreground)",
                     fontSize: 9,
                     fontWeight: "bold",
                   }}
                 />
-                {/* Confidence Range Area */}
                 <Area
                   type="monotone"
                   dataKey="confidenceRange"
                   stroke="none"
-                  fill="oklch(var(--primary))"
+                  fill="var(--primary)"
                   fillOpacity={0.06}
                   name="Confidence Band"
                 />
-                {/* Historical Area */}
                 <Area
                   type="monotone"
                   dataKey="historical"
-                  stroke="oklch(var(--primary))"
+                  stroke="var(--primary)"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorHist)"
                   name="Historical Volume"
                 />
-                {/* Forecast Area */}
                 <Area
                   type="monotone"
                   dataKey="forecast"
-                  stroke="oklch(var(--primary))"
+                  stroke="var(--primary)"
                   strokeWidth={2}
                   strokeDasharray="5 5"
                   fillOpacity={1}

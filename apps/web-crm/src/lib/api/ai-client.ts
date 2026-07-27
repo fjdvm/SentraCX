@@ -122,18 +122,18 @@ export const aiClient = {
   },
   forecasts: {
     getTicketVolume: (days?: number) => {
-      let url = "/api/v1/forecasts/ticket-volume";
-      if (days) url += `?days=${days}`;
-      return request<any>(url);
+      const range = days ? `${days}d` : "7d";
+      return request<any>(`/api/v1/forecasts/ticket-volume?range=${range}`);
     },
     getRevenueBySegment: (days?: number) => {
-      let url = "/api/v1/forecasts/revenue-by-segment";
-      if (days) url += `?days=${days}`;
-      return request<any>(url);
+      const range = days && days > 30 ? "90d" : "30d";
+      return request<any>(`/api/v1/forecasts/revenue?range=${range}`);
     },
     getChurnDistribution: () =>
       request<any>("/api/v1/forecasts/churn-distribution"),
-    getSentimentTrend: () =>
-      request<any>("/api/v1/forecasts/sentiment-trend"),
+    getSentimentTrend: (days?: number) => {
+      const range = days && days <= 7 ? "7d" : "30d";
+      return request<any>(`/api/v1/forecasts/sentiment-trend?range=${range}`);
+    },
   },
 };
