@@ -37,24 +37,24 @@ The implementation is broken into **four sub-epics** that map 1-to-1 with backlo
 #### `api-ai-analytics`
 
 ##### [MODIFY] dashboard_schemas.py
-- [ ] Add `MetricWithDelta` model: `{ value, delta_vs_previous_period, delta_pct }`
-- [ ] Extend `DashboardSummaryResponse` with:
-  - [ ] `active_tickets: MetricWithDelta`
-  - [ ] `avg_resolution_hours: MetricWithDelta`
-  - [ ] `churn_rate: MetricWithDelta`
-  - [ ] `avg_clv: MetricWithDelta`
-  - [ ] `avg_sentiment: MetricWithDelta`
-  - [ ] `active_campaigns: MetricWithDelta`
+- [x] Add `MetricWithDelta` model: `{ value, delta_vs_previous_period, delta_pct }`
+- [x] Extend `DashboardSummaryResponse` with:
+  - [x] `active_tickets: MetricWithDelta`
+  - [x] `avg_resolution_hours: MetricWithDelta`
+  - [x] `churn_rate: MetricWithDelta`
+  - [x] `avg_clv: MetricWithDelta`
+  - [x] `avg_sentiment: MetricWithDelta`
+  - [x] `active_campaigns: MetricWithDelta`
 
 ##### [MODIFY] dashboard_service.py
-- [ ] Extend `get_summary()` to compute deltas vs. equal-length previous period
-- [ ] Pull `active_tickets` from CRM via `crm_client.py` (new `get_active_ticket_count()` method)
-- [ ] Compute `avg_resolution_hours` from `ConversationTranscripts`
-- [ ] Compute `avg_clv` from `customer_feature_logs`
-- [ ] Pull `active_campaigns` from CRM via `crm_client.py` (new `get_active_campaign_count()`)
+- [x] Extend `get_summary()` to compute deltas vs. equal-length previous period
+- [x] Pull `active_tickets` from CRM via `crm_client.py` (new `get_active_ticket_count()` method)
+- [x] Compute `avg_resolution_hours` from `ConversationTranscripts`
+- [x] Compute `avg_clv` from `customer_feature_logs`
+- [x] Pull `active_campaigns` from CRM via `crm_client.py` (new `get_active_campaign_count()`)
 
 ##### [MODIFY] dashboard.py (route)
-- [ ] No new routes — response contract is extended in place
+- [x] No new routes — response contract is extended in place
 
 #### `web-crm`
 
@@ -80,32 +80,32 @@ The implementation is broken into **four sub-epics** that map 1-to-1 with backlo
 
 ##### [NEW] `app/api/v1/routes/forecasts.py`
 Four GET endpoints:
-- [ ] `GET /api/ai/forecasts/ticket-volume?range=7d|14d|30d`
+- [x] `GET /api/ai/forecasts/ticket-volume?range=7d|14d|30d`
   → `{ historical_series[], forecast_series[], confidence_band_upper[], confidence_band_lower[], threshold, alert_triggered }`
-- [ ] `GET /api/ai/forecasts/revenue?range=30d|90d|12m`
+- [x] `GET /api/ai/forecasts/revenue?range=30d|90d|12m`
   → `{ forecast_series[], by_segment{}, total_projected, confidence }`
-- [ ] `GET /api/ai/forecasts/churn-distribution`
+- [x] `GET /api/ai/forecasts/churn-distribution`
   → `{ low, medium, high, critical, trend_series[] }`
-- [ ] `GET /api/ai/forecasts/sentiment-trend?range=7d|30d|90d`
+- [x] `GET /api/ai/forecasts/sentiment-trend?range=7d|30d|90d`
   → `{ daily_scores[], moving_average[], forecast_next_7d[] }`
 
 ##### [NEW] `app/schemas/forecast_schemas.py`
-- [ ] `TicketVolumeForecastResponse`
-- [ ] `RevenueForecastResponse`
-- [ ] `ChurnDistributionResponse`
-- [ ] `SentimentTrendResponse`
+- [x] `TicketVolumeForecastResponse`
+- [x] `RevenueForecastResponse`
+- [x] `ChurnDistributionResponse`
+- [x] `SentimentTrendResponse`
 
 ##### [NEW] `app/services/forecast_service.py`
-- [ ] `get_ticket_volume_forecast(range)` — linear extrapolation from MongoDB `ConversationTranscripts`; numpy for trend fitting; heuristic fallback
-- [ ] `get_revenue_forecast(range)` — aggregate CLV predictions by segment from `customer_feature_logs`, project forward
-- [ ] `get_churn_distribution()` — bucket all customers' latest churn scores into Low/Medium/High/Critical; compute weekly trend
-- [ ] `get_sentiment_trend(range)` — daily average from `ConversationTranscripts`, 7-day rolling avg, simple linear forecast
+- [x] `get_ticket_volume_forecast(range)` — linear extrapolation from MongoDB `ConversationTranscripts`; numpy for trend fitting; heuristic fallback
+- [x] `get_revenue_forecast(range)` — aggregate CLV predictions by segment from `customer_feature_logs`, project forward
+- [x] `get_churn_distribution()` — bucket all customers' latest churn scores into Low/Medium/High/Critical; compute weekly trend
+- [x] `get_sentiment_trend(range)` — daily average from `ConversationTranscripts`, 7-day rolling avg, simple linear forecast
 
 ##### [MODIFY] `app/api/v1/deps.py`
-- [ ] Add `get_forecast_service()` dependency factory
+- [x] Add `get_forecast_service()` dependency factory
 
 ##### [MODIFY] `app/main.py`
-- [ ] Register `forecasts.router` under `/api/ai`
+- [x] Register `forecasts.router` under `/api/ai`
 
 #### `web-crm`
 
@@ -139,22 +139,22 @@ Four GET endpoints:
 #### `api-ai-analytics`
 
 ##### [NEW] `app/api/v1/routes/watchlist.py`
-- [ ] `GET /api/ai/dashboard/at-risk-customers?limit=10`
+- [x] `GET /api/ai/dashboard/at-risk-customers?limit=10`
   → `{ customers: [{ customer_id, name, churn_score, risk_level, contributing_factors[], recommended_action }] }`
-- [ ] `POST /api/ai/anomalies/{id}/acknowledge`
+- [x] `POST /api/ai/anomalies/{id}/acknowledge`
   → `{ anomaly_id, status: "acknowledged" }`
 
 ##### [NEW] `app/schemas/watchlist_schemas.py`
-- [ ] `AtRiskCustomerItem` and `AtRiskCustomerListResponse`
+- [x] `AtRiskCustomerItem` and `AtRiskCustomerListResponse`
 
 ##### [MODIFY] dashboard_service.py
-- [ ] `get_at_risk_customers(limit)` — query top-N by churn score from `customer_feature_logs`, enrich with NBA recommendation
-- [ ] `acknowledge_anomaly(anomaly_id)` — update anomaly status in MongoDB to "acknowledged"
-- [ ] Expand `get_anomalies()` to detect: sentiment drop, churn rate elevation, engagement drop; auto-classify severity as low/medium/high/critical
+- [x] `get_at_risk_customers(limit)` — query top-N by churn score from `customer_feature_logs`, enrich with NBA recommendation
+- [x] `acknowledge_anomaly(anomaly_id)` — update anomaly status in MongoDB to "acknowledged"
+- [x] Expand `get_anomalies()` to detect: sentiment drop, churn rate elevation, engagement drop; auto-classify severity as low/medium/high/critical
 
 ##### [MODIFY] dashboard_schemas.py
-- [ ] Add `"critical"` to `AnomalyItem.severity` enum
-- [ ] Add `"acknowledged"` to `AnomalyItem.status` enum
+- [x] Add `"critical"` to `AnomalyItem.severity` enum
+- [x] Add `"acknowledged"` to `AnomalyItem.status` enum
 
 #### `web-crm`
 
@@ -179,30 +179,30 @@ Four GET endpoints:
 #### `api-crm`
 
 ##### [NEW] `Hubs/DashboardHub.cs`
-- [ ] `JoinDashboard()` / `LeaveDashboard()` — add/remove from `"dashboard"` group
-- [ ] `OnConnectedAsync` / `OnDisconnectedAsync` — increment/decrement Redis online-agent counter
+- [x] `JoinDashboard()` / `LeaveDashboard()` — add/remove from `"dashboard"` group
+- [x] `OnConnectedAsync` / `OnDisconnectedAsync` — increment/decrement Redis online-agent counter
 
 ##### [NEW] `DTOs/Responses/DashboardMetricsDto.cs`
-- [ ] `int ActiveTickets`, `int PendingEscalations`, `int UnreadConversations`, `int OnlineAgents`
+- [x] `int ActiveTickets`, `int PendingEscalations`, `int UnreadConversations`, `int OnlineAgents`
 
 ##### [NEW] `Interfaces/Services/IDashboardBroadcastService.cs`
-- [ ] `Task BroadcastMetricsAsync()`
+- [x] `Task BroadcastMetricsAsync()`
 
 ##### [NEW] `Services/DashboardBroadcastService.cs`
-- [ ] Injects `IHubContext<DashboardHub>`, `ITicketRepository`, `IMessageRepository`, Redis `IConnectionMultiplexer`
-- [ ] Queries live counts and broadcasts `DashboardMetricsUpdated` to the `"dashboard"` group
+- [x] Injects `IHubContext<DashboardHub>`, `ITicketRepository`, `IMessageRepository`, Redis `IConnectionMultiplexer`
+- [x] Queries live counts and broadcasts `DashboardMetricsUpdated` to the `"dashboard"` group
 
 ##### [MODIFY] TicketService.cs
-- [ ] Inject `IDashboardBroadcastService`
-- [ ] Fire-and-forget `BroadcastMetricsAsync()` after `CreateAsync`, `ClaimAsync`, `UnclaimAsync`, `UpdateStatusAsync`
+- [x] Inject `IDashboardBroadcastService`
+- [x] Fire-and-forget `BroadcastMetricsAsync()` after `CreateAsync`, `ClaimAsync`, `UnclaimAsync`, `UpdateStatusAsync`
 
 ##### [MODIFY] MessageService.cs
-- [ ] Inject `IDashboardBroadcastService`
-- [ ] Fire-and-forget `BroadcastMetricsAsync()` after new message creation
+- [x] Inject `IDashboardBroadcastService`
+- [x] Fire-and-forget `BroadcastMetricsAsync()` after new message creation
 
 ##### [MODIFY] Program.cs
-- [ ] Register `IDashboardBroadcastService` as scoped
-- [ ] `app.MapHub<DashboardHub>("/hubs/dashboard")`
+- [x] Register `IDashboardBroadcastService` as scoped
+- [x] `app.MapHub<DashboardHub>("/hubs/dashboard")`
 
 #### `web-crm`
 

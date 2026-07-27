@@ -8,7 +8,7 @@ using Crm.Api.Models;
 
 namespace Crm.Api.Services;
 
-public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiClient) : ITicketService
+public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiClient, IDashboardBroadcastService broadcastService) : ITicketService
 {
     private static readonly Dictionary<string, HashSet<string>> ValidTransitions = new()
     {
@@ -50,6 +50,7 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         };
 
         await ticketRepo.AddAsync(ticket);
+        await broadcastService.BroadcastMetricsAsync();
 
         var created = await ticketRepo.GetByIdAsync(ticket.Id);
 
@@ -89,6 +90,7 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         ticket.AssignedToId = staffUserId;
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
+        await broadcastService.BroadcastMetricsAsync();
         return true;
     }
 
@@ -103,6 +105,7 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         ticket.AssignedToId = null;
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
+        await broadcastService.BroadcastMetricsAsync();
         return true;
     }
 
@@ -116,6 +119,7 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         ticket.Status = dto.Status;
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
+        await broadcastService.BroadcastMetricsAsync();
         return true;
     }
 
@@ -129,6 +133,7 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         ticket.Status = "Canceled";
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
+        await broadcastService.BroadcastMetricsAsync();
         return true;
     }
 

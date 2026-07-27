@@ -98,3 +98,32 @@ class CrmClient:
             return []
         except httpx.RequestError:
             return []
+
+    async def get_tickets_count(self, status: str | None = None) -> int:
+        """Fetch count of tickets with optional status filter."""
+        url = f"{self._base_url}/api/v1/tickets?pageSize=1"
+        if status:
+            url += f"&status={status}"
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                response = await client.get(url, headers=self._headers())
+                response.raise_for_status()
+                data = response.json()
+                return data.get("totalCount", 0)
+        except Exception:
+            return 0
+
+    async def get_active_campaigns_count(self) -> int:
+        """Fetch count of active campaigns."""
+        url = f"{self._base_url}/api/v1/campaigns?status=Active"
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                response = await client.get(url, headers=self._headers())
+                response.raise_for_status()
+                data = response.json()
+                if isinstance(data, list):
+                    return len(data)
+                return 0
+        except Exception:
+            return 0
+

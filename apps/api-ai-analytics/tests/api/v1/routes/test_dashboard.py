@@ -11,12 +11,18 @@ from app.api.v1.deps import get_dashboard_service
 @pytest.fixture(autouse=True)
 def mock_dashboard_service():
     service_mock = AsyncMock()
+    metric_mock = {
+        "value": 10.0,
+        "delta_vs_previous_period": 2.0,
+        "delta_pct": 20.0,
+    }
     service_mock.get_summary.return_value = {
-        "churn_rate": 0.18,
-        "average_sentiment": 0.35,
-        "total_tickets": 150,
-        "resolved_tickets": 130,
-        "active_campaigns": 3,
+        "active_tickets": metric_mock,
+        "avg_resolution_hours": metric_mock,
+        "churn_rate": metric_mock,
+        "avg_clv": metric_mock,
+        "avg_sentiment": metric_mock,
+        "active_campaigns": metric_mock,
         "computed_at": datetime.now(timezone.utc),
     }
     service_mock.get_anomalies.return_value = [
@@ -46,12 +52,14 @@ async def test_get_dashboard_summary() -> None:
         response = await ac.get("/api/v1/dashboard/summary?from=2026-07-01T00:00:00Z&to=2026-07-23T00:00:00Z")
     assert response.status_code == 200
     data = response.json()
+    assert "active_tickets" in data
+    assert "avg_resolution_hours" in data
     assert "churn_rate" in data
-    assert "average_sentiment" in data
-    assert "total_tickets" in data
-    assert "resolved_tickets" in data
+    assert "avg_clv" in data
+    assert "avg_sentiment" in data
     assert "active_campaigns" in data
     assert "computed_at" in data
+
 
 
 async def test_get_anomalies() -> None:
