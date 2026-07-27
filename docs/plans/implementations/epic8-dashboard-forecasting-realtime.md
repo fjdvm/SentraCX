@@ -59,8 +59,8 @@ The implementation is broken into **four sub-epics** that map 1-to-1 with backlo
 #### `web-crm`
 
 ##### [NEW] `src/hooks/useDashboardSummary.ts`
-- [ ] Fetches `/api/ai/dashboard/summary?from=&to=`
-- [ ] Returns `{ data, isLoading, error }`
+- [x] Fetches `/api/ai/dashboard/summary?from=&to=`
+- [x] Returns `{ data, isLoading, error }`
 
 ##### [MODIFY] DashboardMetricCards.tsx
 - [ ] Accept API data props instead of hardcoded values
@@ -110,27 +110,27 @@ Four GET endpoints:
 #### `web-crm`
 
 ##### [NEW] `src/hooks/useDashboardForecasts.ts`
-- [ ] Named exports: `useTicketVolumeForecast`, `useRevenueForecast`, `useChurnDistribution`, `useSentimentTrend`
+- [x] Named exports: `useTicketVolumeForecast`, `useRevenueForecast`, `useChurnDistribution`, `useSentimentTrend`
 
 ##### [NEW] `src/components/features/dashboard/ForecastSection.tsx`
-- [ ] Renders all four charts in a 2×2 grid layout on `lg` screens
+- [x] Renders all four charts in a 2×2 grid layout on `lg` screens
 
 ##### [NEW] `src/components/features/dashboard/TicketVolumeForecastChart.tsx`
-- [ ] Recharts AreaChart: solid historical, dashed forecast, shaded confidence band
-- [ ] Threshold `<ReferenceLine>` overlay
-- [ ] Alert banner when `alert_triggered === true`
+- [x] Recharts AreaChart: solid historical, dashed forecast, shaded confidence band
+- [x] Threshold `<ReferenceLine>` overlay
+- [x] Alert banner when `alert_triggered === true`
 
 ##### [NEW] `src/components/features/dashboard/RevenueBySegmentChart.tsx`
-- [ ] Recharts grouped BarChart by segment (High-Value, Regular, New, At-Risk)
-- [ ] Summary card: "Projected X-day revenue: $Y (±Z%)"
+- [x] Recharts grouped BarChart by segment (High-Value, Regular, New, At-Risk)
+- [x] Summary card: "Projected X-day revenue: $Y (±Z%)"
 
 ##### [NEW] `src/components/features/dashboard/ChurnDistributionChart.tsx`
-- [ ] Recharts PieChart donut: Low / Medium / High / Critical
-- [ ] Clicking a segment navigates to `/customers?churn_risk=<level>`
+- [x] Recharts PieChart donut: Low / Medium / High / Critical
+- [x] Clicking a segment navigates to `/customers?churn_risk=<level>`
 
 ##### [NEW] `src/components/features/dashboard/SentimentTrendChart.tsx`
-- [ ] Recharts LineChart: daily score + 7-day moving average + dashed forecast extension
-- [ ] Alert indicator when trend falls below configurable threshold
+- [x] Recharts LineChart: daily score + 7-day moving average + dashed forecast extension
+- [x] Alert indicator when trend falls below configurable threshold
 
 ---
 
@@ -159,9 +159,9 @@ Four GET endpoints:
 #### `web-crm`
 
 ##### [NEW] `src/components/features/dashboard/AtRiskWatchlist.tsx`
-- [ ] Card list: customer name, churn score badge, contributing factors, recommended action
-- [ ] Each row links to `/customers/{id}`
-- [ ] Quick-action button triggers next-best-action (`POST /api/ai/customers/{id}/next-action`)
+- [x] Card list: customer name, churn score badge, contributing factors, recommended action
+- [x] Each row links to `/customers/{id}`
+- [x] Quick-action button triggers next-best-action (`POST /api/ai/customers/{id}/next-action`)
 
 ##### [MODIFY] DashboardQuickOps.tsx
 - [ ] Wire anomaly cards to real data (`GET /api/ai/anomalies`)
@@ -207,18 +207,18 @@ Four GET endpoints:
 #### `web-crm`
 
 ##### [NEW] `src/hooks/useDashboardHub.ts`
-- [ ] Connects to `/hubs/dashboard` SignalR hub (mirrors `useSignalR.ts` pattern)
-- [ ] Subscribes to `DashboardMetricsUpdated`
-- [ ] Returns `{ liveMetrics, isConnected }`
+- [x] Connects to `/hubs/dashboard` SignalR hub (mirrors `useSignalR.ts` pattern)
+- [x] Subscribes to `DashboardMetricsUpdated`
+- [x] Returns `{ liveMetrics, isConnected }`
 
 ##### [NEW] `src/components/features/dashboard/LiveMetricsBar.tsx`
-- [ ] Shows: Tickets in Queue, Pending Escalations, Unread Conversations, Online Agents
-- [ ] Numbers pulse-animate on change
-- [ ] Green "live" dot indicator
+- [x] Shows: Tickets in Queue, Pending Escalations, Unread Conversations, Online Agents
+- [x] Numbers pulse-animate on change
+- [x] Green "live" dot indicator
 
 ##### [MODIFY] Dashboard.tsx
-- [ ] Add `<LiveMetricsBar />` below page header
-- [ ] Integrate `useDashboardHub()`
+- [x] Add `<LiveMetricsBar />` below page header
+- [x] Integrate `useDashboardHub()`
 
 ---
 
@@ -227,9 +227,9 @@ Four GET endpoints:
 Backend `POST /api/ai/query` is complete. Frontend has the input box. Remaining work:
 
 ##### [MODIFY] DashboardQuickOps.tsx
-- [ ] Render results as: table (if `rows[]`), line chart (if `series[]`), or single-value card
-- [ ] Query history stored in `localStorage` (last 10 queries)
-- [ ] Suggested query chips: "Show me customers at high churn risk", "Ticket volume last 7 days", "Top performing campaign this month"
+- [x] Render results as: table (if `rows[]`), line chart (if `series[]`), or single-value card (implemented in DashboardNLQuery)
+- [x] Query history stored in `localStorage` (last 10 queries)
+- [x] Suggested query chips: "Show me customers at high churn risk", "Ticket volume last 7 days", "Top performing campaign this month"
 
 ---
 

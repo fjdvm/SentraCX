@@ -71,4 +71,64 @@ export const aiClient = {
         body: JSON.stringify(body),
       }),
   },
+  customers: {
+    getNextAction: (customerId: string) =>
+      request<any>(`/api/v1/customers/${customerId}/next-action`),
+    submitFeedback: (customerId: string, feedback: string) =>
+      request<any>(`/api/v1/customers/${customerId}/next-action/feedback`, {
+        method: "POST",
+        body: JSON.stringify({ feedback }),
+      }),
+  },
+  dashboard: {
+    getSummary: (from?: string, to?: string) => {
+      let url = "/api/v1/dashboard/summary";
+      const params = new URLSearchParams();
+      if (from) params.append("from", from);
+      if (to) params.append("to", to);
+      const query = params.toString();
+      if (query) url += `?${query}`;
+      return request<any>(url);
+    },
+    getAnomalies: (from?: string, to?: string, status?: string) => {
+      let url = "/api/v1/anomalies";
+      const params = new URLSearchParams();
+      if (from) params.append("from", from);
+      if (to) params.append("to", to);
+      if (status) params.append("status", status);
+      const query = params.toString();
+      if (query) url += `?${query}`;
+      return request<any>(url);
+    },
+    acknowledgeAnomaly: (id: string) =>
+      request<any>(`/api/v1/anomalies/${id}/acknowledge`, {
+        method: "POST",
+      }),
+    getAtRiskCustomers: (limit?: number) => {
+      let url = "/api/v1/dashboard/at-risk-customers";
+      if (limit) url += `?limit=${limit}`;
+      return request<any>(url);
+    },
+    query: (queryText: string) =>
+      request<any>("/api/v1/query", {
+        method: "POST",
+        body: JSON.stringify({ query: queryText }),
+      }),
+  },
+  forecasts: {
+    getTicketVolume: (days?: number) => {
+      let url = "/api/v1/forecasts/ticket-volume";
+      if (days) url += `?days=${days}`;
+      return request<any>(url);
+    },
+    getRevenueBySegment: (days?: number) => {
+      let url = "/api/v1/forecasts/revenue-by-segment";
+      if (days) url += `?days=${days}`;
+      return request<any>(url);
+    },
+    getChurnDistribution: () =>
+      request<any>("/api/v1/forecasts/churn-distribution"),
+    getSentimentTrend: () =>
+      request<any>("/api/v1/forecasts/sentiment-trend"),
+  },
 };
