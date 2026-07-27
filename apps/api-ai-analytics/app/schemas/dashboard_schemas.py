@@ -5,15 +5,25 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+class MetricWithDelta(BaseModel):
+    """Metric value along with comparisons to previous period."""
+
+    value: float = Field(description="Current value of the metric")
+    delta_vs_previous_period: float = Field(description="Absolute difference compared to previous period")
+    delta_pct: float = Field(description="Percentage difference compared to previous period")
+
+
 class DashboardSummaryResponse(BaseModel):
     """Response schema for dashboard summary metrics."""
 
-    churn_rate: float = Field(ge=0.0, le=1.0, description="Average churn risk across customers")
-    average_sentiment: float = Field(ge=-1.0, le=1.0, description="Average sentiment score across tickets/conversations")
-    total_tickets: int = Field(ge=0, description="Total tickets received in timeframe")
-    resolved_tickets: int = Field(ge=0, description="Number of resolved tickets in timeframe")
-    active_campaigns: int = Field(ge=0, description="Number of active marketing campaigns")
+    active_tickets: MetricWithDelta
+    avg_resolution_hours: MetricWithDelta
+    churn_rate: MetricWithDelta
+    avg_clv: MetricWithDelta
+    avg_sentiment: MetricWithDelta
+    active_campaigns: MetricWithDelta
     computed_at: datetime
+
 
 
 class AnomalyItem(BaseModel):
@@ -22,8 +32,8 @@ class AnomalyItem(BaseModel):
     anomaly_id: str
     anomaly_type: str = Field(description="Type of anomaly (e.g. ticket_volume_spike, high_churn_cluster)")
     description: str
-    severity: str = Field(pattern="^(high|medium|low)$")
-    status: str = Field(pattern="^(open|investigating|resolved)$")
+    severity: str = Field(pattern="^(critical|high|medium|low)$")
+    status: str = Field(pattern="^(open|investigating|resolved|acknowledged)$")
     detected_at: datetime
 
 

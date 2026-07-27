@@ -9,7 +9,8 @@ namespace Crm.Api.Services;
 
 public class MessageService(
     IMessageRepository messageRepo,
-    ITicketRepository ticketRepo) : IMessageService
+    ITicketRepository ticketRepo,
+    IDashboardBroadcastService broadcastService) : IMessageService
 {
     private static readonly HashSet<string> ActiveStatuses = ["Claimed", "Ongoing"];
 
@@ -37,6 +38,7 @@ public class MessageService(
         };
 
         await messageRepo.AddAsync(message);
+        await broadcastService.BroadcastMetricsAsync();
 
         // Reload with Sender navigation property
         var messages = await messageRepo.GetByTicketIdAsync(ticketId);
@@ -47,6 +49,7 @@ public class MessageService(
     public async Task<bool> MarkAsReadAsync(Guid messageId)
     {
         await messageRepo.MarkAsReadAsync(messageId);
+        await broadcastService.BroadcastMetricsAsync();
         return true;
     }
 }

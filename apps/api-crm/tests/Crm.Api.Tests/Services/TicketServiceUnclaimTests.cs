@@ -1,5 +1,6 @@
 using Crm.Api.Interfaces.Repositories;
 using Crm.Api.Interfaces.Clients;
+using Crm.Api.Interfaces.Services;
 using Crm.Api.Models;
 using Crm.Api.Services;
 using Moq;
@@ -10,11 +11,12 @@ public class TicketServiceUnclaimTests
 {
     private readonly Mock<ITicketRepository> _ticketRepoMock = new();
     private readonly Mock<IAiAnalyticsClient> _aiClientMock = new();
+    private readonly Mock<IDashboardBroadcastService> _broadcastMock = new();
     private readonly TicketService _sut;
 
     public TicketServiceUnclaimTests()
     {
-        _sut = new TicketService(_ticketRepoMock.Object, _aiClientMock.Object);
+        _sut = new TicketService(_ticketRepoMock.Object, _aiClientMock.Object, _broadcastMock.Object);
     }
 
     [Fact]

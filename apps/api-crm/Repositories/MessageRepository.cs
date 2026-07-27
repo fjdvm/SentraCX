@@ -31,4 +31,10 @@ public class MessageRepository(AppDbContext context) : IMessageRepository
             await context.SaveChangesAsync();
         }
     }
+
+    public async Task<int> GetUnreadConversationsCountAsync()
+    {
+        return await context.Messages
+            .CountAsync(m => !m.IsRead && (m.Ticket.Status == "Claimed" || m.Ticket.Status == "Ongoing") && m.SenderId != m.Ticket.AssignedToId);
+    }
 }

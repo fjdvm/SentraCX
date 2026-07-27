@@ -11,4 +11,6 @@ public interface ITicketRepository
     Task<Ticket?> GetByIdAsync(Guid id);
     Task AddAsync(Ticket ticket);
     Task UpdateAsync(Ticket ticket);
+    Task<int> GetActiveCountAsync();
+    Task<int> GetPendingEscalationsCountAsync();
 }

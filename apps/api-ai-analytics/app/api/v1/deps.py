@@ -23,6 +23,7 @@ from app.ml.conversation_analyzer import ConversationAnalyzer
 from app.repositories.redis.conversation_cache_repository import ConversationCacheRepository
 from app.services.conversation_analysis_service import ConversationAnalysisService
 from app.services.dashboard_service import DashboardService
+from app.services.forecast_service import ForecastService
 
 
 
@@ -129,5 +130,16 @@ def get_dashboard_service() -> DashboardService:
         api_key=settings.groq_api_key,
         model_id=settings.groq_model_id,
     )
-    return DashboardService(database=database, groq_client=groq_client)
+    crm_client = CrmClient(
+        base_url=settings.crm_api_base_url,
+        service_token=settings.crm_service_token,
+    )
+    return DashboardService(database=database, groq_client=groq_client, crm_client=crm_client)
+
+
+def get_forecast_service() -> ForecastService:
+    """Build and return ForecastService with all dependencies."""
+    database = get_database()
+    return ForecastService(database=database)
+
 

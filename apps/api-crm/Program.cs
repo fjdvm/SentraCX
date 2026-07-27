@@ -10,6 +10,7 @@ using Crm.Api.Repositories;
 using Crm.Api.Services;
 using Crm.Api.Extensions;
 using FluentValidation;
+using StackExchange.Redis;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,9 @@ builder.Services.AddAuthorization();
 var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost";
 var redisPort = Environment.GetEnvironmentVariable("REDIS_PORT") ?? "6379";
 
+var redisConnection = ConnectionMultiplexer.Connect($"{redisHost}:{redisPort}");
+builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
+
 builder.Services.AddSignalR()
     .AddStackExchangeRedis($"{redisHost}:{redisPort}");
 
@@ -81,6 +85,7 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<ICampaignService, CampaignService>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IPromotionService, PromotionService>();
+builder.Services.AddScoped<IDashboardBroadcastService, DashboardBroadcastService>();
 
 // AI Analytics Client
 var aiAnalyticsUrl = Environment.GetEnvironmentVariable("AI_ANALYTICS_API_URL") ?? "http://localhost:4005";
@@ -136,6 +141,7 @@ app.UseMiddleware<JitProvisioningMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
+app.MapHub<DashboardHub>("/hubs/dashboard");
 
 app.Run();
 

@@ -62,4 +62,15 @@ public class TicketRepository(AppDbContext context) : ITicketRepository
         context.Tickets.Update(ticket);
         await context.SaveChangesAsync();
     }
+
+    public async Task<int> GetActiveCountAsync()
+    {
+        return await context.Tickets.CountAsync(t => t.Status == "Unclaimed" || t.Status == "Claimed" || t.Status == "Ongoing");
+    }
+
+    public async Task<int> GetPendingEscalationsCountAsync()
+    {
+        var cutoff = DateTime.UtcNow.AddHours(-24);
+        return await context.Tickets.CountAsync(t => t.Status == "Unclaimed" && t.CreatedAt < cutoff);
+    }
 }

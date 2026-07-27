@@ -38,27 +38,62 @@ def service(database, groq_client) -> DashboardService:
 async def test_get_summary(service: DashboardService, database: MagicMock) -> None:
     collection_mock = MagicMock()
     collection_mock.aggregate.side_effect = [
-        MockCursor([{"total_tickets": 10, "avg_sentiment": 0.5}]),
-        MockCursor([{"latest_features": {"total_orders": 3, "days_since_last_order": 10}}])
+        MockCursor([{"total_tickets": 10, "avg_sentiment": 0.5, "categories": ["billing"]}]),
+        MockCursor([{"total_tickets": 8, "avg_sentiment": 0.4, "categories": ["billing"]}]),
+        MockCursor([{"customer_id": "cust-1", "latest_features": {"total_orders": 3, "days_since_last_order": 10}}]),
+        MockCursor([{"customer_id": "cust-1", "latest_features": {"total_orders": 2, "days_since_last_order": 12}}]),
     ]
     database.__getitem__.return_value = collection_mock
 
     resp = await service.get_summary()
 
-    assert resp["total_tickets"] == 10
-    assert resp["average_sentiment"] == 0.5
-    assert resp["active_campaigns"] == 3
+    assert resp["active_tickets"]["value"] == 15
+    assert resp["avg_sentiment"]["value"] == 0.5
+    assert resp["active_campaigns"]["value"] == 3
+
 
 
 async def test_get_anomalies(service: DashboardService, database: MagicMock) -> None:
     collection_mock = MagicMock()
-    collection_mock.aggregate.return_value = MockCursor([{"count": 5}])
+    collection_mock.count_documents = AsyncMock(return_value=1)
+    find_mock = MagicMock()
+    find_mock.sort.return_value = MockCursor([
+        {
+            "anomaly_id": "anom-001",
+            "anomaly_type": "ticket_volume_spike",
+            "description": "Spike in ticket volume",
+            "severity": "high",
+            "status": "open",
+            "detected_at": datetime.now()
+        }
+    ])
+    collection_mock.find.return_value = find_mock
     database.__getitem__.return_value = collection_mock
 
     resp = await service.get_anomalies()
 
     assert len(resp) > 0
-    assert resp[0]["severity"] in ["high", "medium", "low"]
+    assert resp[0]["severity"] in ["high", "medium", "low", "critical"]
+
+
+async def test_acknowledge_anomaly(service: DashboardService, database: MagicMock) -> None:
+    collection_mock = MagicMock()
+    collection_mock.update_one = AsyncMock(return_value=MagicMock(modified_count=1))
+    database.__getitem__.return_value = collection_mock
+
+    resp = await service.acknowledge_anomaly("anom-001")
+    assert resp is True
+
+
+async def test_get_at_risk_customers(service: DashboardService, database: MagicMock) -> None:
+    collection_mock = MagicMock()
+    collection_mock.aggregate.return_value = MockCursor([])
+    database.__getitem__.return_value = collection_mock
+
+    resp = await service.get_at_risk_customers(limit=5)
+    assert len(resp) > 0
+    assert resp[0]["name"] == "Olivia Vance"
+
 
 
 async def test_execute_nl_query(service: DashboardService, groq_client: AsyncMock) -> None:
