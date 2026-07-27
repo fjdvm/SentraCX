@@ -109,64 +109,62 @@ export function AttentionFeed() {
   }
 
   return (
-    <Card className="bg-card border-border shadow-none h-full flex flex-col justify-between">
-      <div>
-        <CardHeader className="p-lg flex flex-row items-start justify-between">
-          <div className="space-y-sm">
-            <div className="flex items-center gap-sm">
-              <ShieldAlert className="w-5 h-5 text-warning" />
-              <CardTitle className="text-headline-sm font-bold text-foreground">Things That Need Attention</CardTitle>
-            </div>
-            <CardDescription>System anomalies and trend disruptions requiring intervention</CardDescription>
+    <Card className="bg-card border-border shadow-none h-full flex flex-col">
+      <CardHeader className="p-lg flex flex-row items-start justify-between shrink-0">
+        <div className="space-y-sm">
+          <div className="flex items-center gap-sm">
+            <ShieldAlert className="w-5 h-5 text-warning" />
+            <CardTitle className="text-headline-sm font-bold text-foreground">Things That Need Attention</CardTitle>
           </div>
-          {anomalies.length > 0 && (
-            <Badge className="bg-badge-destructive text-badge-destructive-foreground font-bold">
-              {anomalies.length} {anomalies.length === 1 ? "Alert" : "Alerts"}
-            </Badge>
-          )}
-        </CardHeader>
-        <CardContent className="p-lg pt-0 space-y-md max-h-[340px] overflow-y-auto">
-          {anomalies.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-xl text-center space-y-sm">
-              <CheckCircle2 className="w-8 h-8 text-success" />
-              <div className="text-body-md font-semibold text-foreground">All Clear</div>
-              <p className="text-body-sm text-muted-foreground max-w-xs">
-                No active anomalies or capacity alerts detected at this time.
-              </p>
-            </div>
-          ) : (
-            anomalies.map((a, index) => (
-              <div
-                key={a.id ?? index}
-                className="flex flex-col md:flex-row md:items-center justify-between gap-md border border-border/80 rounded-xl p-md bg-muted/20 hover:bg-muted/40 transition-all duration-300 animate-in fade-in duration-300"
-              >
-                <div className="space-y-xs flex-1">
-                  <div className="flex items-center gap-sm flex-wrap">
-                    <Badge variant="outline" className={getSeverityBadgeClass(a.severity)}>
-                      {a.severity.toUpperCase()}
-                    </Badge>
-                    <span className="text-[11px] text-muted-foreground font-medium">
-                      {formatTimeAgo(a.detected_at)}
-                    </span>
-                  </div>
-                  <p className="text-body-sm font-medium text-foreground">{a.description}</p>
+          <CardDescription>System anomalies and trend disruptions requiring intervention</CardDescription>
+        </div>
+        {anomalies.length > 0 && (
+          <Badge className="bg-badge-destructive text-badge-destructive-foreground font-bold">
+            {anomalies.length} {anomalies.length === 1 ? "Alert" : "Alerts"}
+          </Badge>
+        )}
+      </CardHeader>
+      <CardContent className="p-lg pt-0 space-y-md flex-1 overflow-y-auto">
+        {anomalies.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-xl text-center space-y-sm h-full">
+            <CheckCircle2 className="w-8 h-8 text-success" />
+            <div className="text-body-md font-semibold text-foreground">All Clear</div>
+            <p className="text-body-sm text-muted-foreground max-w-xs">
+              No active anomalies or capacity alerts detected at this time.
+            </p>
+          </div>
+        ) : (
+          anomalies.map((a, index) => (
+            <div
+              key={a.id ?? index}
+              className="flex flex-col md:flex-row md:items-center justify-between gap-md border border-border/80 rounded-xl p-md bg-muted/20 hover:bg-muted/40 transition-all duration-300 animate-in fade-in duration-300"
+            >
+              <div className="space-y-xs flex-1">
+                <div className="flex items-center gap-sm flex-wrap">
+                  <Badge variant="outline" className={getSeverityBadgeClass(a.severity)}>
+                    {a.severity.toUpperCase()}
+                  </Badge>
+                  <span className="text-[11px] text-muted-foreground font-medium">
+                    {formatTimeAgo(a.detected_at)}
+                  </span>
                 </div>
-                <div className="flex items-center justify-end">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-xs border-border/80 text-body-sm bg-background hover:bg-muted duration-300 font-medium"
-                    onClick={() => handleAcknowledge(a.id)}
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    Acknowledge
-                  </Button>
-                </div>
+                <p className="text-body-sm font-medium text-foreground">{a.description}</p>
               </div>
-            ))
-          )}
-        </CardContent>
-      </div>
+              <div className="flex items-center justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-xs border-border/80 text-body-sm bg-background hover:bg-muted duration-300 font-medium"
+                  onClick={() => handleAcknowledge(a.id)}
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  Acknowledge
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </CardContent>
     </Card>
   );
 }
