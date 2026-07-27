@@ -68,13 +68,13 @@ export function ConversationList({
 
       <div className="flex-1 overflow-y-auto divide-y divide-border">
         {isLoading ? (
-          <div className="p-md space-y-md">
+          <div className="p-md space-y-md animate-pulse">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center gap-md">
-                <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+                <Skeleton className="h-10 w-10 rounded-full shrink-0 bg-muted/60" />
                 <div className="space-y-xs flex-1">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-3 w-36" />
+                  <Skeleton className="h-4 w-24 bg-muted/60" />
+                  <Skeleton className="h-3 w-36 bg-muted/60" />
                 </div>
               </div>
             ))}

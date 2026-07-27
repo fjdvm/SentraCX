@@ -25,7 +25,7 @@ over HTTP APIs — never shared code, never shared DB connections:
 | AI-Analytics | Python 3.12 / FastAPI | MongoDB + Redis |
 | Frontend | Next.js 16, React 19 | — |
 
-Package manager: **pnpm only** (never npm/yarn) — `pnpm-workspace.yaml` + `turbo.json`.
+Package manager: **npm only** (never pnpm/yarn) — `package.json` workspaces.
 UI: shadcn/ui (`new-york`, `neutral`) + Tailwind v4 (OKLCH vars in `globals.css`) +
 lucide-react (only icon lib) + Hanken Grotesk/Geist Mono fonts. Auth: NextAuth.js v5 (Beta) +
 external OIDC (`authservice`); local dev has auth bypass in `src/auth.ts`. LLM: Groq API
@@ -45,7 +45,7 @@ match exists.
 - Don't invent API endpoints, folder paths, or config values not confirmed in this repo —
   flag the gap instead of guessing.
 - Don't skip committing after a completed task; don't bundle unrelated tasks into one commit.
-- Never use `npm`/`yarn`. Never hardcode colors (use `globals.css` tokens). Never add another
+- Never use `pnpm`/`yarn`. Never hardcode colors (use `globals.css` tokens). Never add another
   icon library. Never hand-roll a UI primitive shadcn already provides.
 - New business logic requires a test in the same PR (see `.agents/skills/testing/SKILL.md`).
 

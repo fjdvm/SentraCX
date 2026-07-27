@@ -28,7 +28,7 @@ SentraCX is a monorepo containing three core applications:
 To run the application locally for testing or development, you will need the following installed:
 - [Git](https://git-scm.com/)
 - [Node.js](https://nodejs.org/) v22+
-- [pnpm](https://pnpm.io/) v9+
+- [npm](https://www.npmjs.com/) v10+
 - [.NET SDK](https://dotnet.microsoft.com/) 10.0+
 - [Python](https://www.python.org/) 3.12+
 - [PostgreSQL](https://www.postgresql.org/) v15+ (for api-crm)
@@ -59,7 +59,7 @@ Follow these steps to set up the repository for development or testing.
 2. **Install dependencies**
 
    ```bash
-   pnpm install
+   npm install
    ```
 
 3. **Set up environment variables**
@@ -103,7 +103,7 @@ Follow these steps to set up the repository for development or testing.
    Start the entire platform in development mode:
 
    ```bash
-   pnpm dev
+   npm run dev:web
    ```
 
 7. **Access the Application**
@@ -115,46 +115,45 @@ Follow these steps to set up the repository for development or testing.
 
 ## Scripts
 
-All scripts are run from the monorepo root with `pnpm <script>`.
+All scripts are run from the monorepo root with `npm run <script>`.
 
 ### Development
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start all services in parallel |
-| `pnpm dev:web` | Start web-crm (Next.js) on port 3005 |
-| `pnpm dev:api` | Start api-crm (.NET) on port 5005 |
-| `pnpm dev:ai` | Start api-ai-analytics (FastAPI) on port 4005 |
+| `npm run dev:web` | Start web-crm (Next.js) on port 3005 |
+| `npm run dev:api` | Start api-crm (.NET) on port 5005 |
+| `npm run dev:ai` | Start api-ai-analytics (FastAPI) on port 4005 |
 
 ### Build
 
 | Command | Description |
 |---------|-------------|
-| `pnpm build` | Build all apps in parallel |
-| `pnpm build:web` | Build web-crm |
-| `pnpm build:api` | Build api-crm |
-| `pnpm build:ai` | Build api-ai-analytics |
+| `npm run build` | Build all apps in parallel |
+| `npm run build:web` | Build web-crm |
+| `npm run build:api` | Build api-crm |
+| `npm run build:ai` | Build api-ai-analytics |
 
 ### Production
 
 | Command | Description |
 |---------|-------------|
-| `pnpm start` | Start all apps in production mode |
-| `pnpm start:web` | Start web-crm production server |
-| `pnpm start:api` | Start api-crm production server |
-| `pnpm start:ai` | Start api-ai-analytics production server |
+| `npm run start` | Start all apps in production mode |
+| `npm run start:web` | Start web-crm production server |
+| `npm run start:api` | Start api-crm production server |
+| `npm run start:ai` | Start api-ai-analytics production server |
 
 ### Quality
 
 | Command | Description |
 |---------|-------------|
-| `pnpm lint` | Lint all workspaces |
-| `pnpm lint:web` | Lint web-crm |
-| `pnpm test` | Run all test suites |
-| `pnpm test:api` | Run api-crm tests (dotnet test) |
-| `pnpm test:ai` | Run api-ai-analytics tests (pytest) |
-| `pnpm migrate` | Run database migrations (wraps `scripts/migrate-crm.sh`) |
-| `pnpm clean` | Remove all build artifacts & node_modules |
+| `npm run lint` | Lint all workspaces |
+| `npm run lint:web` | Lint web-crm |
+| `npm run test` | Run all test suites |
+| `npm run test:api` | Run api-crm tests (dotnet test) |
+| `npm run test:ai` | Run api-ai-analytics tests (pytest) |
+| `npm run migrate` | Run database migrations (wraps `scripts/migrate-crm.sh`) |
+| `npm run clean` | Remove all build artifacts & node_modules |
 
 ### Setup Scripts
 

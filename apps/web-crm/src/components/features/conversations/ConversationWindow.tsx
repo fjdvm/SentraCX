@@ -127,10 +127,10 @@ export function ConversationWindow({
       {/* Message Thread */}
       <div className="flex-1 p-lg overflow-y-auto space-y-md">
         {isLoading ? (
-          <div className="space-y-md">
-            <Skeleton className="h-12 w-2/3" />
-            <Skeleton className="h-12 w-1/2 ml-auto" />
-            <Skeleton className="h-12 w-3/4" />
+          <div className="space-y-md animate-pulse">
+            <Skeleton className="h-12 w-2/3 rounded-xl bg-muted/60" />
+            <Skeleton className="h-12 w-1/2 ml-auto rounded-xl bg-muted/60" />
+            <Skeleton className="h-12 w-3/4 rounded-xl bg-muted/60" />
           </div>
         ) : messages.length === 0 ? (
           <div className="text-center text-muted-foreground text-body-sm py-xl">

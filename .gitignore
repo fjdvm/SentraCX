@@ -60,6 +60,7 @@ yarn-error.log*
 next-env.d.ts
 
 # package managers
+.turbo/
 .pnp
 .pnp.*
 .yarn/*
@@ -67,3 +68,4 @@ next-env.d.ts
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+.vscode

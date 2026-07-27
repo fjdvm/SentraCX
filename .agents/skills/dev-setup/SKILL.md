@@ -9,20 +9,19 @@ Provide concise, accurate commands and instructions for running and debugging Se
 
 ## Instructions
 1. Run monorepo tasks from root:
-   - `pnpm dev`: Starts all three services in parallel via Turborepo.
-   - `pnpm dev:web`: Runs `web-crm` only (Next.js, port 3005).
-   - `pnpm dev:api`: Runs `api-crm` only (.NET, port 5005).
-   - `pnpm dev:ai`: Runs `api-ai-analytics` only (FastAPI, port 4005).
+   - `npm run dev:web`: Runs `web-crm` only (Next.js, port 3005).
+   - `npm run dev:api`: Runs `api-crm` only (.NET, port 5005).
+   - `npm run dev:ai`: Runs `api-ai-analytics` only (FastAPI, port 4005).
 
 2. Set up and run CRM (.NET):
    - Navigate to `apps/api-crm` and run `dotnet watch run --urls https://localhost:5005`.
    - Configure via `appsettings.json` / `appsettings.Development.json` and environment variables in `.env`.
-   - Ensure PostgreSQL is running. Database migrations execute automatically on dev startup or manually via `pnpm migrate` (`scripts/migrate-crm.sh`).
+   - Ensure PostgreSQL is running. Database migrations execute automatically on dev startup or manually via `npm run migrate` (`scripts/migrate-crm.sh`).
    - Access Scalar API docs at `https://localhost:5005/docs`.
 
 3. Set up and run AI-Analytics (FastAPI):
    - Ensure MongoDB (port 27017) and Redis (port 6379) are active.
-   - Run `uvicorn app.main:app --reload --port 4005` inside `.venv` in `apps/api-ai-analytics`, or `pnpm dev:ai` from root.
+   - Run `uvicorn app.main:app --reload --port 4005` inside `.venv` in `apps/api-ai-analytics`, or `npm run dev:ai` from root.
    - Configure via `app/core/config.py` (Pydantic Settings) and `.env.local`.
    - Access Scalar API docs at `http://localhost:4005/docs`.
 
@@ -30,6 +29,6 @@ Provide concise, accurate commands and instructions for running and debugging Se
    - Always verify script commands against `.csproj`, `pyproject.toml`, or `package.json` before assuming final accuracy.
 
 ## Validation Checklist
-* [ ] Monorepo package manager commands use `pnpm` exclusively.
+* [ ] Monorepo package manager commands use `npm` exclusively.
 * [ ] Database prerequisites (PostgreSQL, MongoDB, Redis) are verified before starting services.
 * [ ] Local API documentation endpoints load successfully.

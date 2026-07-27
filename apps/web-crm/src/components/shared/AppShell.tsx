@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
@@ -8,6 +9,7 @@ import { MobileNav } from "./MobileNav";
 
 function MainContent({ children }: { children: React.ReactNode }) {
   const { open } = useSidebar();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -26,7 +28,10 @@ function MainContent({ children }: { children: React.ReactNode }) {
       <Header />
 
       {/* Main Canvas */}
-      <main className="flex-1 w-full bg-background relative overflow-hidden animate-in fade-in duration-300">
+      <main
+        key={pathname}
+        className="flex-1 w-full bg-background relative overflow-hidden"
+      >
         {children}
       </main>
     </div>

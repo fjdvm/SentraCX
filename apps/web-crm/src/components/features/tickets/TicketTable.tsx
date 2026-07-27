@@ -53,9 +53,9 @@ export function TicketTable({ tickets, isLoading, onRefresh, onShowToast }: Tick
           </div>
           <div className="w-full overflow-x-auto">
             {isLoading ? (
-              <div className="space-y-2 py-4 px-4">
+              <div className="space-y-2 py-4 px-4 animate-pulse">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-12 w-full rounded-md" />
+                  <Skeleton key={i} className="h-12 w-full rounded-md bg-muted/60" />
                 ))}
               </div>
             ) : filteredTickets.length === 0 ? (

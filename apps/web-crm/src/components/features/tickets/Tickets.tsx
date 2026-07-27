@@ -48,7 +48,7 @@ export function Tickets() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value={activeTab} className="p-0 m-0">
+        <TabsContent value={activeTab} className="p-0 m-0 animate-in fade-in duration-300">
           <TicketTable
             tickets={data?.items ?? []}
             isLoading={isLoading}

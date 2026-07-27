@@ -5,6 +5,7 @@ import { Search, Plus, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCustomers } from "@/hooks/useCustomers";
 import { CustomerListItem } from "@/types/customer";
@@ -66,7 +67,11 @@ export function CustomerProfiles() {
             <Users className="w-4 h-4 text-foreground" />
           </CardHeader>
           <CardContent className="p-lg pt-0">
-            <span className="text-display-sm font-bold text-foreground">{totalCount}</span>
+            {isLoading ? (
+              <Skeleton className="h-8 w-20 rounded-md" />
+            ) : (
+              <span className="text-display-sm font-bold text-foreground">{totalCount}</span>
+            )}
             <p className="text-body-sm text-muted-foreground mt-sm">Registered accounts</p>
           </CardContent>
         </Card>
