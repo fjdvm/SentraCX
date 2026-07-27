@@ -101,80 +101,78 @@ export function AtRiskWatchlist({ onShowToast }: AtRiskWatchlistProps) {
   }
 
   return (
-    <Card className="bg-card border-border shadow-none h-full flex flex-col justify-between">
-      <div>
-        <CardHeader className="p-lg">
-          <div className="flex items-center gap-sm">
-            <AlertTriangle className="w-5 h-5 text-destructive" />
-            <CardTitle className="text-headline-sm font-bold text-foreground">At-Risk Watchlist</CardTitle>
+    <Card className="bg-card border-border shadow-none h-full flex flex-col">
+      <CardHeader className="p-lg shrink-0">
+        <div className="flex items-center gap-sm">
+          <AlertTriangle className="w-5 h-5 text-destructive" />
+          <CardTitle className="text-headline-sm font-bold text-foreground">At-Risk Watchlist</CardTitle>
+        </div>
+        <CardDescription>High churn risk customers needing urgent attention</CardDescription>
+      </CardHeader>
+      <CardContent className="p-lg pt-0 space-y-md flex-1 overflow-y-auto">
+        {customers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-xl text-center space-y-sm text-muted-foreground text-body-sm h-full">
+            No at-risk customers detected.
           </div>
-          <CardDescription>High churn risk customers needing urgent attention</CardDescription>
-        </CardHeader>
-        <CardContent className="p-lg pt-0 space-y-md">
-          {customers.length === 0 ? (
-            <div className="text-center py-xl text-muted-foreground text-body-sm">
-              No at-risk customers detected.
-            </div>
-          ) : (
-            customers.map((c) => (
-              <div
-                key={c.customer_id}
-                className="flex flex-col md:flex-row md:items-center justify-between gap-md border border-border/80 rounded-xl p-md bg-muted/10 transition-all hover:bg-muted/20"
-              >
-                <div className="space-y-sm flex-1">
-                  <div className="flex items-center gap-sm flex-wrap">
-                    <Link
-                      href={`/customers/${c.customer_id}`}
-                      className="text-body-md font-bold text-foreground hover:underline flex items-center gap-xs"
-                    >
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      {c.name}
-                    </Link>
-                    <Badge className={getRiskBadgeClass(c.risk_level)}>
-                      {(c.churn_score * 100).toFixed(0)}% Churn Risk
-                    </Badge>
-                  </div>
-
-                  <div className="flex flex-wrap gap-xs">
-                    {c.contributing_factors.map((factor) => (
-                      <span
-                        key={factor}
-                        className="text-[10px] bg-muted/65 text-muted-foreground px-sm py-0.5 rounded-full font-medium"
-                      >
-                        {factor}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="text-body-sm text-foreground/80 mt-sm">
-                    <span className="font-semibold text-foreground">Next Best Action: </span>
-                    {c.recommended_action}
-                  </div>
+        ) : (
+          customers.map((c) => (
+            <div
+              key={c.customer_id}
+              className="flex flex-col md:flex-row md:items-center justify-between gap-md border border-border/80 rounded-xl p-md bg-muted/10 transition-all hover:bg-muted/20"
+            >
+              <div className="space-y-sm flex-1">
+                <div className="flex items-center gap-sm flex-wrap">
+                  <Link
+                    href={`/customers/${c.customer_id}`}
+                    className="text-body-md font-bold text-foreground hover:underline flex items-center gap-xs"
+                  >
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    {c.name}
+                  </Link>
+                  <Badge className={getRiskBadgeClass(c.risk_level)}>
+                    {(c.churn_score * 100).toFixed(0)}% Churn Risk
+                  </Badge>
                 </div>
 
-                <div className="flex items-center justify-end">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-xs border-border/80 text-body-sm hover:bg-primary hover:text-primary-foreground duration-300 font-medium"
-                    disabled={actioningId === c.customer_id}
-                    onClick={() => handleTakeAction(c.customer_id, c.recommended_action)}
-                  >
-                    {actioningId === c.customer_id ? (
-                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-foreground"></div>
-                    ) : (
-                      <>
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        Execute NBA
-                      </>
-                    )}
-                  </Button>
+                <div className="flex flex-wrap gap-xs">
+                  {c.contributing_factors.map((factor) => (
+                    <span
+                      key={factor}
+                      className="text-[10px] bg-muted/65 text-muted-foreground px-sm py-0.5 rounded-full font-medium"
+                    >
+                      {factor}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="text-body-sm text-foreground/80 mt-sm">
+                  <span className="font-semibold text-foreground">Next Best Action: </span>
+                  {c.recommended_action}
                 </div>
               </div>
-            ))
-          )}
-        </CardContent>
-      </div>
+
+              <div className="flex items-center justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-xs border-border/80 text-body-sm hover:bg-primary hover:text-primary-foreground duration-300 font-medium"
+                  disabled={actioningId === c.customer_id}
+                  onClick={() => handleTakeAction(c.customer_id, c.recommended_action)}
+                >
+                  {actioningId === c.customer_id ? (
+                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-foreground"></div>
+                  ) : (
+                    <>
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      Execute NBA
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </CardContent>
     </Card>
   );
 }
