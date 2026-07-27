@@ -70,13 +70,13 @@ export function AtRiskWatchlist({ onShowToast }: AtRiskWatchlistProps) {
   const getRiskBadgeClass = (level: string) => {
     switch (level) {
       case "critical":
-        return "bg-destructive text-destructive-foreground font-bold";
+        return "bg-badge-destructive text-badge-destructive-foreground border-badge-destructive/30 font-bold";
       case "high":
-        return "bg-orange-500 text-white font-semibold";
+        return "bg-badge-orange text-badge-orange-foreground border-badge-orange/30 font-semibold";
       case "medium":
-        return "bg-yellow-500 text-black font-medium";
+        return "bg-badge-warning text-badge-warning-foreground border-badge-warning/30 font-medium";
       default:
-        return "bg-green-500 text-white font-medium";
+        return "bg-badge-success text-badge-success-foreground border-badge-success/30 font-medium";
     }
   };
 
