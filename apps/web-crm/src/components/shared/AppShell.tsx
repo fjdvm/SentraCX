@@ -6,6 +6,7 @@ import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { MobileNav } from "./MobileNav";
+import { AskSentraCXPanel } from "@/components/features/dashboard/ask-sentracx-panel";
 
 function MainContent({ children }: { children: React.ReactNode }) {
   const { open } = useSidebar();
@@ -30,7 +31,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
       {/* Main Canvas */}
       <main
         key={pathname}
-        className="flex-1 w-full bg-background relative overflow-hidden"
+        className="flex-1 w-full bg-background relative overflow-y-auto overflow-x-hidden"
       >
         {children}
       </main>
@@ -51,6 +52,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Mobile Navigation Shell */}
         <MobileNav />
       </div>
+
+      {/* Floating AI Chat — placed outside all layout containers to avoid
+          transform/transition containment breaking fixed positioning on md+ screens */}
+      <AskSentraCXPanel />
     </SidebarProvider>
   );
 }

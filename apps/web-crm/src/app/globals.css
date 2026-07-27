@@ -232,6 +232,48 @@ body {
   }
 }
 
+/* Radix Sheet & Overlay Animations (Tailwind v4) */
+@keyframes radixFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes radixFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes radixSlideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes radixSlideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+/* Apply animation rules to Radix open/closed states */
+[data-state="open"].fixed.inset-0,
+.data-\[state\=open\]\:fade-in-0[data-state="open"] {
+  animation: radixFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-state="closed"].fixed.inset-0,
+.data-\[state\=closed\]\:fade-out-0[data-state="closed"] {
+  animation: radixFadeOut 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-state="open"].fixed.right-0,
+.data-\[state\=open\]\:slide-in-from-right[data-state="open"] {
+  animation: radixSlideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-state="closed"].fixed.right-0,
+.data-\[state\=closed\]\:slide-out-to-right[data-state="closed"] {
+  animation: radixSlideOutRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Typography Utilities */
 @utility text-display-lg {
   font-size: 3rem;
