@@ -67,7 +67,14 @@ export function Dashboard() {
           </div>
           <Button
             size="sm"
-            onClick={() => toast.success("Downloading CSV reports...")}
+            onClick={() => {
+              downloadDashboardReport(
+                summaryData,
+                { ticketVolume, revenueBySegment, churnDistribution, sentimentTrend },
+                days
+              );
+              toast.success("Dashboard report downloaded.");
+            }}
           >
             Download Report
           </Button>

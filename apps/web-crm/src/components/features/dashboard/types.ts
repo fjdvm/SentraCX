@@ -8,6 +8,34 @@ export interface TicketType {
   time: string;
 }
 
+export interface ForecastTicketVolume {
+  date?: string;
+  predicted_tickets?: number;
+  [key: string]: any;
+}
+
+export interface RevenueSegment {
+  segment?: string;
+  revenue?: number;
+  percentage?: number;
+  [key: string]: any;
+}
+
+export interface ChurnDistribution {
+  low?: number;
+  medium?: number;
+  high?: number;
+  critical?: number;
+  [key: string]: any;
+}
+
+export interface SentimentPoint {
+  date?: string;
+  score?: number;
+  sentiment?: string;
+  [key: string]: any;
+}
+
 export const chartData = [
   { month: "January", tickets: 186, resolved: 80 },
   { month: "February", tickets: 305, resolved: 200 },
