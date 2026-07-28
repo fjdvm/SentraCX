@@ -143,3 +143,31 @@ def get_forecast_service() -> ForecastService:
     return ForecastService(database=database)
 
 
+def get_chatbot_service() -> ChatbotService:
+    """Build and return ChatbotService with all dependencies."""
+    from app.lib.oos_client import OosClient
+    from app.services.chatbot_service import ChatbotService
+    
+    settings = get_settings()
+
+    oos_client = OosClient(
+        base_url=settings.oos_api_base_url,
+        service_token=settings.oos_service_token,
+    )
+
+    groq_client = GroqClient(
+        api_key=settings.groq_api_key,
+        model_id=settings.groq_model_id,
+    )
+
+    analyzer = ConversationAnalyzer(groq_client=groq_client)
+
+    return ChatbotService(
+        oos_client=oos_client,
+        analyzer=analyzer,
+        groq_client=groq_client,
+        settings=settings,
+    )
+
+
+

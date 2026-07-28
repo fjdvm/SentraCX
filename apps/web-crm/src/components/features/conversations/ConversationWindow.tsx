@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Send, CheckCircle, Undo2 } from "lucide-react";
+import { Send, CheckCircle, Undo2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ interface ConversationWindowProps {
   onSendMessage: (content: string) => void;
   onComplete: (ticketId: string) => void;
   onUnclaim: (ticketId: string) => void;
+  onCancel?: (ticketId: string) => void;
 }
 
 export function ConversationWindow({
@@ -36,8 +37,10 @@ export function ConversationWindow({
   onSendMessage,
   onComplete,
   onUnclaim,
+  onCancel,
 }: ConversationWindowProps) {
   const [typedMessage, setTypedMessage] = useState("");
+  const [isBotSummaryOpen, setIsBotSummaryOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,6 +60,14 @@ export function ConversationWindow({
         Select a conversation to start messaging
       </div>
     );
+  }
+
+  const botContextDelimiter = "--- Bot Context ---";
+  const hasBotContext = ticket.description?.includes(botContextDelimiter);
+  let botSummary = "";
+  if (hasBotContext) {
+    const parts = ticket.description.split(botContextDelimiter);
+    botSummary = parts[1]?.trim() || "";
   }
 
   const customerInitials =
@@ -89,6 +100,18 @@ export function ConversationWindow({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-xs shrink-0">
+          {onCancel && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onCancel(ticket.id)}
+              className="text-destructive border-destructive/20 hover:bg-destructive/10 text-label-sm font-semibold gap-xs"
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              Cancel Ticket
+            </Button>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -123,6 +146,30 @@ export function ConversationWindow({
           </AlertDialog>
         </div>
       </div>
+
+      {/* Bot Context Card */}
+      {hasBotContext && (
+        <div className="mx-lg mt-md p-md bg-muted/40 border border-border/80 rounded-xl shrink-0">
+          <div className="flex items-center justify-between">
+            <span className="text-label-sm font-bold text-muted-foreground flex items-center gap-xs">
+              🤖 Bot Context Summary
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs font-semibold px-sm hover:bg-muted/80"
+              onClick={() => setIsBotSummaryOpen(!isBotSummaryOpen)}
+            >
+              {isBotSummaryOpen ? "Hide" : "Show"}
+            </Button>
+          </div>
+          {isBotSummaryOpen && (
+            <p className="mt-xs text-body-sm leading-relaxed text-foreground font-medium whitespace-pre-wrap">
+              {botSummary}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Message Thread */}
       <div className="flex-1 p-lg overflow-y-auto space-y-md">

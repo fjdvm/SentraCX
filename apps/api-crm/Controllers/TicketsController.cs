@@ -1,4 +1,5 @@
 using Crm.Api.DTOs.Requests;
+using Crm.Api.DTOs.Responses;
 using Crm.Api.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -69,5 +70,19 @@ public class TicketsController(ITicketService ticketService) : ControllerBase
     {
         var success = await ticketService.CancelAsync(id);
         return success ? NoContent() : NotFound();
+    }
+
+    [HttpPost("{id:guid}/escalate")]
+    public async Task<IActionResult> Escalate(Guid id, [FromBody] EscalateConversationRequestDto dto)
+    {
+        var success = await ticketService.EscalateAsync(id, dto.BotSummary);
+        if (!success) return NotFound();
+
+        return Ok(new EscalationResponseDto
+        {
+            TicketId = id,
+            ConversationGroupId = id.ToString(),
+            Status = "Unclaimed"
+        });
     }
 }

@@ -13,4 +13,5 @@ public interface ITicketService
     Task<bool> UnclaimAsync(Guid id);
     Task<bool> UpdateStatusAsync(Guid id, UpdateTicketStatusRequestDto dto);
     Task<bool> CancelAsync(Guid id);
+    Task<bool> EscalateAsync(Guid id, string botSummary);
 }

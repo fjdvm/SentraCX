@@ -4,6 +4,7 @@ using Crm.Api.Interfaces.Repositories;
 using Crm.Api.Interfaces.Services;
 using Crm.Api.Mappers;
 using Crm.Api.Models;
+using System.Linq;
 
 namespace Crm.Api.Services;
 
@@ -51,5 +52,14 @@ public class MessageService(
         await messageRepo.MarkAsReadAsync(messageId);
         await broadcastService.BroadcastMetricsAsync();
         return true;
+    }
+
+    public async Task<List<MessageResponseDto>> GetSinceAsync(Guid ticketId, DateTime since)
+    {
+        var messages = await messageRepo.GetByTicketIdAsync(ticketId);
+        return messages
+            .Where(m => m.SentAt > since)
+            .Select(MessageMapper.ToResponse)
+            .ToList();
     }
 }

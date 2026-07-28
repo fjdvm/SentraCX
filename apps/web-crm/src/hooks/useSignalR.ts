@@ -10,9 +10,10 @@ interface UseSignalROptions {
   ticketId: string | null;
   onReceiveMessage?: (msg: Message) => void;
   onMessageRead?: (messageId: string) => void;
+  onNewMessageNotification?: (ticketId: string, message: Message) => void;
 }
 
-export function useSignalR({ ticketId, onReceiveMessage, onMessageRead }: UseSignalROptions) {
+export function useSignalR({ ticketId, onReceiveMessage, onMessageRead, onNewMessageNotification }: UseSignalROptions) {
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const activeTicketRef = useRef<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -22,6 +23,9 @@ export function useSignalR({ ticketId, onReceiveMessage, onMessageRead }: UseSig
 
   const onMessageReadRef = useRef(onMessageRead);
   onMessageReadRef.current = onMessageRead;
+
+  const onNewMessageNotificationRef = useRef(onNewMessageNotification);
+  onNewMessageNotificationRef.current = onNewMessageNotification;
 
   useEffect(() => {
     // TODO (auth): Pass JWT access token via .withUrl(url, { accessTokenFactory: () => token })
@@ -43,12 +47,17 @@ export function useSignalR({ ticketId, onReceiveMessage, onMessageRead }: UseSig
       onMessageReadRef.current?.(messageId);
     });
 
+    connection.on("NewMessageNotification", (data: { ticketId: string; message: Message }) => {
+      onNewMessageNotificationRef.current?.(data.ticketId, data.message);
+    });
+
     connectionRef.current = connection;
 
     connection
       .start()
       .then(() => {
         setIsConnected(true);
+        connection.invoke("JoinStaff").catch(console.error);
         if (ticketId) {
           activeTicketRef.current = ticketId;
           connection.invoke("JoinTicket", ticketId).catch(console.error);
@@ -59,8 +68,11 @@ export function useSignalR({ ticketId, onReceiveMessage, onMessageRead }: UseSig
       });
 
     return () => {
-      if (activeTicketRef.current && connection.state === signalR.HubConnectionState.Connected) {
-        connection.invoke("LeaveTicket", activeTicketRef.current).catch(console.error);
+      if (connection.state === signalR.HubConnectionState.Connected) {
+        if (activeTicketRef.current) {
+          connection.invoke("LeaveTicket", activeTicketRef.current).catch(console.error);
+        }
+        connection.invoke("LeaveStaff").catch(console.error);
       }
       connection.stop().catch(console.error);
       connectionRef.current = null;
@@ -89,10 +101,10 @@ export function useSignalR({ ticketId, onReceiveMessage, onMessageRead }: UseSig
   }, [ticketId, isConnected]);
 
   const sendMessage = useCallback(
-    async (targetTicketId: string, senderId: string, content: string) => {
+    async (targetTicketId: string, senderId: string, content: string, senderType = "employee") => {
       const connection = connectionRef.current;
       if (connection && connection.state === signalR.HubConnectionState.Connected) {
-        await connection.invoke("SendMessage", targetTicketId, senderId, content);
+        await connection.invoke("SendMessage", targetTicketId, senderId, content, senderType);
       }
     },
     []

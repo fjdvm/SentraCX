@@ -43,3 +43,20 @@ class OosClient:
             raise OosClientError(f"HTTP error from OOS: {e}") from e
         except httpx.RequestError as e:
             raise OosClientError(f"Network error contacting OOS: {e}") from e
+
+    async def get_order(self, order_id: str) -> dict | None:
+        """Fetch a single order by ID from OOS API."""
+        url = f"{self._base_url}/api/v1/orders/{order_id}"
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                response = await client.get(url, headers=self._headers())
+                if response.status_code == 404:
+                    return None
+                response.raise_for_status()
+                return response.json()
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                return None
+            raise OosClientError(f"HTTP error fetching order {order_id} from OOS: {e}") from e
+        except httpx.RequestError as e:
+            raise OosClientError(f"Network error contacting OOS: {e}") from e

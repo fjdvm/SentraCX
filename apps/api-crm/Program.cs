@@ -20,10 +20,10 @@ EnvLoader.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-var dbHost     = Environment.GetEnvironmentVariable("DATABASE_HOST")     ?? "localhost";
-var dbPort     = Environment.GetEnvironmentVariable("DATABASE_PORT")     ?? "5432";
-var dbName     = Environment.GetEnvironmentVariable("DATABASE_NAME")     ?? "sentracx_crm";
-var dbUser     = Environment.GetEnvironmentVariable("DATABASE_USER")     ?? "postgres";
+var dbHost = Environment.GetEnvironmentVariable("DATABASE_HOST") ?? "localhost";
+var dbPort = Environment.GetEnvironmentVariable("DATABASE_PORT") ?? "5432";
+var dbName = Environment.GetEnvironmentVariable("DATABASE_NAME") ?? "sentracx_crm";
+var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER") ?? "postgres";
 var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? "postgres";
 var connectionString =
     $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
@@ -102,7 +102,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("https://localhost:3005", "http://localhost:3000", "https://localhost:3000")
+        policy.WithOrigins("https://localhost:3005", "http://localhost:3000", "https://localhost:3000", "https://localhost:3006", "http://localhost:3006")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

@@ -16,8 +16,24 @@ public class ChatHub(IMessageService messageService) : Hub
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, ticketId);
     }
 
-    public async Task SendMessage(string ticketId, string senderId, string content)
+    public async Task JoinStaff()
     {
+        await Groups.AddToGroupAsync(Context.ConnectionId, "staff");
+    }
+
+    public async Task LeaveStaff()
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, "staff");
+    }
+
+    public async Task SendMessage(string ticketId, string senderId, string content, string senderType)
+    {
+        if (senderType != "customer" && senderType != "employee")
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid sender type. Must be 'customer' or 'employee'.");
+            return;
+        }
+
         if (!Guid.TryParse(ticketId, out var ticketGuid))
         {
             await Clients.Caller.SendAsync("Error", "Invalid ticket ID.");
@@ -40,6 +56,15 @@ public class ChatHub(IMessageService messageService) : Hub
         }
 
         await Clients.Group(ticketId).SendAsync("ReceiveMessage", message);
+
+        if (senderType == "customer")
+        {
+            await Clients.Group("staff").SendAsync("NewMessageNotification", new
+            {
+                TicketId = ticketGuid,
+                Message = message
+            });
+        }
     }
 
     public async Task MarkMessageRead(string messageId)

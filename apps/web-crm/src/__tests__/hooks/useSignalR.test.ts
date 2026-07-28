@@ -52,6 +52,7 @@ describe("useSignalR", () => {
       await Promise.resolve();
     });
 
+    expect(mockConnection.invoke).toHaveBeenCalledWith("JoinStaff");
     expect(mockConnection.invoke).toHaveBeenCalledWith("JoinTicket", "ticket-101");
   });
 
@@ -69,6 +70,7 @@ describe("useSignalR", () => {
     unmount();
 
     expect(mockConnection.invoke).toHaveBeenCalledWith("LeaveTicket", "ticket-101");
+    expect(mockConnection.invoke).toHaveBeenCalledWith("LeaveStaff");
     expect(mockConnection.stop).toHaveBeenCalled();
   });
 

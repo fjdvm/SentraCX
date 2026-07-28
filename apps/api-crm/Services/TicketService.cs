@@ -137,6 +137,27 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         return true;
     }
 
+    public async Task<bool> EscalateAsync(Guid id, string botSummary)
+    {
+        var ticket = await ticketRepo.GetByIdAsync(id);
+        if (ticket is null) return false;
+
+        if (ticket.Status is "Completed" or "Canceled") return false;
+
+        if (!string.IsNullOrWhiteSpace(botSummary))
+        {
+            ticket.Description = $"{ticket.Description}\n\n--- Bot Context ---\n{botSummary}";
+        }
+
+        ticket.Status = "Unclaimed";
+        ticket.AssignedToId = null;
+        ticket.UpdatedAt = DateTime.UtcNow;
+
+        await ticketRepo.UpdateAsync(ticket);
+        await broadcastService.BroadcastMetricsAsync();
+        return true;
+    }
+
     private static bool IsValidTransition(string currentStatus, string newStatus)
     {
         if (!ValidTransitions.TryGetValue(currentStatus, out var allowed))
