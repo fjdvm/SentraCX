@@ -41,43 +41,43 @@ This plan covers all open items from **Epic 2.2** (backlog) and the related inte
 
 ---
 
-## Proposed Changes
+## Proposed Changes (All Completed)
 
 ### Component 1 — `api-crm`
 
-#### [MODIFY] Program.cs
+#### [MODIFY] [DONE] Program.cs
 - Extend CORS `WithOrigins` to include `https://localhost:3006` (web-shop) so `web-shop` can connect directly to `/hubs/chat`.
 
-#### [MODIFY] Hubs/ChatHub.cs
+#### [MODIFY] [DONE] Hubs/ChatHub.cs
 - Add `senderType` parameter (`"customer"` | `"employee"`) to `SendMessage`.
 - On a customer message, broadcast `NewMessageNotification` to all connected staff (hub group `"staff"`) so `web-crm` can show an unread badge.
 - Validate `senderType` — reject unknown values with an `"Error"` response.
 
-#### [NEW] DTOs/Requests/EscalateConversationRequestDto.cs
+#### [NEW] [DONE] DTOs/Requests/EscalateConversationRequestDto.cs
 - `{ string BotSummary }` — summary of the bot exchange to append to ticket description.
 
-#### [NEW] DTOs/Responses/EscalationResponseDto.cs
+#### [NEW] [DONE] DTOs/Responses/EscalationResponseDto.cs
 - `{ Guid TicketId, string ConversationGroupId, string Status }`.
 
-#### [MODIFY] Services/TicketService.cs
+#### [MODIFY] [DONE] Services/TicketService.cs
 - Add `EscalateAsync(Guid ticketId, string botSummary)`:
   - Appends `botSummary` to the ticket `Description` field (delimited by `\n\n--- Bot Context ---\n`). No migration needed.
   - Confirms ticket is in `"Unclaimed"` queue.
   - Broadcasts `TicketEscalated` via `IDashboardBroadcastService`.
 
-#### [MODIFY] Interfaces/Services/ITicketService.cs
+#### [MODIFY] [DONE] Interfaces/Services/ITicketService.cs
 - Add `EscalateAsync(Guid ticketId, string botSummary)` signature.
 
-#### [MODIFY] Controllers/TicketsController.cs
+#### [MODIFY] [DONE] Controllers/TicketsController.cs
 - Add `POST /api/v1/tickets/{id}/escalate` — calls `ITicketService.EscalateAsync`.
 
-#### [NEW] Controllers/ConversationsController.cs
+#### [NEW] [DONE] Controllers/ConversationsController.cs
 - `GET /api/v1/tickets/{id}/messages?since={timestamp}` — returns messages after a given timestamp for SignalR reconnection catch-up (delegates to `IMessageService.GetSinceAsync`).
 
-#### [MODIFY] Services/MessageService.cs
+#### [MODIFY] [DONE] Services/MessageService.cs
 - Add `GetSinceAsync(Guid ticketId, DateTime since)` for reconnect recovery.
 
-#### [MODIFY] Interfaces/Services/IMessageService.cs
+#### [MODIFY] [DONE] Interfaces/Services/IMessageService.cs
 - Add `GetSinceAsync(Guid ticketId, DateTime since)` signature.
 
 ---
@@ -86,7 +86,7 @@ This plan covers all open items from **Epic 2.2** (backlog) and the related inte
 
 All new files follow route → service → repository layering.
 
-#### [NEW] app/api/v1/routes/chatbot.py
+#### [NEW] [DONE] app/api/v1/routes/chatbot.py
 New router prefix `/chatbot`, tags `["chatbot"]`:
 
 | Method | Path | Auth | Description |
@@ -119,7 +119,7 @@ Logic:
 - If intent is `escalate` or `confidence < threshold` → set `should_escalate: true`, generate `bot_summary`.
 - If intent is `order_status` → call `oos_client` to look up order status.
 
-#### [NEW] app/services/chatbot_service.py
+#### [NEW] [DONE] app/services/chatbot_service.py
 Orchestration service composing:
 - `ConversationAnalyzer.detect_intent()` (existing) for intent classification.
 - `GroqClient` for LLM-generated reply.
@@ -130,28 +130,28 @@ Methods:
 - `async def reply(message, customer_id, ticket_id, history) → ChatbotReplyResult`
 - `async def generate_bot_summary(history) → str`
 
-#### [NEW] app/schemas/chatbot_schemas.py
+#### [NEW] [DONE] app/schemas/chatbot_schemas.py
 Pydantic models: `ChatbotReplyRequest`, `ChatbotReplyResponse`, `ChatHistoryEntry`.
 
-#### [MODIFY] app/api/v1/deps.py
+#### [MODIFY] [DONE] app/api/v1/deps.py
 - Add `get_chatbot_service()` dependency factory.
 
-#### [MODIFY] app/main.py
+#### [MODIFY] [DONE] app/main.py
 - Register `chatbot.router` under `/api/v1`.
 
 ---
 
 ### Component 3 — `web-crm`
 
-#### [MODIFY] ConversationWindow.tsx
+#### [MODIFY] [DONE] ConversationWindow.tsx
 - **Bot context panel:** When ticket description contains `--- Bot Context ---`, extract and render it in a collapsible "Bot Summary" section at the top of the conversation window.
 - **Cancel-ticket action:** Expose cancel-ticket button within the conversation view (call existing cancel endpoint).
 - **`senderType` tagging:** Pass `"employee"` as `senderType` when staff sends a message via `ChatHub.SendMessage`.
 
-#### [MODIFY] ConversationList.tsx
+#### [MODIFY] [DONE] ConversationList.tsx
 - **Unread badge:** Subscribe to `NewMessageNotification` SignalR event. On fire, increment unread count for the affected conversation and render a badge indicator.
 
-#### [MODIFY] Conversations.tsx
+#### [MODIFY] [DONE] Conversations.tsx
 - Wire `NewMessageNotification` hub subscription at parent level so unread state is shared across child components.
 
 > Note: "Real-time chat UI for messaging staff" and "Message/conversation details view" from the backlog are already covered by the existing 2.1 implementation. The remaining gaps are the bot summary panel, unread badge, and cancel button.
@@ -160,46 +160,46 @@ Pydantic models: `ChatbotReplyRequest`, `ChatbotReplyResponse`, `ChatHistoryEntr
 
 ## File Summary
 
-| File | Action | Service |
-|---|---|---|
-| `Program.cs` | Modify — add CORS origin | `api-crm` |
-| `Hubs/ChatHub.cs` | Modify — senderType + notification | `api-crm` |
-| `DTOs/Requests/EscalateConversationRequestDto.cs` | New | `api-crm` |
-| `DTOs/Responses/EscalationResponseDto.cs` | New | `api-crm` |
-| `Services/TicketService.cs` | Modify — EscalateAsync | `api-crm` |
-| `Interfaces/Services/ITicketService.cs` | Modify — add signature | `api-crm` |
-| `Controllers/TicketsController.cs` | Modify — escalate endpoint | `api-crm` |
-| `Controllers/ConversationsController.cs` | New — reconnect messages endpoint | `api-crm` |
-| `Services/MessageService.cs` | Modify — GetSinceAsync | `api-crm` |
-| `Interfaces/Services/IMessageService.cs` | Modify — add signature | `api-crm` |
-| `app/api/v1/routes/chatbot.py` | New | `api-ai-analytics` |
-| `app/services/chatbot_service.py` | New | `api-ai-analytics` |
-| `app/schemas/chatbot_schemas.py` | New | `api-ai-analytics` |
-| `app/api/v1/deps.py` | Modify — add dependency | `api-ai-analytics` |
-| `app/main.py` | Modify — register router | `api-ai-analytics` |
-| `ConversationWindow.tsx` | Modify — bot summary, cancel, senderType | `web-crm` |
-| `ConversationList.tsx` | Modify — unread badge | `web-crm` |
-| `Conversations.tsx` | Modify — hub subscription | `web-crm` |
+| File | Action | Service | Status |
+|---|---|---|---|
+| `Program.cs` | Modify — add CORS origin | `api-crm` | Done |
+| `Hubs/ChatHub.cs` | Modify — senderType + notification | `api-crm` | Done |
+| `DTOs/Requests/EscalateConversationRequestDto.cs` | New | `api-crm` | Done |
+| `DTOs/Responses/EscalationResponseDto.cs` | New | `api-crm` | Done |
+| `Services/TicketService.cs` | Modify — EscalateAsync | `api-crm` | Done |
+| `Interfaces/Services/ITicketService.cs` | Modify — add signature | `api-crm` | Done |
+| `Controllers/TicketsController.cs` | Modify — escalate endpoint | `api-crm` | Done |
+| `Controllers/ConversationsController.cs` | New — reconnect messages endpoint | `api-crm` | Done |
+| `Services/MessageService.cs` | Modify — GetSinceAsync | `api-crm` | Done |
+| `Interfaces/Services/IMessageService.cs` | Modify — add signature | `api-crm` | Done |
+| `app/api/v1/routes/chatbot.py` | New | `api-ai-analytics` | Done |
+| `app/services/chatbot_service.py` | New | `api-ai-analytics` | Done |
+| `app/schemas/chatbot_schemas.py` | New | `api-ai-analytics` | Done |
+| `app/api/v1/deps.py` | Modify — add dependency | `api-ai-analytics` | Done |
+| `app/main.py` | Modify — register router | `api-ai-analytics` | Done |
+| `ConversationWindow.tsx` | Modify — bot summary, cancel, senderType | `web-crm` | Done |
+| `ConversationList.tsx` | Modify — unread badge | `web-crm` | Done |
+| `Conversations.tsx` | Modify — hub subscription | `web-crm` | Done |
 
 ---
 
 ## Test Plan
 
-| Source file | Test file | Action |
-|---|---|---|
-| `Services/TicketService.cs` (EscalateAsync) | `tests/Crm.Api.Tests/Services/TicketServiceTests.cs` | Extend |
-| `Services/MessageService.cs` (GetSinceAsync) | `tests/Crm.Api.Tests/Services/MessageServiceTests.cs` | Extend |
-| `Hubs/ChatHub.cs` | `tests/Crm.Api.Tests/Hubs/ChatHubTests.cs` | Extend |
-| `app/services/chatbot_service.py` | `tests/services/test_chatbot_service.py` | New |
-| `app/api/v1/routes/chatbot.py` | `tests/api/v1/routes/test_chatbot.py` | New |
+| Source file | Test file | Action | Status |
+|---|---|---|---|
+| `Services/TicketService.cs` (EscalateAsync) | `tests/Crm.Api.Tests/Services/TicketServiceTests.cs` | Extend | Done |
+| `Services/MessageService.cs` (GetSinceAsync) | `tests/Crm.Api.Tests/Services/MessageServiceTests.cs` | Extend | Done |
+| `Hubs/ChatHub.cs` | `tests/Crm.Api.Tests/Hubs/ChatHubTests.cs` | Extend | Done |
+| `app/services/chatbot_service.py` | `tests/services/test_chatbot_service.py` | New | Done |
+| `app/api/v1/routes/chatbot.py` | `tests/api/v1/routes/test_chatbot.py` | New | Done |
 
 ### Verification Steps
 
-1. `dotnet build` passes for `api-crm` with no errors.
-2. `pytest tests/services/test_chatbot_service.py tests/api/v1/routes/test_chatbot.py` pass for `api-ai-analytics`.
-3. **Manual — unauthenticated bot:** `POST /api/ai/chatbot/reply` with no `customer_id` + public question → valid reply, `should_escalate: false`.
-4. **Manual — escalation signal:** Low-confidence or explicit escalation intent → `should_escalate: true`, `bot_summary` populated.
-5. **Manual — CRM escalation endpoint:** `POST /api/v1/tickets/{id}/escalate` with bot summary → description updated, `200 OK`.
-6. **Manual — CORS:** `web-shop` origin (`https://localhost:3006`) connects to `/hubs/chat` without errors.
-7. **Manual — unread badge:** Customer message arrives → `NewMessageNotification` fires → badge increments in `web-crm`.
-8. **Manual — bot summary panel:** Open escalated ticket in `web-crm` → collapsible "Bot Summary" section renders.
+1. [x] `dotnet build` passes for `api-crm` with no errors.
+2. [x] `pytest tests/services/test_chatbot_service.py tests/api/v1/routes/test_chatbot.py` pass for `api-ai-analytics`.
+3. [x] **Manual — unauthenticated bot:** `POST /api/ai/chatbot/reply` with no `customer_id` + public question → valid reply, `should_escalate: false`.
+4. [x] **Manual — escalation signal:** Low-confidence or explicit escalation intent → `should_escalate: true`, `bot_summary` populated.
+5. [x] **Manual — CRM escalation endpoint:** `POST /api/v1/tickets/{id}/escalate` with bot summary → description updated, `200 OK`.
+6. [x] **Manual — CORS:** `web-shop` origin (`https://localhost:3006`) connects to `/hubs/chat` without errors.
+7. [x] **Manual — unread badge:** Customer message arrives → `NewMessageNotification` fires → badge increments in `web-crm`.
+8. [x] **Manual — bot summary panel:** Open escalated ticket in `web-crm` → collapsible "Bot Summary" section renders.
