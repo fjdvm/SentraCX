@@ -48,10 +48,20 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
     [appendMessage, refetchTickets]
   );
 
+  const handleNewMessageNotification = useCallback(
+    (ticketId: string, incomingMsg: Message) => {
+      if (ticketId !== activeTicketId) {
+        refetchTickets();
+      }
+    },
+    [activeTicketId, refetchTickets]
+  );
+
   // SignalR connection hook
   const { sendMessage } = useSignalR({
     ticketId: activeTicketId,
     onReceiveMessage: handleReceiveMessage,
+    onNewMessageNotification: handleNewMessageNotification,
   });
 
   const handleSelectTicket = useCallback(
@@ -133,6 +143,22 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
     [activeTicketId, tickets, refetchTickets]
   );
 
+  const handleCancel = useCallback(
+    async (ticketId: string) => {
+      try {
+        await crmClient.tickets.cancel(ticketId);
+        refetchTickets();
+        if (activeTicketId === ticketId) {
+          const next = tickets.find((t) => t.id !== ticketId);
+          setActiveTicketId(next ? next.id : null);
+        }
+      } catch (err) {
+        console.error("Failed to cancel ticket:", err);
+      }
+    },
+    [activeTicketId, tickets, refetchTickets]
+  );
+
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col md:flex-row overflow-hidden bg-background">
       <ConversationList
@@ -151,6 +177,7 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
         onSendMessage={handleSendMessage}
         onComplete={handleComplete}
         onUnclaim={handleUnclaim}
+        onCancel={handleCancel}
       />
       <CustomerContextPanel
         ticket={ticket}

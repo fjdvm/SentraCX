@@ -73,20 +73,20 @@ Organized as Epics → User Stories → Tasks (Backend / Frontend split). Priori
 *Maps to: BR-CRM-03, BR-CRM-04*
 
 **Backend (`api-crm`)**
-- [ ] 🔗 Chat endpoint consumed directly by `br-online-shop`'s floating chat widget (`web-shop`) via the shared SignalR hub
-- [ ] Bot-first flow — route to AI agent bot before offering human handoff (🔗 uses `api-ai-analytics` intent detection, see Epic 5)
-- [ ] Chatbot integration: route incoming customer messages to an agent bot first
-- [ ] Logic to detect when the bot's response is insufficient and prompt escalation to a live agent
-- [ ] Escalation endpoint to hand off a conversation from bot to human staff
+- [x] 🔗 Chat endpoint consumed directly by `br-online-shop`'s floating chat widget (`web-shop`) via the shared SignalR hub
+- [x] Bot-first flow — route to AI agent bot before offering human handoff (🔗 uses `api-ai-analytics` intent detection, see Epic 5)
+- [x] Chatbot integration: route incoming customer messages to an agent bot first
+- [x] Logic to detect when the bot's response is insufficient and prompt escalation to a live agent
+- [x] Escalation endpoint to hand off a conversation from bot to human staff
 - [x] `PUT /api/tickets/{id}/cancel` reachable from within conversation view
 - [x] Message detail endpoint
 
 **Frontend (`web-crm`)**
-- [ ] Real-time chat UI for messaging staff
-- [ ] Bot-first chat experience: show the agent bot's responses before offering escalation
-- [ ] "Talk to a real agent" prompt/option shown when the bot's response isn't sufficient
-- [ ] Cancel-ticket action available inside the conversation view
-- [ ] Message/conversation details view
+- [x] Real-time chat UI for messaging staff
+- [x] Bot-first chat experience: show the agent bot's responses before offering escalation (🔗 in `web-shop`; staff context in `web-crm`)
+- [x] "Talk to a real agent" prompt/option shown when the bot's response isn't sufficient (🔗 in `web-shop`; escalation context in `web-crm`)
+- [x] Cancel-ticket action available inside the conversation view
+- [x] Message/conversation details view
 
 ---
 
@@ -260,12 +260,12 @@ Organized as Epics → User Stories → Tasks (Backend / Frontend split). Priori
 ### 6.3 AI Chatbot / Virtual Assistant
 
 **Backend (`api-ai-analytics` + `api-crm`)**
-- [ ] FAQ handling, order status lookup (🔗 `api-oos`), simple request handling
-- [ ] Escalation to human agent via Epic 2.2 flow when bot can't resolve
-- [ ] Log chatbot conversations for quality review
+- [x] FAQ handling, order status lookup (🔗 `api-oos`), simple request handling
+- [x] Escalation to human agent via Epic 2.2 flow when bot can't resolve
+- [x] Log chatbot conversations for quality review
 
 **Frontend (`web-shop` 🔗)**
-- [ ] Chatbot widget lives in `br-online-shop`, calls `api-ai-analytics`/`api-crm` endpoints
+- [x] Chatbot widget lives in `br-online-shop`, calls `api-ai-analytics`/`api-crm` endpoints
 
 ---
 

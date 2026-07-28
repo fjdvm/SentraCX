@@ -1,4 +1,5 @@
 using Crm.Api.BackgroundJobs;
+using Crm.Api.Configurations;
 using Crm.Api.Data;
 using Crm.Api.Helpers;
 using Crm.Api.Hubs;
@@ -20,10 +21,10 @@ EnvLoader.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-var dbHost     = Environment.GetEnvironmentVariable("DATABASE_HOST")     ?? "localhost";
-var dbPort     = Environment.GetEnvironmentVariable("DATABASE_PORT")     ?? "5432";
-var dbName     = Environment.GetEnvironmentVariable("DATABASE_NAME")     ?? "sentracx_crm";
-var dbUser     = Environment.GetEnvironmentVariable("DATABASE_USER")     ?? "postgres";
+var dbHost = Environment.GetEnvironmentVariable("DATABASE_HOST") ?? "localhost";
+var dbPort = Environment.GetEnvironmentVariable("DATABASE_PORT") ?? "5432";
+var dbName = Environment.GetEnvironmentVariable("DATABASE_NAME") ?? "sentracx_crm";
+var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER") ?? "postgres";
 var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? "postgres";
 var connectionString =
     $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
@@ -87,6 +88,18 @@ builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IPromotionService, PromotionService>();
 builder.Services.AddScoped<IDashboardBroadcastService, DashboardBroadcastService>();
 
+// Email & Campaign Dispatch Services
+builder.Services.Configure<SmtpOptions>(opts =>
+{
+    opts.Host = Environment.GetEnvironmentVariable("SMTP_HOST") ?? "";
+    opts.Port = int.TryParse(Environment.GetEnvironmentVariable("SMTP_PORT"), out var p) ? p : 587;
+    opts.Username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? "";
+    opts.Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "";
+    opts.From = Environment.GetEnvironmentVariable("SMTP_FROM") ?? "";
+});
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<ICampaignDispatchService, CampaignDispatchService>();
+
 // AI Analytics Client
 var aiAnalyticsUrl = Environment.GetEnvironmentVariable("AI_ANALYTICS_API_URL") ?? "http://localhost:4005";
 builder.Services.AddAiAnalyticsClient(aiAnalyticsUrl);
@@ -102,7 +115,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("https://localhost:3005", "http://localhost:3000", "https://localhost:3000")
+        policy.WithOrigins("https://localhost:3005", "http://localhost:3000", "https://localhost:3000", "https://localhost:3006", "http://localhost:3006")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

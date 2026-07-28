@@ -24,9 +24,11 @@ export function useDashboardHub({ onMetricsUpdated }: UseDashboardHubOptions = {
   onMetricsUpdatedRef.current = onMetricsUpdated;
 
   useEffect(() => {
+    let stopped = false;
+
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${CRM_BASE}/hubs/dashboard`, {
-        skipNegotiation: false,
+        skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
       })
       .withAutomaticReconnect()
@@ -38,28 +40,32 @@ export function useDashboardHub({ onMetricsUpdated }: UseDashboardHubOptions = {
 
     connectionRef.current = connection;
 
-    connection
+    const startPromise = connection
       .start()
       .then(() => {
+        if (stopped) {
+          connection.stop().catch(console.error);
+          return;
+        }
         setIsConnected(true);
         connection.invoke("JoinDashboard").catch((err) => {
           console.error("Failed to join dashboard group:", err);
         });
       })
       .catch((err) => {
-        console.error("SignalR DashboardHub connection error:", err);
+        if (!stopped) {
+          console.error("SignalR DashboardHub connection error:", err);
+        }
       });
 
     return () => {
-      if (connection.state === signalR.HubConnectionState.Connected) {
-        connection.invoke("LeaveDashboard")
-          .catch((err) => console.error("Failed to leave dashboard group:", err))
-          .finally(() => {
-            connection.stop().catch(console.error);
-          });
-      } else {
-        connection.stop().catch(console.error);
-      }
+      stopped = true;
+      startPromise.then(async () => {
+        if (connection.state === signalR.HubConnectionState.Connected) {
+          await connection.invoke("LeaveDashboard").catch(() => {});
+        }
+        connection.stop().catch(() => {});
+      });
       connectionRef.current = null;
       setIsConnected(false);
     };

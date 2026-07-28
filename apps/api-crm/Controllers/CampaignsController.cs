@@ -54,6 +54,23 @@ public class CampaignsController(ICampaignService campaignService) : ControllerB
         return success ? NoContent() : NotFound();
     }
 
+    [HttpPost("{id:guid}/send")]
+    public async Task<IActionResult> Send(
+        Guid id,
+        [FromServices] ICampaignDispatchService dispatchService)
+    {
+        var campaign = await campaignService.GetByIdAsync(id);
+        if (campaign is null) return NotFound();
+
+        if (!campaign.Channels.Any(c => c.Equals("Email", StringComparison.OrdinalIgnoreCase)))
+        {
+            return BadRequest(new { message = "Campaign does not include Email channel." });
+        }
+
+        var sentCount = await dispatchService.DispatchAsync(id);
+        return Ok(new { message = $"Campaign dispatched to {sentCount} recipients.", sentCount });
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {

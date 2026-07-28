@@ -8,4 +8,5 @@ public class CreateCustomerRequestDto
     public string? PhoneNumber { get; set; }
     public string CustomerType { get; set; } = "Regular";
     public string? Address { get; set; }
+    public string? ExternalUserId { get; set; }
 }

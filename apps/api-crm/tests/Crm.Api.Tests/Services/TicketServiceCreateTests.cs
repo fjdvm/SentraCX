@@ -8,6 +8,8 @@ using Crm.Api.Interfaces.Clients;
 using Crm.Api.Interfaces.Services;
 using Crm.Api.Models;
 using Crm.Api.Services;
+using Microsoft.AspNetCore.SignalR;
+using Crm.Api.Hubs;
 using Moq;
 using Xunit;
 
@@ -16,13 +18,23 @@ namespace Crm.Api.Tests.Services;
 public class TicketServiceCreateTests
 {
     private readonly Mock<ITicketRepository> _ticketRepoMock = new();
+    private readonly Mock<ICustomerProfileRepository> _customerRepoMock = new();
     private readonly Mock<IAiAnalyticsClient> _aiClientMock = new();
     private readonly Mock<IDashboardBroadcastService> _broadcastMock = new();
+    private readonly Mock<IHubContext<ChatHub>> _chatHubMock = new();
+    private readonly Mock<IHubClients> _clientsMock = new();
+    private readonly Mock<IClientProxy> _clientProxyMock = new();
     private readonly TicketService _sut;
 
     public TicketServiceCreateTests()
     {
-        _sut = new TicketService(_ticketRepoMock.Object, _aiClientMock.Object, _broadcastMock.Object);
+        _clientsMock.Setup(c => c.Group("staff")).Returns(_clientProxyMock.Object);
+        _chatHubMock.Setup(h => h.Clients).Returns(_clientsMock.Object);
+
+        _customerRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((Guid id) => new CustomerProfile { Id = id, UserId = id.ToString() });
+
+        _sut = new TicketService(_ticketRepoMock.Object, _customerRepoMock.Object, _aiClientMock.Object, _broadcastMock.Object, _chatHubMock.Object);
     }
 
     [Fact]

@@ -74,7 +74,7 @@ public class ChatHubTests
                 It.Is<CreateMessageRequestDto>(d => d.Content == content)))
             .ReturnsAsync(saved);
 
-        await _sut.SendMessage(ticketId, senderId, content);
+        await _sut.SendMessage(ticketId, senderId, content, "employee");
 
         _messageServiceMock.Verify(s => s.CreateAsync(
             Guid.Parse(ticketId), senderId,
@@ -86,9 +86,50 @@ public class ChatHubTests
     }
 
     [Fact]
+    public async Task SendMessage_CustomerSenderType_BroadcastsNewMessageNotification()
+    {
+        var ticketId = Guid.NewGuid().ToString();
+        var senderId = "user-1";
+        var content = "Hello!";
+        var saved = new MessageResponseDto
+        {
+            Id = Guid.NewGuid(),
+            SenderId = senderId,
+            SenderName = "User One",
+            Content = content,
+            IsRead = false,
+            SentAt = DateTime.UtcNow
+        };
+
+        _messageServiceMock
+            .Setup(s => s.CreateAsync(
+                Guid.Parse(ticketId),
+                senderId,
+                It.Is<CreateMessageRequestDto>(d => d.Content == content)))
+            .ReturnsAsync(saved);
+
+        await _sut.SendMessage(ticketId, senderId, content, "customer");
+
+        _clientsMock.Verify(c => c.Group("staff"), Times.Once);
+        _groupClientMock.Verify(c =>
+            c.SendCoreAsync("NewMessageNotification", It.Is<object[]>(a => a[0] != null), default),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SendMessage_InvalidSenderType_SendsErrorToCaller()
+    {
+        await _sut.SendMessage(Guid.NewGuid().ToString(), "user-1", "Hello", "invalid-type");
+
+        _callerMock.Verify(c =>
+            c.SendCoreAsync("Error", It.IsAny<object[]>(), default),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task SendMessage_InvalidTicketId_SendsErrorToCaller()
     {
-        await _sut.SendMessage("not-a-guid", "user-1", "Hello");
+        await _sut.SendMessage("not-a-guid", "user-1", "Hello", "employee");
 
         _callerMock.Verify(c =>
             c.SendCoreAsync("Error", It.IsAny<object[]>(), default),
@@ -104,7 +145,7 @@ public class ChatHubTests
     {
         var ticketId = Guid.NewGuid().ToString();
 
-        await _sut.SendMessage(ticketId, "user-1", "   ");
+        await _sut.SendMessage(ticketId, "user-1", "   ", "employee");
 
         _callerMock.Verify(c =>
             c.SendCoreAsync("Error", It.IsAny<object[]>(), default),
@@ -125,7 +166,7 @@ public class ChatHubTests
                 It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CreateMessageRequestDto>()))
             .ReturnsAsync((MessageResponseDto?)null);
 
-        await _sut.SendMessage(ticketId, "user-1", "Hello");
+        await _sut.SendMessage(ticketId, "user-1", "Hello", "employee");
 
         _callerMock.Verify(c =>
             c.SendCoreAsync("Error", It.IsAny<object[]>(), default),
@@ -134,6 +175,22 @@ public class ChatHubTests
         _groupClientMock.Verify(c =>
             c.SendCoreAsync("ReceiveMessage", It.IsAny<object[]>(), default),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task JoinStaff_AddsConnectionToStaffGroup()
+    {
+        await _sut.JoinStaff();
+
+        _groupsMock.Verify(g => g.AddToGroupAsync("conn-1", "staff", default), Times.Once);
+    }
+
+    [Fact]
+    public async Task LeaveStaff_RemovesConnectionFromStaffGroup()
+    {
+        await _sut.LeaveStaff();
+
+        _groupsMock.Verify(g => g.RemoveFromGroupAsync("conn-1", "staff", default), Times.Once);
     }
 
     [Fact]

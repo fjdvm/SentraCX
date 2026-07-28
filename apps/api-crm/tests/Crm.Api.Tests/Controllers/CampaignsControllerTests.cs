@@ -47,4 +47,45 @@ public class CampaignsControllerTests
         var createdResult = Assert.IsType<CreatedAtActionResult>(result);
         Assert.Equal(response, createdResult.Value);
     }
+
+    [Fact]
+    public async Task Send_WhenCampaignNotFound_ReturnsNotFound()
+    {
+        var id = Guid.NewGuid();
+        _campaignServiceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync((CampaignResponseDto?)null);
+        var dispatchMock = new Mock<ICampaignDispatchService>();
+
+        var result = await _sut.Send(id, dispatchMock.Object);
+
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task Send_WhenNoEmailChannel_ReturnsBadRequest()
+    {
+        var id = Guid.NewGuid();
+        var campaign = new CampaignResponseDto { Id = id, Channels = ["InApp"] };
+        _campaignServiceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(campaign);
+        var dispatchMock = new Mock<ICampaignDispatchService>();
+
+        var result = await _sut.Send(id, dispatchMock.Object);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task Send_WhenEmailChannelPresent_ReturnsOkWithCount()
+    {
+        var id = Guid.NewGuid();
+        var campaign = new CampaignResponseDto { Id = id, Channels = ["Email", "InApp"] };
+        _campaignServiceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(campaign);
+
+        var dispatchMock = new Mock<ICampaignDispatchService>();
+        dispatchMock.Setup(d => d.DispatchAsync(id)).ReturnsAsync(5);
+
+        var result = await _sut.Send(id, dispatchMock.Object);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.NotNull(okResult.Value);
+    }
 }

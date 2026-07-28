@@ -1,4 +1,5 @@
 using Crm.Api.DTOs.Requests;
+using Crm.Api.DTOs.Responses;
 using Crm.Api.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,8 +36,15 @@ public class TicketsController(ITicketService ticketService) : ControllerBase
         [FromBody] CreateTicketRequestDto dto,
         [FromQuery] Guid customerId) // TODO: Extract from JWT claims when auth is re-enabled
     {
-        var result = await ticketService.CreateAsync(dto, customerId);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        try
+        {
+            var result = await ticketService.CreateAsync(dto, customerId);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return UnprocessableEntity(new { error = ex.Message });
+        }
     }
 
     [HttpPut("{id:guid}/claim")]
@@ -69,5 +77,19 @@ public class TicketsController(ITicketService ticketService) : ControllerBase
     {
         var success = await ticketService.CancelAsync(id);
         return success ? NoContent() : NotFound();
+    }
+
+    [HttpPost("{id:guid}/escalate")]
+    public async Task<IActionResult> Escalate(Guid id, [FromBody] EscalateConversationRequestDto dto)
+    {
+        var success = await ticketService.EscalateAsync(id, dto.BotSummary);
+        if (!success) return NotFound();
+
+        return Ok(new EscalationResponseDto
+        {
+            TicketId = id,
+            ConversationGroupId = id.ToString(),
+            Status = "Unclaimed"
+        });
     }
 }

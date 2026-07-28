@@ -16,6 +16,9 @@ export interface CampaignListItem {
   id: string;
   title: string;
   channels: CampaignChannel[];
+  targetAudience?: string;
+  targetCustomerIds?: string[];
+  targetEmails?: string[];
   status: CampaignStatus;
   createdAt: string;
 }
@@ -35,6 +38,9 @@ export interface CreateCampaignInput {
   subject: string;
   description: string;
   channels: CampaignChannel[];
+  targetAudience?: string;
+  targetCustomerIds?: string[];
+  targetEmails?: string[];
   scheduleType: ScheduleType;
   recurrenceDays?: RecurrenceDay[];
   startDate?: string;
@@ -49,6 +55,9 @@ export interface UpdateCampaignInput {
   subject?: string;
   description?: string;
   channels?: CampaignChannel[];
+  targetAudience?: string;
+  targetCustomerIds?: string[];
+  targetEmails?: string[];
   scheduleType?: ScheduleType;
   recurrenceDays?: RecurrenceDay[];
   startDate?: string;

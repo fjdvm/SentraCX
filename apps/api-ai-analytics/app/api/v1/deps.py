@@ -1,5 +1,7 @@
 """Dependency injection for API v1 routes."""
 
+from __future__ import annotations
+
 from app.core.config import get_settings
 from app.db.mongo import get_database
 from app.db.redis import get_redis_client
@@ -141,5 +143,44 @@ def get_forecast_service() -> ForecastService:
     """Build and return ForecastService with all dependencies."""
     database = get_database()
     return ForecastService(database=database)
+
+
+def get_chatbot_log_repository() -> ChatbotLogRepository:
+    """Build and return ChatbotLogRepository with database connection."""
+    from app.repositories.mongo.chatbot_log_repository import ChatbotLogRepository
+
+    database = get_database()
+    return ChatbotLogRepository(database=database)
+
+
+def get_chatbot_service() -> ChatbotService:
+    """Build and return ChatbotService with all dependencies."""
+    from app.lib.oos_client import OosClient
+    from app.services.chatbot_service import ChatbotService
+    
+    settings = get_settings()
+
+    oos_client = OosClient(
+        base_url=settings.oos_api_base_url,
+        service_token=settings.oos_service_token,
+    )
+
+    groq_client = GroqClient(
+        api_key=settings.groq_api_key,
+        model_id=settings.groq_model_id,
+    )
+
+    analyzer = ConversationAnalyzer(groq_client=groq_client)
+    log_repo = get_chatbot_log_repository()
+
+    return ChatbotService(
+        oos_client=oos_client,
+        analyzer=analyzer,
+        groq_client=groq_client,
+        settings=settings,
+        log_repo=log_repo,
+    )
+
+
 
 

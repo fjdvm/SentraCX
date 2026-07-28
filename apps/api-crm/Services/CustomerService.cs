@@ -31,11 +31,17 @@ public class CustomerService(
         return profile is null ? null : CustomerMapper.ToDetailResponse(profile);
     }
 
+    public async Task<CustomerResponseDto?> GetByEmailAsync(string email)
+    {
+        var profile = await customerRepo.GetByEmailAsync(email);
+        return profile is null ? null : CustomerMapper.ToDetailResponse(profile);
+    }
+
     public async Task<CustomerResponseDto> CreateAsync(CreateCustomerRequestDto dto)
     {
         var user = new User
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = !string.IsNullOrWhiteSpace(dto.ExternalUserId) ? dto.ExternalUserId : Guid.NewGuid().ToString(),
             Email = dto.Email,
             FirstName = dto.FirstName,
             LastName = dto.LastName,

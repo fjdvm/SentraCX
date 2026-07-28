@@ -25,6 +25,7 @@ public class CampaignRepository(AppDbContext dbContext) : ICampaignRepository
     {
         return await dbContext.Campaigns
             .Include(c => c.CampaignSchedule)
+            .Include(c => c.Template)
             .Include(c => c.CampaignPromotions)
                 .ThenInclude(cp => cp.Promotion)
             .FirstOrDefaultAsync(c => c.Id == id);
