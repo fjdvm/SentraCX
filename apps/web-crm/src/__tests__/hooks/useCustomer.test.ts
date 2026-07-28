@@ -85,4 +85,21 @@ describe("useCustomer", () => {
 
     expect(result.current.customer?.status).toBe("Inactive");
   });
+
+  it("polls for customer details every 10 seconds", async () => {
+    jest.useFakeTimers();
+    (crmClient.customers.getById as jest.Mock).mockResolvedValue(mockCustomer);
+    
+    renderHook(() => useCustomer("abc123"));
+    
+    expect(crmClient.customers.getById).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      jest.advanceTimersByTime(10000);
+    });
+
+    expect(crmClient.customers.getById).toHaveBeenCalledTimes(2);
+
+    jest.useRealTimers();
+  });
 });

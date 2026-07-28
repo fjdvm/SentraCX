@@ -11,6 +11,9 @@ jest.mock("@/lib/api/crm-client", () => ({
     upload: {
       uploadFile: jest.fn(),
     },
+    customers: {
+      list: jest.fn().mockResolvedValue({ items: [], totalCount: 0, totalPages: 1 }),
+    },
   },
 }));
 

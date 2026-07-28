@@ -26,22 +26,36 @@ export function useCustomer(id: string) {
   useEffect(() => {
     if (!id) return;
     let isMounted = true;
-    crmClient.customers.getById(id)
-      .then((data) => {
-        if (isMounted) {
-          setCustomer(data);
-          setError(null);
-          setIsLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : "Failed to load customer profile.");
-          setIsLoading(false);
-        }
-      });
+
+    const fetchSingle = (isBackground = false) => {
+      if (!isBackground) {
+        setIsLoading(true);
+      }
+      crmClient.customers.getById(id)
+        .then((data) => {
+          if (isMounted) {
+            setCustomer(data);
+            setError(null);
+            setIsLoading(false);
+          }
+        })
+        .catch((err) => {
+          if (isMounted) {
+            setError(err instanceof Error ? err.message : "Failed to load customer profile.");
+            setIsLoading(false);
+          }
+        });
+    };
+
+    fetchSingle(false);
+
+    const interval = setInterval(() => {
+      fetchSingle(true);
+    }, 10000);
+
     return () => {
       isMounted = false;
+      clearInterval(interval);
     };
   }, [id]);
 

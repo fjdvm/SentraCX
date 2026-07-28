@@ -35,25 +35,38 @@ export function useCustomers({ page = 1, pageSize = 20, search = "", customerTyp
 
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true);
-    crmClient.customers.list(page, pageSize, customerType, search)
-      .then((data) => {
-        if (isMounted) {
-          setCustomers(data.items || []);
-          setTotalCount(data.totalCount || 0);
-          setTotalPages(data.totalPages || 1);
-          setError(null);
-          setIsLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : "Failed to load customers.");
-          setIsLoading(false);
-        }
-      });
+
+    const fetchList = (isBackground = false) => {
+      if (!isBackground) {
+        setIsLoading(true);
+      }
+      crmClient.customers.list(page, pageSize, customerType, search)
+        .then((data) => {
+          if (isMounted) {
+            setCustomers(data.items || []);
+            setTotalCount(data.totalCount || 0);
+            setTotalPages(data.totalPages || 1);
+            setError(null);
+            setIsLoading(false);
+          }
+        })
+        .catch((err) => {
+          if (isMounted) {
+            setError(err instanceof Error ? err.message : "Failed to load customers.");
+            setIsLoading(false);
+          }
+        });
+    };
+
+    fetchList(false);
+
+    const interval = setInterval(() => {
+      fetchList(true);
+    }, 10000);
+
     return () => {
       isMounted = false;
+      clearInterval(interval);
     };
   }, [page, pageSize, search, customerType]);
 

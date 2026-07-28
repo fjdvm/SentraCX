@@ -130,4 +130,21 @@ describe("useCustomers", () => {
 
     await waitFor(() => expect(result.current.totalCount).toBe(5));
   });
+
+  it("polls for customer updates every 10 seconds", async () => {
+    jest.useFakeTimers();
+    (crmClient.customers.list as jest.Mock).mockResolvedValue(mockResponse);
+    
+    renderHook(() => useCustomers());
+    
+    expect(crmClient.customers.list).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      jest.advanceTimersByTime(10000);
+    });
+
+    expect(crmClient.customers.list).toHaveBeenCalledTimes(2);
+
+    jest.useRealTimers();
+  });
 });
