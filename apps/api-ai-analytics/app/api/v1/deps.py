@@ -1,5 +1,7 @@
 """Dependency injection for API v1 routes."""
 
+from __future__ import annotations
+
 from app.core.config import get_settings
 from app.db.mongo import get_database
 from app.db.redis import get_redis_client
