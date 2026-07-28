@@ -7,6 +7,9 @@ public class Campaign
     public string Subject { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public List<string> Channels { get; set; } = []; // Email, InApp, Facebook, Twitter, Instagram
+    public string TargetAudience { get; set; } = "All"; // All, Regular, InstitutionalBuyer, Specific
+    public List<string>? TargetCustomerIds { get; set; } // Specific CustomerProfile IDs if TargetAudience == "Specific"
+    public List<string>? TargetEmails { get; set; } // Explicit email addresses if typed by staff
     public string Status { get; set; } = "Draft"; // Draft, Active, Ended
     public Guid? TemplateId { get; set; }
     public string? ImageUrl { get; set; }

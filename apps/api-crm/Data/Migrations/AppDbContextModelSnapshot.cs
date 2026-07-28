@@ -64,6 +64,19 @@ namespace Crm.Api.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("TargetAudience")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("All");
+
+                    b.PrimitiveCollection<List<string>>("TargetCustomerIds")
+                        .HasColumnType("text[]");
+
+                    b.PrimitiveCollection<List<string>>("TargetEmails")
+                        .HasColumnType("text[]");
+
                     b.Property<Guid?>("TemplateId")
                         .HasColumnType("uuid");
 
@@ -221,6 +234,11 @@ namespace Crm.Api.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsSuccess")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<DateTime>("SentAt")
                         .ValueGeneratedOnAdd()

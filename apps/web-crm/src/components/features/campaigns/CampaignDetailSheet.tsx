@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,6 +24,7 @@ interface CampaignDetailSheetProps {
 
 export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToast }: CampaignDetailSheetProps) {
   const { data: campaign, isLoading } = useCampaign(campaignId);
+  const [isSending, setIsSending] = useState(false);
 
   if (!campaignId) return null;
 
@@ -34,6 +36,21 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
       onClose();
     } catch {
       onShowToast("Failed to update campaign status.");
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!campaignId) return;
+    setIsSending(true);
+    try {
+      const res = await crmClient.campaigns.send(campaignId);
+      onShowToast(res.message || "Campaign email dispatched!");
+      onRefresh();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to dispatch email campaign.";
+      onShowToast(msg);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -55,6 +72,32 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
               <span className="text-muted-foreground font-medium">Status</span>
               <CampaignStatusBadge status={campaign.status} />
             </div>
+
+            <div className="flex items-center justify-between border-b border-border pb-2">
+              <span className="text-muted-foreground font-medium">Target Audience</span>
+              <span className="text-xs bg-muted text-foreground px-2 py-0.5 rounded font-medium">
+                {campaign.targetAudience === "Specific"
+                  ? `Specific Recipients (${(campaign.targetCustomerIds?.length ?? 0) + (campaign.targetEmails?.length ?? 0)} targeted)`
+                  : campaign.targetAudience === "Regular"
+                  ? "Regular Customers Only"
+                  : campaign.targetAudience === "InstitutionalBuyer"
+                  ? "Institutional Buyers Only"
+                  : "All Active Contacts"}
+              </span>
+            </div>
+
+            {campaign.targetEmails && campaign.targetEmails.length > 0 && (
+              <div className="space-y-1">
+                <span className="text-muted-foreground font-medium block">Typed Specific Emails</span>
+                <div className="flex flex-wrap gap-1 font-mono text-[11px]">
+                  {campaign.targetEmails.map((email) => (
+                    <span key={email} className="bg-muted px-2 py-0.5 rounded text-foreground">
+                      {email}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-1">
               <span className="text-muted-foreground font-medium block">Target Channels</span>
@@ -103,7 +146,13 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
               </div>
             )}
 
-            <div className="pt-4 flex justify-end gap-2 border-t border-border">
+            <div className="pt-4 flex flex-wrap justify-end gap-2 border-t border-border">
+              {campaign.channels.some((ch) => ch.toLowerCase() === "email") && campaign.status === "Active" && (
+                <Button variant="default" disabled={isSending} onClick={handleSendEmail} className="gap-1.5">
+                  <Mail className="w-4 h-4" />
+                  {isSending ? "Sending..." : "Send Email Now"}
+                </Button>
+              )}
               {campaign.status === "Draft" && (
                 <Button onClick={() => handleUpdateStatus("Active")}>
                   Activate Campaign

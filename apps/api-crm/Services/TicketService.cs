@@ -6,9 +6,17 @@ using Crm.Api.Interfaces.Clients;
 using Crm.Api.Mappers;
 using Crm.Api.Models;
 
+using Microsoft.AspNetCore.SignalR;
+using Crm.Api.Hubs;
+
 namespace Crm.Api.Services;
 
-public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiClient, IDashboardBroadcastService broadcastService) : ITicketService
+public class TicketService(
+    ITicketRepository ticketRepo,
+    ICustomerProfileRepository customerRepo,
+    IAiAnalyticsClient aiClient,
+    IDashboardBroadcastService broadcastService,
+    IHubContext<ChatHub> chatHubContext) : ITicketService
 {
     private static readonly Dictionary<string, HashSet<string>> ValidTransitions = new()
     {
@@ -19,7 +27,20 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
     public async Task<PaginatedResponseDto<TicketListResponseDto>> GetAllAsync(
         int page, int pageSize, string? status = null, Guid? customerId = null, string? assignedToId = null)
     {
-        var (items, totalCount) = await ticketRepo.GetAllAsync(page, pageSize, status, customerId, assignedToId);
+        // The customerId may be a CustomerProfile.Id (from CRM frontend)
+        // or an external User ID (from web-shop). Resolve to CustomerProfile.Id.
+        var resolvedCustomerId = customerId;
+        if (customerId.HasValue)
+        {
+            var customer = await customerRepo.GetByIdAsync(customerId.Value);
+            if (customer is null)
+            {
+                customer = await customerRepo.GetByUserIdAsync(customerId.Value.ToString());
+            }
+            resolvedCustomerId = customer?.Id;
+        }
+
+        var (items, totalCount) = await ticketRepo.GetAllAsync(page, pageSize, status, resolvedCustomerId, assignedToId);
 
         return new PaginatedResponseDto<TicketListResponseDto>
         {
@@ -38,9 +59,24 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
 
     public async Task<TicketResponseDto> CreateAsync(CreateTicketRequestDto dto, Guid customerId)
     {
+        // Resolve the actual CustomerProfile ID.
+        // The customerId may be a CustomerProfile.Id (from CRM frontend)
+        // or an external User ID (from web-shop). Try both.
+        var customer = await customerRepo.GetByIdAsync(customerId);
+        if (customer is null)
+        {
+            customer = await customerRepo.GetByUserIdAsync(customerId.ToString());
+        }
+
+        if (customer is null)
+        {
+            throw new InvalidOperationException(
+                $"No customer profile found for ID '{customerId}'. Ensure the customer is registered in the CRM.");
+        }
+
         var ticket = new Ticket
         {
-            CustomerId = customerId,
+            CustomerId = customer.Id,
             Title = dto.Title,
             Description = dto.Description,
             ImageUrl = dto.ImageUrl,
@@ -76,6 +112,8 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         response.Category = category;
         response.Sentiment = sentiment;
 
+        await chatHubContext.Clients.Group("staff").SendAsync("NewTicketAvailable", response);
+
         return response;
     }
 
@@ -91,6 +129,12 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
+        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", new
+        {
+            TicketId = id,
+            Status = ticket.Status,
+            AssignedToId = ticket.AssignedToId
+        });
         return true;
     }
 
@@ -106,6 +150,12 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
+        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", new
+        {
+            TicketId = id,
+            Status = ticket.Status,
+            AssignedToId = ticket.AssignedToId
+        });
         return true;
     }
 
@@ -120,6 +170,12 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
+        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", new
+        {
+            TicketId = id,
+            Status = ticket.Status,
+            AssignedToId = ticket.AssignedToId
+        });
         return true;
     }
 
@@ -134,6 +190,12 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
+        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", new
+        {
+            TicketId = id,
+            Status = ticket.Status,
+            AssignedToId = ticket.AssignedToId
+        });
         return true;
     }
 
@@ -155,6 +217,12 @@ public class TicketService(ITicketRepository ticketRepo, IAiAnalyticsClient aiCl
 
         await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
+        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", new
+        {
+            TicketId = id,
+            Status = ticket.Status,
+            AssignedToId = ticket.AssignedToId
+        });
         return true;
     }
 

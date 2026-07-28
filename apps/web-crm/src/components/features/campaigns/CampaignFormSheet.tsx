@@ -27,6 +27,7 @@ import {
 import { crmClient } from "@/lib/api/crm-client";
 import { usePromotions } from "@/hooks/usePromotions";
 import { useTemplates } from "@/hooks/useTemplates";
+import { useCustomers } from "@/hooks/useCustomers";
 import { CampaignChannel, CreateCampaignInput, RecurrenceDay, ScheduleType } from "@/types/campaign";
 
 interface CampaignFormSheetProps {
@@ -41,8 +42,11 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
   const [isOpen, setIsOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedPromotions, setSelectedPromotions] = useState<string[]>([]);
+  const [selectedCustomerIds, setSelectedCustomerIds] = useState<string[]>([]);
+  const [customEmailsText, setCustomEmailsText] = useState("");
   const { data: promotions } = usePromotions("Active");
   const { data: templates } = useTemplates();
+  const { customers } = useCustomers({ customerType: "Contact", pageSize: 50 });
 
   const form = useForm<CreateCampaignInput>({
     defaultValues: {
@@ -50,6 +54,7 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
       subject: "",
       description: "",
       channels: ["Email"],
+      targetAudience: "All",
       scheduleType: "SendNow",
       recurrenceDays: [],
       imageUrl: "",
@@ -83,10 +88,17 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
     }
 
     try {
+      const parsedEmails = customEmailsText
+        .split(/[\n,;]+/)
+        .map((e) => e.trim())
+        .filter((e) => e.length > 0);
+
       const payload: CreateCampaignInput = {
         ...values,
         status: targetStatus,
         templateId: values.templateId || undefined,
+        targetCustomerIds: values.targetAudience === "Specific" && selectedCustomerIds.length > 0 ? selectedCustomerIds : undefined,
+        targetEmails: values.targetAudience === "Specific" && parsedEmails.length > 0 ? parsedEmails : undefined,
       };
 
       const created = await crmClient.campaigns.create(payload);
@@ -98,6 +110,8 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
       onShowToast(`Campaign ${created.title} saved as ${targetStatus}!`);
       form.reset();
       setSelectedPromotions([]);
+      setSelectedCustomerIds([]);
+      setCustomEmailsText("");
       setIsOpen(false);
       onSuccess();
     } catch (err) {
@@ -171,6 +185,69 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
               </FormItem>
             )} />
 
+            {/* Target Audience Filter */}
+            <FormField control={form.control} name="targetAudience" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Target Audience</FormLabel>
+                <select
+                  className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
+                  value={field.value ?? "All"}
+                  onChange={field.onChange}
+                >
+                  <option value="All">All Active Contacts</option>
+                  <option value="Regular">Regular Customers Only</option>
+                  <option value="InstitutionalBuyer">Institutional Buyers Only</option>
+                  <option value="Specific">Specific Customers / Emails</option>
+                </select>
+              </FormItem>
+            )} />
+
+            {/* Specific Customers & Emails Picker */}
+            {form.watch("targetAudience") === "Specific" && (
+              <div className="space-y-4 border border-border rounded-lg p-3 bg-muted/10">
+                {customers.length > 0 && (
+                  <div className="space-y-2">
+                    <FormLabel className="text-xs font-semibold">Select Customer Contacts</FormLabel>
+                    <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1 border rounded p-2 bg-background">
+                      {customers.map((c) => {
+                        const checked = selectedCustomerIds.includes(c.id);
+                        return (
+                          <label key={c.id} className="flex items-center justify-between text-xs p-1 rounded hover:bg-muted/50 cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={(val) => {
+                                  setSelectedCustomerIds((prev) =>
+                                    val ? [...prev, c.id] : prev.filter((id) => id !== c.id)
+                                  );
+                                }}
+                              />
+                              <span className="font-medium">{c.displayName}</span>
+                            </div>
+                            <span className="text-muted-foreground">{c.email}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <FormLabel className="text-xs font-semibold">Specific Email Addresses (Typed)</FormLabel>
+                  <Textarea
+                    rows={2}
+                    placeholder="Enter emails separated by commas or new lines, e.g. john@company.com, partner@org.com"
+                    value={customEmailsText}
+                    onChange={(e) => setCustomEmailsText(e.target.value)}
+                    className="text-xs font-mono"
+                  />
+                  <span className="text-[11px] text-muted-foreground block">
+                    You can type any specific email addresses here to receive the campaign.
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Schedule Strategy */}
             <FormField control={form.control} name="scheduleType" render={({ field }) => (
               <FormItem>
@@ -229,22 +306,20 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
             )}
 
             {/* Template Picker */}
-            {templates.length > 0 && (
-              <FormField control={form.control} name="templateId" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Template Picker (Optional)</FormLabel>
-                  <select
-                    className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
-                    value={field.value ?? ""} onChange={field.onChange}
-                  >
-                    <option value="">No template selected</option>
-                    {templates.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name} ({t.channel})</option>
-                    ))}
-                  </select>
-                </FormItem>
-              )} />
-            )}
+            <FormField control={form.control} name="templateId" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Template (Optional)</FormLabel>
+                <select
+                  className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
+                  value={field.value ?? ""} onChange={field.onChange}
+                >
+                  <option value="">Default Clean Email Layout</option>
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name} ({t.channel})</option>
+                  ))}
+                </select>
+              </FormItem>
+            )} />
 
             {/* Image Upload */}
             <div className="space-y-1">

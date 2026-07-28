@@ -184,3 +184,25 @@ async def test_reply_llm_fallback(
     assert res["intent"] == "general_inquiry"
     assert res["reply"] == "Here is a smart answer from LLM."
     assert res["should_escalate"] is False
+
+
+async def test_reply_logs_interaction(
+    oos_client: AsyncMock, analyzer: AsyncMock, groq_client: AsyncMock
+) -> None:
+    log_repo = AsyncMock()
+    settings = MagicMock()
+    settings.confidence_threshold_sentiment = 0.60
+    svc = ChatbotService(oos_client, analyzer, groq_client, settings=settings, log_repo=log_repo)
+
+    analyzer.detect_intent.return_value = {"intent": "general_inquiry", "confidence": 0.90}
+    analyzer.analyze_message.return_value = {"escalation_flag": False}
+
+    res = await svc.reply("What are your hours?", customer_id="c-1")
+    assert res["intent"] == "faq"
+
+    # Allow fire-and-forget task to complete
+    import asyncio
+    await asyncio.sleep(0.05)
+
+    log_repo.insert.assert_called_once()
+

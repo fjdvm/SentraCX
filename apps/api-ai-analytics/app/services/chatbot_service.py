@@ -1,11 +1,14 @@
 """Chatbot Service for handling bot-first flow and FAQ replies."""
 
+import asyncio
 import logging
 import re
 from datetime import datetime, timezone
 from app.lib.oos_client import OosClient
 from app.ml.conversation_analyzer import ConversationAnalyzer
 from app.lib.groq_client import GroqClient, GroqClientError
+from app.repositories.mongo.chatbot_log_repository import ChatbotLogRepository
+from app.schemas.chatbot_log_schemas import ChatbotLogDocument
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +22,12 @@ class ChatbotService:
         analyzer: ConversationAnalyzer,
         groq_client: GroqClient,
         settings=None,
+        log_repo: ChatbotLogRepository | None = None,
     ) -> None:
         self._oos_client = oos_client
         self._analyzer = analyzer
         self._groq_client = groq_client
+        self._log_repo = log_repo
         from app.core.config import get_settings
         self._settings = settings or get_settings()
 
@@ -87,13 +92,37 @@ class ChatbotService:
                 # LLM response
                 reply_text = await self._generate_llm_reply(message, conversation_history)
 
-        return {
+        res = {
             "reply": reply_text,
             "intent": intent,
             "should_escalate": should_escalate,
             "confidence": confidence,
             "bot_summary": bot_summary,
         }
+
+        if self._log_repo:
+            log_doc = ChatbotLogDocument(
+                ticket_id=ticket_id,
+                customer_id=customer_id,
+                message=message,
+                reply=reply_text,
+                intent=intent,
+                should_escalate=should_escalate,
+                confidence=confidence,
+                bot_summary=bot_summary,
+                created_at=datetime.now(timezone.utc),
+            )
+            asyncio.create_task(self._safe_log_insert(log_doc))
+
+        return res
+
+    async def _safe_log_insert(self, log_doc: ChatbotLogDocument) -> None:
+        """Helper to safely insert log without throwing uncaught exceptions."""
+        try:
+            if self._log_repo:
+                await self._log_repo.insert(log_doc)
+        except Exception as e:
+            logger.warning("Failed to log chatbot interaction: %s", e)
 
     async def _handle_track_order(self, customer_id: str, message: str) -> str:
         """Fetch order status from OOS API and generate a tracking response."""

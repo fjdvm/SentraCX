@@ -17,6 +17,7 @@ public static class MarketingInteractionMapper
             Description = model.Description,
             Channel = model.Channel,
             InteractionType = model.InteractionType,
+            IsSuccess = model.IsSuccess,
             SentAt = model.SentAt,
         };
     }

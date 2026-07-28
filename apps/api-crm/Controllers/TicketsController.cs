@@ -36,8 +36,15 @@ public class TicketsController(ITicketService ticketService) : ControllerBase
         [FromBody] CreateTicketRequestDto dto,
         [FromQuery] Guid customerId) // TODO: Extract from JWT claims when auth is re-enabled
     {
-        var result = await ticketService.CreateAsync(dto, customerId);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        try
+        {
+            var result = await ticketService.CreateAsync(dto, customerId);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return UnprocessableEntity(new { error = ex.Message });
+        }
     }
 
     [HttpPut("{id:guid}/claim")]

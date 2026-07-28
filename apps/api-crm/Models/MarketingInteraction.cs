@@ -10,6 +10,7 @@ public class MarketingInteraction
     public string Description { get; set; } = string.Empty;
     public string Channel { get; set; } = string.Empty;
     public string InteractionType { get; set; } = string.Empty;
+    public bool IsSuccess { get; set; } = true;
     public DateTime SentAt { get; set; }
 
     // Navigation properties

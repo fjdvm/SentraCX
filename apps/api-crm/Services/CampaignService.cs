@@ -38,6 +38,9 @@ public class CampaignService(ICampaignRepository campaignRepository) : ICampaign
         if (!string.IsNullOrWhiteSpace(dto.Subject)) campaign.Subject = dto.Subject;
         if (!string.IsNullOrWhiteSpace(dto.Description)) campaign.Description = dto.Description;
         if (dto.Channels != null && dto.Channels.Count > 0) campaign.Channels = dto.Channels;
+        if (!string.IsNullOrWhiteSpace(dto.TargetAudience)) campaign.TargetAudience = dto.TargetAudience;
+        if (dto.TargetCustomerIds != null) campaign.TargetCustomerIds = dto.TargetCustomerIds;
+        if (dto.TargetEmails != null) campaign.TargetEmails = dto.TargetEmails;
         if (dto.TemplateId.HasValue) campaign.TemplateId = dto.TemplateId;
         if (dto.ImageUrl != null) campaign.ImageUrl = dto.ImageUrl;
         if (!string.IsNullOrWhiteSpace(dto.Status)) campaign.Status = dto.Status;

@@ -1,4 +1,5 @@
 using Crm.Api.BackgroundJobs;
+using Crm.Api.Configurations;
 using Crm.Api.Data;
 using Crm.Api.Helpers;
 using Crm.Api.Hubs;
@@ -86,6 +87,18 @@ builder.Services.AddScoped<ICampaignService, CampaignService>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IPromotionService, PromotionService>();
 builder.Services.AddScoped<IDashboardBroadcastService, DashboardBroadcastService>();
+
+// Email & Campaign Dispatch Services
+builder.Services.Configure<SmtpOptions>(opts =>
+{
+    opts.Host = Environment.GetEnvironmentVariable("SMTP_HOST") ?? "";
+    opts.Port = int.TryParse(Environment.GetEnvironmentVariable("SMTP_PORT"), out var p) ? p : 587;
+    opts.Username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? "";
+    opts.Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "";
+    opts.From = Environment.GetEnvironmentVariable("SMTP_FROM") ?? "";
+});
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<ICampaignDispatchService, CampaignDispatchService>();
 
 // AI Analytics Client
 var aiAnalyticsUrl = Environment.GetEnvironmentVariable("AI_ANALYTICS_API_URL") ?? "http://localhost:4005";

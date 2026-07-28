@@ -143,6 +143,14 @@ def get_forecast_service() -> ForecastService:
     return ForecastService(database=database)
 
 
+def get_chatbot_log_repository() -> ChatbotLogRepository:
+    """Build and return ChatbotLogRepository with database connection."""
+    from app.repositories.mongo.chatbot_log_repository import ChatbotLogRepository
+
+    database = get_database()
+    return ChatbotLogRepository(database=database)
+
+
 def get_chatbot_service() -> ChatbotService:
     """Build and return ChatbotService with all dependencies."""
     from app.lib.oos_client import OosClient
@@ -161,13 +169,16 @@ def get_chatbot_service() -> ChatbotService:
     )
 
     analyzer = ConversationAnalyzer(groq_client=groq_client)
+    log_repo = get_chatbot_log_repository()
 
     return ChatbotService(
         oos_client=oos_client,
         analyzer=analyzer,
         groq_client=groq_client,
         settings=settings,
+        log_repo=log_repo,
     )
+
 
 
 

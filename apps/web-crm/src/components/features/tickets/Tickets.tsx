@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useTickets } from "@/hooks/useTickets";
+import { useSignalR } from "@/hooks/useSignalR";
 import { TicketCreateSheet } from "./TicketCreateSheet";
 import { TicketTable } from "./TicketTable";
 
@@ -12,10 +13,24 @@ export function Tickets() {
 
   const { data, isLoading, refetch } = useTickets(1, 50, activeTab);
 
-  const showToast = (msg: string) => {
+  const showToast = useCallback((msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3000);
-  };
+  }, []);
+
+  const handleNewTicketAvailable = useCallback(() => {
+    refetch();
+    showToast("🔔 New ticket submitted live from shop!");
+  }, [refetch, showToast]);
+
+  const handleTicketStatusChanged = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  useSignalR({
+    onNewTicketAvailable: handleNewTicketAvailable,
+    onTicketStatusChanged: handleTicketStatusChanged,
+  });
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-2xl">

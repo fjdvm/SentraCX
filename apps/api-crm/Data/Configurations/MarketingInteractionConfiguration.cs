@@ -20,6 +20,7 @@ public class MarketingInteractionConfiguration : IEntityTypeConfiguration<Market
         builder.Property(mi => mi.Description).IsRequired().HasColumnType("text");
         builder.Property(mi => mi.Channel).IsRequired().HasMaxLength(50);
         builder.Property(mi => mi.InteractionType).IsRequired().HasMaxLength(50);
+        builder.Property(mi => mi.IsSuccess).HasDefaultValue(true);
         builder.Property(mi => mi.SentAt).HasDefaultValueSql("now()");
 
         builder.HasOne(mi => mi.CustomerProfile)

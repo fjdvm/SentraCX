@@ -17,6 +17,9 @@ public class CampaignConfiguration : IEntityTypeConfiguration<Campaign>
         builder.Property(c => c.Subject).IsRequired().HasMaxLength(200);
         builder.Property(c => c.Description).IsRequired().HasColumnType("text");
         builder.Property(c => c.Channels).IsRequired();
+        builder.Property(c => c.TargetAudience).IsRequired().HasMaxLength(50).HasDefaultValue("All");
+        builder.Property(c => c.TargetCustomerIds);
+        builder.Property(c => c.TargetEmails);
         builder.Property(c => c.Status).IsRequired().HasMaxLength(50).HasDefaultValue("Draft");
         builder.Property(c => c.ImageUrl).HasMaxLength(500);
 

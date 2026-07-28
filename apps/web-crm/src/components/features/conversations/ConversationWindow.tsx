@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Send, CheckCircle, Undo2, XCircle } from "lucide-react";
+import { Send, CheckCircle, Undo2, XCircle, ArrowUpFromLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Ticket } from "@/types/ticket";
 import { Message } from "@/types/message";
+import { BotContextPanel } from "./BotContextPanel";
+import { MessageBubble } from "./MessageBubble";
 
 interface ConversationWindowProps {
   ticket: Ticket | null;
@@ -40,7 +42,6 @@ export function ConversationWindow({
   onCancel,
 }: ConversationWindowProps) {
   const [typedMessage, setTypedMessage] = useState("");
-  const [isBotSummaryOpen, setIsBotSummaryOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -148,28 +149,7 @@ export function ConversationWindow({
       </div>
 
       {/* Bot Context Card */}
-      {hasBotContext && (
-        <div className="mx-lg mt-md p-md bg-muted/40 border border-border/80 rounded-xl shrink-0">
-          <div className="flex items-center justify-between">
-            <span className="text-label-sm font-bold text-muted-foreground flex items-center gap-xs">
-              🤖 Bot Context Summary
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs font-semibold px-sm hover:bg-muted/80"
-              onClick={() => setIsBotSummaryOpen(!isBotSummaryOpen)}
-            >
-              {isBotSummaryOpen ? "Hide" : "Show"}
-            </Button>
-          </div>
-          {isBotSummaryOpen && (
-            <p className="mt-xs text-body-sm leading-relaxed text-foreground font-medium whitespace-pre-wrap">
-              {botSummary}
-            </p>
-          )}
-        </div>
-      )}
+      <BotContextPanel botSummary={botSummary} />
 
       {/* Message Thread */}
       <div className="flex-1 p-lg overflow-y-auto space-y-md">
@@ -184,40 +164,26 @@ export function ConversationWindow({
             No messages yet. Send a message to start the conversation.
           </div>
         ) : (
-          messages.map((m) => {
-            const isStaff = ticket.assignedToId ? m.senderId === ticket.assignedToId : false;
-            const formattedTime = new Date(m.sentAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-
-            return (
-              <div
-                key={m.id}
-                className={`flex flex-col ${isStaff ? "items-end" : "items-start"}`}
-              >
-                <span className="text-[10px] text-muted-foreground mb-1 px-1 font-medium">
-                  {m.senderName}
-                </span>
-                <div
-                  className={`max-w-[75%] p-md rounded-xl space-y-xs ${
-                    isStaff
-                      ? "bg-primary text-primary-foreground rounded-tr-none font-medium"
-                      : "bg-muted border border-border text-foreground rounded-tl-none font-medium"
-                  }`}
-                >
-                  <p className="text-body-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
-                  <span
-                    className={`text-[10px] block text-right font-mono ${
-                      isStaff ? "text-primary-foreground/85 font-semibold" : "text-muted-foreground"
-                    }`}
-                  >
-                    {formattedTime}
-                  </span>
+          <>
+            {hasBotContext && (
+              <div className="flex items-center gap-sm py-xs">
+                <div className="flex-1 h-px bg-border" />
+                <div className="flex items-center gap-xs px-sm py-1 rounded-full bg-muted border border-border text-[10px] font-semibold text-muted-foreground shrink-0">
+                  <ArrowUpFromLine className="w-3 h-3" />
+                  Escalated from bot — live agent joined
                 </div>
+                <div className="flex-1 h-px bg-border" />
               </div>
-            );
-          })
+            )}
+
+            {messages.map((m) => (
+              <MessageBubble
+                key={m.id}
+                message={m}
+                isStaff={ticket.assignedToId ? m.senderId === ticket.assignedToId : false}
+              />
+            ))}
+          </>
         )}
         <div ref={messagesEndRef} />
       </div>

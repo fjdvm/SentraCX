@@ -20,6 +20,13 @@ public class WebhooksController(IOrderService orderService, ICustomerService cus
     public async Task<IActionResult> ProcessCustomerSignup(
         [FromBody] CustomerWebhookRequestDto dto)
     {
+        // Idempotent: skip if a user with this email already exists
+        var existing = await customerService.GetByEmailAsync(dto.Email);
+        if (existing is not null)
+        {
+            return Ok();
+        }
+
         var createDto = new CreateCustomerRequestDto
         {
             Email = dto.Email,
@@ -27,7 +34,8 @@ public class WebhooksController(IOrderService orderService, ICustomerService cus
             LastName = dto.LastName,
             PhoneNumber = dto.PhoneNumber,
             CustomerType = "Regular",
-            Address = dto.Address
+            Address = dto.Address,
+            ExternalUserId = dto.ExternalUserId
         };
         await customerService.CreateAsync(createDto);
         return Ok();

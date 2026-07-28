@@ -10,6 +10,7 @@ from app.api.v1.routes.customers import router as customers_router
 from app.api.v1.routes.tickets import router as tickets_router
 from app.api.v1.routes.conversations import router as conversations_router
 from app.api.v1.routes.chatbot import router as chatbot_router
+from app.api.v1.routes.chatbot_logs import router as chatbot_logs_router
 from app.api.v1.routes.dashboard import router as dashboard_router
 from app.api.v1.routes.config import router as config_router
 from app.api.v1.routes.forecasts import router as forecasts_router
@@ -106,6 +107,7 @@ app.include_router(customers_router, prefix="/api/v1")
 app.include_router(tickets_router, prefix="/api/v1")
 app.include_router(conversations_router, prefix="/api/v1")
 app.include_router(chatbot_router, prefix="/api/v1")
+app.include_router(chatbot_logs_router, prefix="/api/v1")
 app.include_router(dashboard_router, prefix="/api/v1")
 app.include_router(forecasts_router, prefix="/api/v1")
 app.include_router(watchlist_router, prefix="/api/v1")

@@ -177,9 +177,15 @@ Pydantic models: `ChatbotReplyRequest`, `ChatbotReplyResponse`, `ChatHistoryEntr
 | `app/schemas/chatbot_schemas.py` | New | `api-ai-analytics` | Done |
 | `app/api/v1/deps.py` | Modify — add dependency | `api-ai-analytics` | Done |
 | `app/main.py` | Modify — register router | `api-ai-analytics` | Done |
-| `ConversationWindow.tsx` | Modify — bot summary, cancel, senderType | `web-crm` | Done |
+| `ConversationWindow.tsx` | Modify — bot summary, cancel, senderType, refactored subcomponents | `web-crm` | Done |
+| `BotContextPanel.tsx` | New — extracted subcomponent | `web-crm` | Done |
+| `MessageBubble.tsx` | New — extracted subcomponent | `web-crm` | Done |
 | `ConversationList.tsx` | Modify — unread badge | `web-crm` | Done |
 | `Conversations.tsx` | Modify — hub subscription | `web-crm` | Done |
+| `app/repositories/mongo/chatbot_log_repository.py` | New — chatbot interaction logging | `api-ai-analytics` | Done |
+| `app/schemas/chatbot_log_schemas.py` | New — chatbot log DTOs | `api-ai-analytics` | Done |
+| `app/api/v1/routes/chatbot_logs.py` | New — chatbot logs GET endpoint | `api-ai-analytics` | Done |
+| `useChatSignalR.ts` | Modify — pass senderType 'customer' | `web-shop` | Done |
 
 ---
 
@@ -192,6 +198,8 @@ Pydantic models: `ChatbotReplyRequest`, `ChatbotReplyResponse`, `ChatHistoryEntr
 | `Hubs/ChatHub.cs` | `tests/Crm.Api.Tests/Hubs/ChatHubTests.cs` | Extend | Done |
 | `app/services/chatbot_service.py` | `tests/services/test_chatbot_service.py` | New | Done |
 | `app/api/v1/routes/chatbot.py` | `tests/api/v1/routes/test_chatbot.py` | New | Done |
+| `app/repositories/mongo/chatbot_log_repository.py` | `tests/repositories/mongo/test_chatbot_log_repository.py` | New | Done |
+| `app/api/v1/routes/chatbot_logs.py` | `tests/api/v1/routes/test_chatbot_logs.py` | New | Done |
 
 ### Verification Steps
 
