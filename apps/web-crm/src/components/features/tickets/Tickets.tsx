@@ -42,7 +42,7 @@ export function Tickets() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
         <div className="space-y-sm">
-          <h1 className="text-headline-md font-bold tracking-tight text-foreground">Support Tickets (Staff View)</h1>
+          <h1 className="text-headline-md font-bold tracking-tight text-foreground">Support Tickets</h1>
           <p className="text-body-md text-muted-foreground">
             Claim available customer inquiries, track progress, and mark tasks as completed.
           </p>

@@ -42,7 +42,7 @@ export function TicketDetailSheet({ ticketId, staffUserId = "user-001", onClose,
 
   const handleUnclaim = async () => {
     try {
-      await crmClient.tickets.updateStatus(ticketId, "Unclaimed");
+      await crmClient.tickets.unclaim(ticketId);
       onShowToast("Ticket status set to Unclaimed.");
       onRefresh();
       onClose();
