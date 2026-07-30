@@ -60,6 +60,20 @@ export function useMessages(ticketId: string | null) {
       if (prev.some((m) => m.id === msg.id)) {
         return prev;
       }
+
+      // If this is a real message from the server, check if there is an optimistic temporary message
+      // with the same sender and content, and replace it.
+      if (!msg.id.startsWith("temp-")) {
+        const tempIndex = prev.findIndex(
+          (m) => m.id.startsWith("temp-") && m.senderId === msg.senderId && m.content === msg.content
+        );
+        if (tempIndex !== -1) {
+          const updated = [...prev];
+          updated[tempIndex] = msg;
+          return updated;
+        }
+      }
+
       return [...prev, msg];
     });
   }, []);

@@ -21,7 +21,7 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
   const { tickets, isLoading: isTicketsLoading, error: ticketsError, refetch: refetchTickets } = useTickets(
     1,
     100,
-    "Claimed"
+    "Ongoing"
   );
 
   const [activeTicketId, setActiveTicketId] = useState<string | null>(initialTicketId ?? null);
@@ -57,11 +57,19 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
     [activeTicketId, refetchTickets]
   );
 
+  const handleTicketStatusChanged = useCallback(
+    () => {
+      refetchTickets();
+    },
+    [refetchTickets]
+  );
+
   // SignalR connection hook
   const { sendMessage } = useSignalR({
     ticketId: activeTicketId,
     onReceiveMessage: handleReceiveMessage,
     onNewMessageNotification: handleNewMessageNotification,
+    onTicketStatusChanged: handleTicketStatusChanged,
   });
 
   const handleSelectTicket = useCallback(
