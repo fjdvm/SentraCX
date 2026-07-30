@@ -111,11 +111,14 @@ builder.Services.AddHostedService<PromotionStatusJob>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
+var corsOrigins = (Environment.GetEnvironmentVariable("CORS_ORIGINS") ?? "https://localhost:3005,https://localhost:3012")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("https://localhost:3005", "http://localhost:3000", "https://localhost:3000", "https://localhost:3006", "http://localhost:3006")
+        policy.WithOrigins(corsOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -146,9 +149,29 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseCors();
+
+// Global exception handling middleware — runs inside the CORS pipeline so
+// error responses still carry Access-Control-Allow-Origin headers.
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next(context);
+    }
+    catch (Exception)
+    {
+        if (!context.Response.HasStarted)
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync("{\"error\":\"An unexpected error occurred.\"}");
+        }
+    }
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseCors();
 app.UseAuthentication();
 app.UseMiddleware<JitProvisioningMiddleware>();
 app.UseAuthorization();

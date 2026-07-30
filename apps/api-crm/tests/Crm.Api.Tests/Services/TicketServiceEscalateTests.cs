@@ -25,7 +25,7 @@ public class TicketServiceEscalateTests
 
     public TicketServiceEscalateTests()
     {
-        _clientsMock.Setup(c => c.Group("staff")).Returns(_clientProxyMock.Object);
+        _clientsMock.Setup(c => c.Group(It.IsAny<string>())).Returns(_clientProxyMock.Object);
         _chatHubMock.Setup(h => h.Clients).Returns(_clientsMock.Object);
 
         _sut = new TicketService(_ticketRepoMock.Object, _customerRepoMock.Object, _aiClientMock.Object, _broadcastMock.Object, _chatHubMock.Object);
@@ -88,7 +88,7 @@ public class TicketServiceEscalateTests
 
         // Assert
         Assert.True(result);
-        Assert.Equal("Unclaimed", ticket.Status);
+        Assert.Equal("Ongoing", ticket.Status);
         Assert.Null(ticket.AssignedToId);
         Assert.Contains("Original description", ticket.Description);
         Assert.Contains("--- Bot Context ---", ticket.Description);

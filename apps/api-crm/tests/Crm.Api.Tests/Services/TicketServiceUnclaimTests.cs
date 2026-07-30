@@ -23,7 +23,7 @@ public class TicketServiceUnclaimTests
 
     public TicketServiceUnclaimTests()
     {
-        _clientsMock.Setup(c => c.Group("staff")).Returns(_clientProxyMock.Object);
+        _clientsMock.Setup(c => c.Group(It.IsAny<string>())).Returns(_clientProxyMock.Object);
         _chatHubMock.Setup(h => h.Clients).Returns(_clientsMock.Object);
 
         _sut = new TicketService(_ticketRepoMock.Object, _customerRepoMock.Object, _aiClientMock.Object, _broadcastMock.Object, _chatHubMock.Object);
@@ -46,10 +46,9 @@ public class TicketServiceUnclaimTests
 
     [Theory]
     [InlineData("Unclaimed")]
-    [InlineData("Ongoing")]
     [InlineData("Completed")]
     [InlineData("Canceled")]
-    public async Task UnclaimAsync_ReturnsFalse_WhenStatusIsNotClaimed(string status)
+    public async Task UnclaimAsync_ReturnsFalse_WhenStatusIsNotClaimedOrOngoing(string status)
     {
         // Arrange
         var id = Guid.NewGuid();
@@ -69,15 +68,17 @@ public class TicketServiceUnclaimTests
         _ticketRepoMock.Verify(r => r.UpdateAsync(It.IsAny<Ticket>()), Times.Never);
     }
 
-    [Fact]
-    public async Task UnclaimAsync_UpdatesTicketAndReturnsTrue_WhenStatusIsClaimed()
+    [Theory]
+    [InlineData("Claimed")]
+    [InlineData("Ongoing")]
+    public async Task UnclaimAsync_UpdatesTicketAndReturnsTrue_WhenStatusIsClaimedOrOngoing(string initialStatus)
     {
         // Arrange
         var id = Guid.NewGuid();
         var ticket = new Ticket
         {
             Id = id,
-            Status = "Claimed",
+            Status = initialStatus,
             AssignedToId = "staff-123",
             UpdatedAt = DateTime.UtcNow.AddHours(-1)
         };

@@ -20,7 +20,7 @@ public class TicketService(
 {
     private static readonly Dictionary<string, HashSet<string>> ValidTransitions = new()
     {
-        ["Claimed"] = ["Ongoing"],
+        ["Claimed"] = ["Ongoing", "Completed"],
         ["Ongoing"] = ["Completed"]
     };
 
@@ -129,12 +129,14 @@ public class TicketService(
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
-        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", new
+        var statusPayload = new
         {
             TicketId = id,
             Status = ticket.Status,
             AssignedToId = ticket.AssignedToId
-        });
+        };
+        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", statusPayload);
+        await chatHubContext.Clients.Group(id.ToString()).SendAsync("TicketStatusChanged", statusPayload);
         return true;
     }
 
@@ -143,19 +145,21 @@ public class TicketService(
         var ticket = await ticketRepo.GetByIdAsync(id);
         if (ticket is null) return false;
 
-        if (ticket.Status != "Claimed") return false;
+        if (ticket.Status != "Claimed" && ticket.Status != "Ongoing") return false;
 
         ticket.Status = "Unclaimed";
         ticket.AssignedToId = null;
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
-        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", new
+        var statusPayload = new
         {
             TicketId = id,
             Status = ticket.Status,
             AssignedToId = ticket.AssignedToId
-        });
+        };
+        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", statusPayload);
+        await chatHubContext.Clients.Group(id.ToString()).SendAsync("TicketStatusChanged", statusPayload);
         return true;
     }
 
@@ -170,12 +174,14 @@ public class TicketService(
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
-        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", new
+        var statusPayload = new
         {
             TicketId = id,
             Status = ticket.Status,
             AssignedToId = ticket.AssignedToId
-        });
+        };
+        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", statusPayload);
+        await chatHubContext.Clients.Group(id.ToString()).SendAsync("TicketStatusChanged", statusPayload);
         return true;
     }
 
@@ -190,12 +196,14 @@ public class TicketService(
         ticket.UpdatedAt = DateTime.UtcNow;
         await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
-        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", new
+        var statusPayload = new
         {
             TicketId = id,
             Status = ticket.Status,
             AssignedToId = ticket.AssignedToId
-        });
+        };
+        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", statusPayload);
+        await chatHubContext.Clients.Group(id.ToString()).SendAsync("TicketStatusChanged", statusPayload);
         return true;
     }
 
@@ -211,18 +219,20 @@ public class TicketService(
             ticket.Description = $"{ticket.Description}\n\n--- Bot Context ---\n{botSummary}";
         }
 
-        ticket.Status = "Unclaimed";
+        ticket.Status = "Ongoing";
         ticket.AssignedToId = null;
         ticket.UpdatedAt = DateTime.UtcNow;
 
         await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
-        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", new
+        var statusPayload = new
         {
             TicketId = id,
             Status = ticket.Status,
             AssignedToId = ticket.AssignedToId
-        });
+        };
+        await chatHubContext.Clients.Group("staff").SendAsync("TicketStatusChanged", statusPayload);
+        await chatHubContext.Clients.Group(id.ToString()).SendAsync("TicketStatusChanged", statusPayload);
         return true;
     }
 

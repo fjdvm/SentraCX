@@ -11,5 +11,5 @@ public class Message
 
     // Navigation properties
     public Ticket Ticket { get; set; } = null!;
-    public User Sender { get; set; } = null!;
+    public User? Sender { get; set; }
 }

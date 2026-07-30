@@ -28,7 +28,7 @@ public class TicketServiceSignalRTests
 
     public TicketServiceSignalRTests()
     {
-        _clientsMock.Setup(c => c.Group("staff")).Returns(_clientProxyMock.Object);
+        _clientsMock.Setup(c => c.Group(It.IsAny<string>())).Returns(_clientProxyMock.Object);
         _chatHubMock.Setup(h => h.Clients).Returns(_clientsMock.Object);
 
         _customerRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
@@ -86,6 +86,6 @@ public class TicketServiceSignalRTests
         Assert.True(result);
         _clientProxyMock.Verify(
             p => p.SendCoreAsync("TicketStatusChanged", It.Is<object[]>(o => o.Length == 1), default),
-            Times.Once);
+            Times.Exactly(2));
     }
 }
