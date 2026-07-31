@@ -56,6 +56,11 @@ export function useSignalR({
       .withUrl(`${CRM_BASE}/hubs/chat`, {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
+        accessTokenFactory: async () => {
+          const { getSession } = await import("next-auth/react");
+          const session = await getSession();
+          return session?.accessToken ?? "";
+        }
       })
       .withAutomaticReconnect()
       .build();

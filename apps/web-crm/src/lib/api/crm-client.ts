@@ -40,6 +40,21 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     headers["Content-Type"] = "application/json";
   }
 
+  let token: string | undefined;
+  if (typeof window === "undefined") {
+    const { auth } = await import("@/auth");
+    const session = await auth();
+    token = session?.accessToken;
+  } else {
+    const { getSession } = await import("next-auth/react");
+    const session = await getSession();
+    token = session?.accessToken;
+  }
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const response = await fetch(url, {
     ...init,
     headers,

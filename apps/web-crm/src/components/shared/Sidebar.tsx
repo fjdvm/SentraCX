@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronsUpDown, Check, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 import {
   SidebarHeader,
   SidebarContent,
@@ -30,6 +31,7 @@ import { SidebarProfileFooter } from "./SidebarProfileFooter";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const { open, openMobile, setOpenMobile, toggleSidebar, isMobile } =
     useSidebar();
   const [activeAccount, setActiveAccountState] = useState(() => {
@@ -71,6 +73,23 @@ export function Sidebar() {
 
   const SettingsIcon = settingsNavItem.icon;
   const isSettingsActive = pathname === settingsNavItem.href;
+
+  const allowedNavItems = mainNavItems.filter((item) => {
+    if (!session) return false;
+    if (session.isSuperUser) return true;
+
+    let modName = "";
+    if (item.href === "/" || item.href === "/dashboard") modName = "Dashboard";
+    else if (item.href.startsWith("/customers")) modName = "Customer Profiles";
+    else if (item.href.startsWith("/conversations")) modName = "Conversations";
+    else if (item.href.startsWith("/tickets")) modName = "Tickets";
+    else if (item.href.startsWith("/campaigns") || item.href.startsWith("/promotions")) modName = "Campaigns";
+
+    if (!modName) return true;
+    return !!session.permissions?.CRMS?.[modName]?.canRead;
+  });
+
+  const showSettings = !!session?.isSuperUser;
 
   return (
     <>
@@ -151,7 +170,7 @@ export function Sidebar() {
           <SidebarGroup className="p-0">
             <SidebarGroupContent>
               <SidebarMenu>
-                {mainNavItems.map((item) => {
+                {allowedNavItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
                   return (
@@ -175,20 +194,22 @@ export function Sidebar() {
         </SidebarContent>
 
         <SidebarFooter className="p-3 border-t border-border space-y-2">
-          <SidebarMenu>
-            <SidebarMenuItem key={settingsNavItem.name}>
-              <SidebarMenuButton
-                asChild
-                isActive={isSettingsActive}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
-              >
-                <Link href={settingsNavItem.href} onClick={handleNavClick}>
-                  <SettingsIcon className="w-4 h-4 shrink-0" />
-                  <span>{settingsNavItem.name}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+          {showSettings && (
+            <SidebarMenu>
+              <SidebarMenuItem key={settingsNavItem.name}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isSettingsActive}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
+                >
+                  <Link href={settingsNavItem.href} onClick={handleNavClick}>
+                    <SettingsIcon className="w-4 h-4 shrink-0" />
+                    <span>{settingsNavItem.name}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          )}
 
           <div className="pt-2 border-t border-border">
             <SidebarProfileFooter

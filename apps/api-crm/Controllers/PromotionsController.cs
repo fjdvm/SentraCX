@@ -1,11 +1,13 @@
 using Crm.Api.DTOs.Requests;
 using Crm.Api.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Crm.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/promotions")]
+[Authorize]
 public class PromotionsController(IPromotionService promotionService) : ControllerBase
 {
     [HttpGet]

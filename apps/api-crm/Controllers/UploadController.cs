@@ -1,10 +1,12 @@
 using Crm.Api.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Crm.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/upload")]
+[Authorize]
 public class UploadController(IFileStorageService fileStorageService) : ControllerBase
 {
     [HttpPost]

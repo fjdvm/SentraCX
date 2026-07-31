@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { MoreVertical, Check, User, Shield, Activity, LogOut, Sparkles } from "lucide-react";
+import { MoreVertical, User, Shield, Activity, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,8 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
-import { Account, accounts } from "./SidebarNav";
+import { useSession, signOut } from "next-auth/react";
 
 interface SidebarProfileFooterProps {
   activeAccount: string;
@@ -22,7 +21,25 @@ interface SidebarProfileFooterProps {
 }
 
 export function SidebarProfileFooter({ activeAccount, onSelectAccount }: SidebarProfileFooterProps) {
-  const currentAccount: Account = accounts.find((a) => a.id === activeAccount) || accounts[0];
+  const { data: session } = useSession();
+
+  if (!session?.user) {
+    return (
+      <div className="flex items-center gap-3.5 p-2 rounded-xl text-xs text-muted-foreground animate-pulse">
+        Loading session...
+      </div>
+    );
+  }
+
+  const name = session.user.name ?? "User";
+  const email = session.user.email ?? "";
+  const role = session.role ?? "Staff/Employee";
+  const initials = name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
 
   return (
     <div className="w-full">
@@ -32,14 +49,14 @@ export function SidebarProfileFooter({ activeAccount, onSelectAccount }: Sidebar
             <div className="relative shrink-0">
               <Avatar className="w-11 h-11 border-2 border-border shadow-sm">
                 <AvatarFallback className="text-sm bg-primary text-primary-foreground font-bold">
-                  BR
+                  {initials}
                 </AvatarFallback>
               </Avatar>
               <span className="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-sidebar" title="Online" />
             </div>
             <div className="flex-1 overflow-hidden space-y-0.5">
-              <p className="text-sm font-bold truncate text-sidebar-foreground leading-tight">{currentAccount.name}</p>
-              <p className="text-xs font-medium text-muted-foreground truncate leading-tight">{currentAccount.role}</p>
+              <p className="text-sm font-bold truncate text-sidebar-foreground leading-tight">{name}</p>
+              <p className="text-xs font-medium text-muted-foreground truncate leading-tight">{role}</p>
             </div>
             <MoreVertical className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-sidebar-foreground transition-colors" />
           </div>
@@ -48,39 +65,17 @@ export function SidebarProfileFooter({ activeAccount, onSelectAccount }: Sidebar
         <DropdownMenuContent className="w-64 bg-popover border-border text-popover-foreground z-[999] shadow-xl p-2" side="top" align="start">
           <div className="p-3 bg-muted/40 rounded-lg border border-border mb-2 flex items-center gap-3">
             <Avatar className="w-10 h-10 border border-border shrink-0">
-              <AvatarFallback className="text-xs bg-primary text-primary-foreground font-bold">BR</AvatarFallback>
+              <AvatarFallback className="text-xs bg-primary text-primary-foreground font-bold">
+                {initials}
+              </AvatarFallback>
             </Avatar>
             <div className="flex flex-col min-w-0 overflow-hidden">
-              <span className="text-xs font-bold text-foreground truncate">{currentAccount.name}</span>
-              <span className="text-[11px] text-muted-foreground truncate">{currentAccount.email}</span>
+              <span className="text-xs font-bold text-foreground truncate">{name}</span>
+              <span className="text-[11px] text-muted-foreground truncate">{email}</span>
               <Badge variant="outline" className="text-[9px] w-fit mt-1 px-1.5 py-0 font-semibold">
-                {currentAccount.role}
+                {role}
               </Badge>
             </div>
-          </div>
-
-          <DropdownMenuLabel className="text-[11px] text-muted-foreground font-semibold px-2 py-1 flex items-center gap-1">
-            <Sparkles className="w-3 h-3" /> Switch Role / Account
-          </DropdownMenuLabel>
-          <div className="space-y-0.5 mb-2">
-            {accounts.map((acc) => (
-              <DropdownMenuItem
-                key={acc.id}
-                onClick={() => {
-                  onSelectAccount(acc.id);
-                  toast.success(`Switched role to ${acc.name} (${acc.role})`);
-                }}
-                className={`cursor-pointer text-xs flex items-center justify-between p-2 rounded-md transition-colors ${
-                  activeAccount === acc.id ? "bg-accent font-bold text-foreground" : "hover:bg-accent/60"
-                }`}
-              >
-                <div className="flex flex-col overflow-hidden">
-                  <span className="truncate">{acc.name}</span>
-                  <span className="text-[10px] text-muted-foreground">{acc.role}</span>
-                </div>
-                {activeAccount === acc.id && <Check className="w-4 h-4 text-primary shrink-0 ml-2" />}
-              </DropdownMenuItem>
-            ))}
           </div>
 
           <DropdownMenuSeparator className="bg-border" />
@@ -103,7 +98,10 @@ export function SidebarProfileFooter({ activeAccount, onSelectAccount }: Sidebar
           <DropdownMenuSeparator className="bg-border" />
 
           <DropdownMenuItem
-            onClick={() => toast.info("Sign out triggered")}
+            onClick={async () => {
+              await signOut({ redirect: false });
+              window.location.href = "https://localhost:5001/connect/logout?post_logout_redirect_uri=https://localhost:3005/";
+            }}
             className="cursor-pointer text-xs font-medium gap-2 p-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
             <LogOut className="w-3.5 h-3.5" />

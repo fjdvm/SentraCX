@@ -34,7 +34,13 @@ public class JitProvisioningMiddleware(RequestDelegate next)
         var employeeNumberClaim = principal.FindFirstValue("employeeNumber");
         int? employeeNumber = int.TryParse(employeeNumberClaim, out var num) ? num : null;
 
+        // Look up by ID first, then fall back to email to avoid duplicate key violations
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null && !string.IsNullOrEmpty(email))
+        {
+            user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
 
         if (user is null)
         {
@@ -53,10 +59,11 @@ public class JitProvisioningMiddleware(RequestDelegate next)
         }
         else
         {
-            user.Email = email;
-            user.FirstName = firstName;
-            user.LastName = lastName;
-            user.DisplayName = $"{firstName} {lastName}".Trim();
+            if (!string.IsNullOrEmpty(email)) user.Email = email;
+            if (!string.IsNullOrEmpty(firstName)) user.FirstName = firstName;
+            if (!string.IsNullOrEmpty(lastName)) user.LastName = lastName;
+            var displayName = $"{firstName} {lastName}".Trim();
+            if (!string.IsNullOrEmpty(displayName)) user.DisplayName = displayName;
             user.EmployeeNumber = employeeNumber;
             user.UpdatedAt = DateTime.UtcNow;
         }
