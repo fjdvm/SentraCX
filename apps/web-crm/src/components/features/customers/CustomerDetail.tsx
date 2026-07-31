@@ -22,7 +22,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const { customer, isLoading, error, refetch, setCustomer } = useCustomer(customerId);
 
-  const isLead = customer?.customerType === "Lead";
+  const isLead = (customer?.customerType as string) === "Lead";
 
   React.useEffect(() => {
     if (isLead && activeTab === "orders") {

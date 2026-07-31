@@ -20,7 +20,7 @@ export function CustomerOverviewTab({
   onCustomerUpdated,
   onSelectTab,
 }: CustomerOverviewTabProps) {
-  const isLead = customer.customerType === "Lead";
+  const isLead = (customer.customerType as string) === "Lead";
   const { orders, isLoading: isOrdersLoading } = useCustomerOrders(isLead ? "" : customer.id);
   const { interactions, isLoading: isInteractionsLoading } = useCustomerMarketingHistory({ customerId: customer.id, page: 1, pageSize: 5 });
 
