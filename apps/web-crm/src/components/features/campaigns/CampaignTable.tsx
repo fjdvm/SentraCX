@@ -77,49 +77,49 @@ export function CampaignTable({ campaigns, isLoading, onRefresh, onShowToast }: 
             ) : (
               <Table className="min-w-[700px] w-full text-left text-body-sm">
                 <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
-                  <TableRow className="border-b border-border flex items-center justify-around w-full">
-                    <TableHead className="flex-1 flex items-center justify-around">
-                      <span className="flex items-center justify-around w-full">Title</span>
+                  <TableRow className="border-b border-border flex items-center justify-start w-full">
+                    <TableHead className="flex-1 flex items-center justify-start px-4">
+                      <span className="flex items-center justify-start w-full">Title</span>
                     </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-around">
-                      <span className="flex items-center justify-around w-full">Channels</span>
+                    <TableHead className="flex-1 flex items-center justify-start px-4">
+                      <span className="flex items-center justify-start w-full">Channels</span>
                     </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-around">
-                      <span className="flex items-center justify-around w-full">Status</span>
+                    <TableHead className="flex-1 flex items-center justify-start px-4">
+                      <span className="flex items-center justify-start w-full">Status</span>
                     </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-around">
-                      <span className="flex items-center justify-around w-full">Created At</span>
+                    <TableHead className="flex-1 flex items-center justify-start px-4">
+                      <span className="flex items-center justify-start w-full">Created At</span>
                     </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-around text-right">
-                      <span className="flex items-center justify-around w-full">Actions</span>
+                    <TableHead className="flex-1 flex items-center justify-end px-4 text-right">
+                      <span className="flex items-center justify-end w-full">Actions</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-border">
                   {paginatedCampaigns.map((c) => (
-                    <TableRow key={c.id} className="hover:bg-muted/50 transition-colors flex items-center justify-around w-full">
-                      <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-around">
-                        <span className="flex items-center justify-around w-full">{c.title}</span>
+                    <TableRow key={c.id} className="hover:bg-muted/50 transition-colors flex items-center justify-start w-full">
+                      <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-start px-4">
+                        <span className="flex items-center justify-start w-full">{c.title}</span>
                       </TableCell>
-                      <TableCell className="flex-1 flex items-center justify-around">
-                        <span className="flex flex-wrap gap-1 items-center justify-around w-full">
+                      <TableCell className="flex-1 flex items-center justify-start px-4">
+                        <span className="flex flex-wrap gap-1 items-center justify-start w-full">
                           {c.channels.map((ch) => (
                             <CampaignChannelBadge key={ch} channel={ch} />
                           ))}
                         </span>
                       </TableCell>
-                      <TableCell className="flex-1 flex items-center justify-around">
-                        <span className="flex items-center justify-around w-full">
+                      <TableCell className="flex-1 flex items-center justify-start px-4">
+                        <span className="flex items-center justify-start w-full">
                           <CampaignStatusBadge status={c.status} />
                         </span>
                       </TableCell>
-                      <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-around">
-                        <span className="flex items-center justify-around w-full">
+                      <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
+                        <span className="flex items-center justify-start w-full">
                           {new Date(c.createdAt).toLocaleDateString()}
                         </span>
                       </TableCell>
-                      <TableCell className="flex-1 text-right flex items-center justify-around">
-                        <span className="flex items-center justify-around w-full">
+                      <TableCell className="flex-1 text-right flex items-center justify-end px-4">
+                        <span className="flex items-center justify-end w-full">
                           <Button
                             variant="ghost"
                             size="sm"
