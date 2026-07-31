@@ -1,11 +1,13 @@
 using Crm.Api.DTOs.Requests;
 using Crm.Api.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Crm.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/templates")]
+[Authorize]
 public class TemplatesController(ITemplateService templateService) : ControllerBase
 {
     [HttpGet]

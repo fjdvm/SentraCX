@@ -1,12 +1,13 @@
 using Crm.Api.DTOs.Requests;
 using Crm.Api.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Crm.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/tickets/{ticketId:guid}/messages")]
-// [Authorize] // TODO: Re-enable authentication before production/merge to main
+[Authorize]
 public class MessagesController(IMessageService messageService) : ControllerBase
 {
     [HttpGet]

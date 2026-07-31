@@ -1,11 +1,12 @@
 using Crm.Api.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Crm.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/customers/{customerId:guid}/marketing-interactions")]
-// [Authorize] // TODO: Re-enable authentication before production/merge to main
+[Authorize]
 public class MarketingInteractionsController(IMarketingInteractionService service) : ControllerBase
 {
     [HttpGet]

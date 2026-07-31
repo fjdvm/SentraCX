@@ -41,6 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.Authority = jwtAuthority;
         options.Audience  = jwtAudience;
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        options.TokenValidationParameters.ValidateAudience = false;
     });
 
 builder.Services.AddAuthorization();
@@ -159,13 +160,16 @@ app.Use(async (context, next) =>
     {
         await next(context);
     }
-    catch (Exception)
+    catch (Exception ex)
     {
         if (!context.Response.HasStarted)
         {
             context.Response.StatusCode = 500;
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync("{\"error\":\"An unexpected error occurred.\"}");
+            var message = app.Environment.IsDevelopment()
+                ? ex.ToString().Replace("\"", "'")
+                : "An unexpected error occurred.";
+            await context.Response.WriteAsync($"{{\"error\":\"{message}\"}}");
         }
     }
 });

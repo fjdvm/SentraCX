@@ -1,4 +1,5 @@
 using Crm.Api.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ namespace Crm.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/tickets")]
+[Authorize]
 public class ConversationsController(IMessageService messageService) : ControllerBase
 {
     [HttpGet("{id:guid}/messages")]
