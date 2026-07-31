@@ -7,6 +7,7 @@ import { useCustomerOrders } from "@/hooks/useCustomerOrders";
 import { useCustomerMarketingHistory } from "@/hooks/useCustomerMarketingHistory";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CustomerOverviewTabProps {
   customer: Customer;
@@ -20,8 +21,8 @@ export function CustomerOverviewTab({
   onSelectTab,
 }: CustomerOverviewTabProps) {
   const isLead = customer.customerType === "Lead";
-  const { orders } = useCustomerOrders(isLead ? "" : customer.id);
-  const { interactions } = useCustomerMarketingHistory({ customerId: customer.id, page: 1, pageSize: 5 });
+  const { orders, isLoading: isOrdersLoading } = useCustomerOrders(isLead ? "" : customer.id);
+  const { interactions, isLoading: isInteractionsLoading } = useCustomerMarketingHistory({ customerId: customer.id, page: 1, pageSize: 5 });
 
   const recentOrders = orders.slice(0, 5);
   const recentInteractions = interactions.slice(0, 5);
@@ -77,7 +78,13 @@ export function CustomerOverviewTab({
               View all ({orders.length})
             </Button>
           </div>
-          {recentOrders.length === 0 ? (
+          {isOrdersLoading ? (
+            <div className="space-y-xs">
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="h-10 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : recentOrders.length === 0 ? (
             <p className="text-body-sm text-muted-foreground italic">No recent orders recorded.</p>
           ) : (
             <div className="space-y-xs">
@@ -111,7 +118,13 @@ export function CustomerOverviewTab({
             View all
           </Button>
         </div>
-        {recentInteractions.length === 0 ? (
+        {isInteractionsLoading ? (
+          <div className="space-y-xs">
+            {[1, 2].map((i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : recentInteractions.length === 0 ? (
           <p className="text-body-sm text-muted-foreground italic">No recent marketing interactions.</p>
         ) : (
           <div className="space-y-xs">

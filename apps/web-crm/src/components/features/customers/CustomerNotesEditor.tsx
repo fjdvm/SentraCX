@@ -23,6 +23,12 @@ export function CustomerNotesEditor({
   const [notes, setNotes] = useState(initialNotes || "");
   const [isSaving, setIsSaving] = useState(false);
 
+  React.useEffect(() => {
+    if (!isEditing) {
+      setNotes(initialNotes || "");
+    }
+  }, [initialNotes, isEditing]);
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
