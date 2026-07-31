@@ -45,7 +45,7 @@ export function CustomerTypeControl({
       <Select
         value={currentType}
         onValueChange={(val) => handleChange(val as CustomerType)}
-        disabled={isUpdating || currentType === "Lead"}
+        disabled={isUpdating}
       >
         <SelectTrigger className="w-full sm:w-[160px] h-8 text-label-sm font-semibold">
           <SelectValue />
@@ -53,8 +53,6 @@ export function CustomerTypeControl({
         <SelectContent>
           <SelectItem value="Regular">Regular</SelectItem>
           <SelectItem value="InstitutionalBuyer">Institutional Buyer</SelectItem>
-          <SelectItem value="VIP">VIP</SelectItem>
-          <SelectItem value="Lead">Lead</SelectItem>
         </SelectContent>
       </Select>
     </div>

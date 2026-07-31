@@ -19,7 +19,6 @@ export function CustomerProfiles() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<CustomerListItem | null>(null);
-  const [activeTab, setActiveTab] = useState<"contacts" | "leads">("contacts");
 
   React.useEffect(() => {
     const handler = setTimeout(() => {
@@ -32,13 +31,8 @@ export function CustomerProfiles() {
     page,
     pageSize: 20,
     search: debouncedSearch,
-    customerType: activeTab === "contacts" ? "Contact" : "Lead",
+    customerType: "Contact",
   });
-
-  const handleTabChange = (val: string) => {
-    setActiveTab(val as "contacts" | "leads");
-    setPage(1);
-  };
 
   return (
     <div className="w-full min-h-full py-xl px-lg md:px-xl space-y-2xl max-w-7xl mx-auto">
@@ -87,19 +81,11 @@ export function CustomerProfiles() {
         </div>
       )}
 
-      {/* Tabs */}
-      <Tabs defaultValue="contacts" value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="bg-muted p-0.5 rounded-lg border border-border">
-          <TabsTrigger value="contacts" className="px-lg py-sm text-label-sm font-medium">Contacts</TabsTrigger>
-          <TabsTrigger value="leads" className="px-lg py-sm text-label-sm font-medium">Leads</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
       {/* Main Customers Table Card */}
       <Card className="shadow-none border-border flex flex-col">
         <CardHeader className="pb-md p-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
           <CardTitle className="text-title-lg font-bold">
-            {activeTab === "contacts" ? "Contact Registry" : "Lead Registry"}
+            Contact Registry
           </CardTitle>
         </CardHeader>
 

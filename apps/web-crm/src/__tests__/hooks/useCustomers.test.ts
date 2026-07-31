@@ -107,10 +107,10 @@ describe("useCustomers", () => {
 
   it("calls crmClient.customers.list with correct customerType filter", async () => {
     (crmClient.customers.list as jest.Mock).mockResolvedValue(mockResponse);
-    renderHook(() => useCustomers({ page: 1, pageSize: 20, customerType: "Lead" }));
+    renderHook(() => useCustomers({ page: 1, pageSize: 20, customerType: "Contact" }));
 
     await waitFor(() =>
-      expect(crmClient.customers.list).toHaveBeenCalledWith(1, 20, "Lead", "")
+      expect(crmClient.customers.list).toHaveBeenCalledWith(1, 20, "Contact", "")
     );
   });
 
