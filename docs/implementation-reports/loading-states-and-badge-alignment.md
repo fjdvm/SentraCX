@@ -2,12 +2,12 @@
 
 ## What was built
 - Verified that loading states for customer profiles sub-tabs (overview, orders, marketing history) are already properly implemented in the codebase (hooks set `isLoading = true` and `CustomerOverviewTab` renders Skeletons during load).
-- Replaced custom flexbox-based table layouts (`flex`, `flex-1`, etc.) with native HTML fixed-table layouts (`table-fixed`) across all main tables. Explicitly set percentage-based widths on columns (`w-[30%]`, `w-[15%]`, etc.), which ensures that all columns and their contents (including badges) align column-wise.
-- Removed the hardcoded `min-w-[700px]` constraint from tables. This enables the tables to fit the full width of their containers (`w-full`) natively on medium to large screens without inducing horizontal scrollbars, while maintaining clear, percentage-allocated column widths.
+- Replaced custom flexbox-based table layouts (`flex`, `flex-1`, etc.) with native HTML table layouts across all main tables.
+- Switched tables to standard auto-width layout (`table-auto` by default) by removing `table-fixed` and pixel/percentage width allocations (`w-[...]`) from headers and cells. This allows the browser to dynamically allocate column track widths to fit the screen size, preventing the layout from overflowing the page and eliminating the horizontal scrollbar on medium to large viewports while keeping badges perfectly aligned in vertical tracks.
 
 ## Key architectural decisions
-- Replaced the flex-layout spacing logic (`justify-around` and `justify-start`) inside table elements (`tr`/`td`/`th`) with standard native table behavior (`table-fixed`). HTML tables inherently group cells into columns, guaranteeing that all columns and their badges align column-wise.
-- Enforced horizontal responsiveness by removing unnecessary `min-width` settings on standard desktop viewports.
+- Replaced the flex-layout spacing logic (`justify-around` and `justify-start`) inside table elements (`tr`/`td`/`th`) with standard native table behavior. HTML tables inherently group cells into columns, guaranteeing that all columns and their badges align column-wise.
+- Enforced horizontal responsiveness by removing unnecessary `min-width` and `fixed-width` column constraints.
 
 ## Files touched
 - `apps/web-crm/src/components/features/customers/CustomerTable.tsx`
