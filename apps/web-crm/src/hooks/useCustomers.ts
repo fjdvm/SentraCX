@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { crmClient } from "@/lib/api/crm-client";
 import { CustomerListItem } from "@/types/customer";
 
@@ -17,58 +17,43 @@ export function useCustomers({ page = 1, pageSize = 20, search = "", customerTyp
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const lastRequestIdRef = useRef<number>(0);
 
-  const fetchCustomers = useCallback(async () => {
-    setIsLoading(true);
+  const fetchCustomers = useCallback(async (isBackground = false) => {
+    if (!isBackground) {
+      setIsLoading(true);
+    }
     setError(null);
+    const currentRequestId = ++lastRequestIdRef.current;
     try {
       const data = await crmClient.customers.list(page, pageSize, customerType, search);
-      setCustomers(data.items || []);
-      setTotalCount(data.totalCount || 0);
-      setTotalPages(data.totalPages || 1);
+      if (currentRequestId === lastRequestIdRef.current) {
+        setCustomers(data.items || []);
+        setTotalCount(data.totalCount || 0);
+        setTotalPages(data.totalPages || 1);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load customers.");
+      if (currentRequestId === lastRequestIdRef.current) {
+        setError(err instanceof Error ? err.message : "Failed to load customers.");
+      }
     } finally {
-      setIsLoading(false);
+      if (currentRequestId === lastRequestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [page, pageSize, search, customerType]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchList = (isBackground = false) => {
-      if (!isBackground) {
-        setIsLoading(true);
-      }
-      crmClient.customers.list(page, pageSize, customerType, search)
-        .then((data) => {
-          if (isMounted) {
-            setCustomers(data.items || []);
-            setTotalCount(data.totalCount || 0);
-            setTotalPages(data.totalPages || 1);
-            setError(null);
-            setIsLoading(false);
-          }
-        })
-        .catch((err) => {
-          if (isMounted) {
-            setError(err instanceof Error ? err.message : "Failed to load customers.");
-            setIsLoading(false);
-          }
-        });
-    };
-
-    fetchList(false);
+    fetchCustomers(false);
 
     const interval = setInterval(() => {
-      fetchList(true);
+      fetchCustomers(true);
     }, 10000);
 
     return () => {
-      isMounted = false;
       clearInterval(interval);
     };
-  }, [page, pageSize, search, customerType]);
+  }, [fetchCustomers]);
 
   return {
     customers,
@@ -76,6 +61,6 @@ export function useCustomers({ page = 1, pageSize = 20, search = "", customerTyp
     totalPages,
     isLoading,
     error,
-    refetch: fetchCustomers,
+    refetch: () => fetchCustomers(false),
   };
 }

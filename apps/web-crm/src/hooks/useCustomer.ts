@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { crmClient } from "@/lib/api/crm-client";
 import { Customer } from "@/types/customer";
 
@@ -8,62 +8,61 @@ export function useCustomer(id: string) {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [isLoading, setIsLoading] = useState(() => Boolean(id));
   const [error, setError] = useState<string | null>(null);
+  const lastOptimisticUpdateRef = useRef<number>(0);
+  const lastRequestIdRef = useRef<number>(0);
 
-  const fetchCustomer = useCallback(async () => {
+  const updateCustomerOptimistically = useCallback((newCustomer: Customer | null | ((prev: Customer | null) => Customer | null)) => {
+    lastOptimisticUpdateRef.current = Date.now();
+    setCustomer(newCustomer);
+  }, []);
+
+  const fetchCustomer = useCallback(async (isBackground = false) => {
     if (!id) return;
-    setIsLoading(true);
+    if (isBackground) {
+      if (Date.now() - lastOptimisticUpdateRef.current < 12000) {
+        return;
+      }
+    } else {
+      setIsLoading(true);
+    }
+
+    const currentRequestId = ++lastRequestIdRef.current;
     setError(null);
     try {
       const data = await crmClient.customers.getById(id);
-      setCustomer(data);
+      if (currentRequestId === lastRequestIdRef.current) {
+        setCustomer(data);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load customer profile.");
+      if (currentRequestId === lastRequestIdRef.current) {
+        setError(err instanceof Error ? err.message : "Failed to load customer profile.");
+      }
     } finally {
-      setIsLoading(false);
+      if (currentRequestId === lastRequestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [id]);
 
   useEffect(() => {
     if (!id) return;
-    let isMounted = true;
 
-    const fetchSingle = (isBackground = false) => {
-      if (!isBackground) {
-        setIsLoading(true);
-      }
-      crmClient.customers.getById(id)
-        .then((data) => {
-          if (isMounted) {
-            setCustomer(data);
-            setError(null);
-            setIsLoading(false);
-          }
-        })
-        .catch((err) => {
-          if (isMounted) {
-            setError(err instanceof Error ? err.message : "Failed to load customer profile.");
-            setIsLoading(false);
-          }
-        });
-    };
-
-    fetchSingle(false);
+    fetchCustomer(false);
 
     const interval = setInterval(() => {
-      fetchSingle(true);
+      fetchCustomer(true);
     }, 10000);
 
     return () => {
-      isMounted = false;
       clearInterval(interval);
     };
-  }, [id]);
+  }, [id, fetchCustomer]);
 
   return {
     customer,
     isLoading,
     error,
-    refetch: fetchCustomer,
-    setCustomer,
+    refetch: () => fetchCustomer(false),
+    setCustomer: updateCustomerOptimistically,
   };
 }
