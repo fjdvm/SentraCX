@@ -5,6 +5,7 @@ const config: Config = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^next-auth/react$": "<rootDir>/src/__mocks__/next-auth-react.ts",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
     "\\.(png|jpg|jpeg|gif|svg|ico|webp)$": "<rootDir>/src/__mocks__/fileMock.ts",
   },
