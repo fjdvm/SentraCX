@@ -166,7 +166,7 @@ export function TicketsCustomerView({ customerId }: TicketsCustomerViewProps) {
                                     <XCircle className="w-4 h-4 mr-1" /> Cancel
                                   </Button>
                                 )}
-                              </span>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
