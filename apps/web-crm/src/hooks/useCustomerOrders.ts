@@ -25,6 +25,7 @@ export function useCustomerOrders(customerId: string) {
 
   useEffect(() => {
     if (!customerId) return;
+    setIsLoading(true);
     let isMounted = true;
     crmClient.orders.listByCustomer(customerId)
       .then((data) => {

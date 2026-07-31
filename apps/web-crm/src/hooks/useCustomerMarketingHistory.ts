@@ -39,6 +39,7 @@ export function useCustomerMarketingHistory({
 
   useEffect(() => {
     if (!customerId) return;
+    setIsLoading(true);
     let isMounted = true;
     crmClient.marketingInteractions.listByCustomer(customerId, page, pageSize)
       .then((data) => {
