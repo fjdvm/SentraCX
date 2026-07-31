@@ -16,3 +16,7 @@ Object.defineProperty(window, "matchMedia", {
       dispatchEvent: jest.fn(),
     }) as unknown as MediaQueryList,
 });
+
+// next-auth/react is mocked via moduleNameMapper in jest.config.ts
+// pointing to src/__mocks__/next-auth-react.ts
+
