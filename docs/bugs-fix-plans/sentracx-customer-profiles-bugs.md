@@ -18,7 +18,7 @@ The `UpdateTypeAsync` method returns `false` both when the customer is not found
 
 ---
 
-### BUG-02: Frontend allows "VIP" and "Lead" types but backend validator rejects them
+### BUG-02: Frontend allows "VIP" and "Lead" types but backend validator rejects them (Resolved ✅)
 
 **Backend** — `CreateCustomerRequestValidator.cs:19`
 
