@@ -75,7 +75,7 @@ export function PromotionTable({ promotions, isLoading, onRefresh, onShowToast }
                 </p>
               </div>
             ) : (
-              <Table className="min-w-[700px] w-full text-left text-body-sm table-fixed">
+              <Table className="w-full text-left text-body-sm table-fixed">
                 <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
                   <TableRow className="border-b border-border">
                     <TableHead className="px-4 py-3 font-semibold w-[30%] text-left">Title</TableHead>
