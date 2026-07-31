@@ -87,35 +87,35 @@ export function CustomerTable({
         ) : (
           <Table className="min-w-[700px] w-full text-left text-body-sm">
             <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
-              <TableRow className="border-b border-border flex items-center justify-around w-full">
-                <TableHead className="flex-1 flex items-center justify-around">
-                  <span className="flex items-center justify-around w-full">Customer Name</span>
+              <TableRow className="border-b border-border flex items-center justify-start w-full">
+                <TableHead className="flex-1 flex items-center justify-start px-4">
+                  <span className="flex items-center justify-start w-full">Customer Name</span>
                 </TableHead>
-                <TableHead className="flex-1 flex items-center justify-around">
-                  <span className="flex items-center justify-around w-full">Email</span>
+                <TableHead className="flex-1 flex items-center justify-start px-4">
+                  <span className="flex items-center justify-start w-full">Email</span>
                 </TableHead>
-                <TableHead className="flex-1 flex items-center justify-around">
-                  <span className="flex items-center justify-around w-full">Phone</span>
+                <TableHead className="flex-1 flex items-center justify-start px-4">
+                  <span className="flex items-center justify-start w-full">Phone</span>
                 </TableHead>
-                <TableHead className="flex-1 flex items-center justify-around">
-                  <span className="flex items-center justify-around w-full">Type</span>
+                <TableHead className="flex-1 flex items-center justify-start px-4">
+                  <span className="flex items-center justify-start w-full">Type</span>
                 </TableHead>
-                <TableHead className="flex-1 flex items-center justify-around">
-                  <span className="flex items-center justify-around w-full">Status</span>
+                <TableHead className="flex-1 flex items-center justify-start px-4">
+                  <span className="flex items-center justify-start w-full">Status</span>
                 </TableHead>
-                <TableHead className="flex-1 flex items-center justify-around">
-                  <span className="flex items-center justify-around w-full">Created At</span>
+                <TableHead className="flex-1 flex items-center justify-start px-4">
+                  <span className="flex items-center justify-start w-full">Created At</span>
                 </TableHead>
-                <TableHead className="flex-1 flex items-center justify-around text-right">
-                  <span className="flex items-center justify-around w-full">Actions</span>
+                <TableHead className="flex-1 flex items-center justify-end px-4 text-right">
+                  <span className="flex items-center justify-end w-full">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-border">
               {customers.map((c) => (
-                <TableRow key={c.id} className="hover:bg-muted/50 transition-colors flex items-center justify-around w-full">
-                  <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-around">
-                    <span className="flex items-center justify-around w-full">
+                <TableRow key={c.id} className="hover:bg-muted/50 transition-colors flex items-center justify-start w-full">
+                  <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-start px-4">
+                    <span className="flex items-center justify-start w-full">
                       <Link
                         href={`/customers/${c.id}`}
                         className="hover:underline hover:text-primary transition-colors"
@@ -124,29 +124,29 @@ export function CustomerTable({
                       </Link>
                     </span>
                   </TableCell>
-                  <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-around">
-                    <span className="flex items-center justify-around w-full">{c.email}</span>
+                  <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
+                    <span className="flex items-center justify-start w-full">{c.email}</span>
                   </TableCell>
-                  <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-around">
-                    <span className="flex items-center justify-around w-full">{c.phoneNumber || "-"}</span>
+                  <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
+                    <span className="flex items-center justify-start w-full">{c.phoneNumber || "-"}</span>
                   </TableCell>
-                  <TableCell className="flex-1 flex items-center justify-around">
-                    <span className="flex items-center justify-around w-full">
+                  <TableCell className="flex-1 flex items-center justify-start px-4">
+                    <span className="flex items-center justify-start w-full">
                       <CustomerTypeBadge customerType={c.customerType} />
                     </span>
                   </TableCell>
-                  <TableCell className="flex-1 flex items-center justify-around">
-                    <span className="flex items-center justify-around w-full">
+                  <TableCell className="flex-1 flex items-center justify-start px-4">
+                    <span className="flex items-center justify-start w-full">
                       <CustomerStatusBadge status={c.status} />
                     </span>
                   </TableCell>
-                  <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-around">
-                    <span className="flex items-center justify-around w-full">
+                  <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
+                    <span className="flex items-center justify-start w-full">
                       {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
                     </span>
                   </TableCell>
-                  <TableCell className="flex-1 text-right flex items-center justify-around">
-                    <span className="flex items-center justify-around w-full">
+                  <TableCell className="flex-1 text-right flex items-center justify-end px-4">
+                    <span className="flex items-center justify-end w-full">
                       <Button
                         variant="ghost"
                         size="icon"

@@ -82,45 +82,45 @@ export function TicketTable({
             ) : (
               <Table className="min-w-[700px] w-full text-left text-body-sm">
                 <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
-                  <TableRow className="border-b border-border flex items-center justify-around w-full">
-                    <TableHead className="flex-1 flex items-center justify-around">
-                      <span className="flex items-center justify-around w-full">Title</span>
+                  <TableRow className="border-b border-border flex items-center justify-start w-full">
+                    <TableHead className="flex-1 flex items-center justify-start px-4">
+                      <span className="flex items-center justify-start w-full">Title</span>
                     </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-around">
-                      <span className="flex items-center justify-around w-full">Customer</span>
+                    <TableHead className="flex-1 flex items-center justify-start px-4">
+                      <span className="flex items-center justify-start w-full">Customer</span>
                     </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-around">
-                      <span className="flex items-center justify-around w-full">Status</span>
+                    <TableHead className="flex-1 flex items-center justify-start px-4">
+                      <span className="flex items-center justify-start w-full">Status</span>
                     </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-around">
-                      <span className="flex items-center justify-around w-full">Created At</span>
+                    <TableHead className="flex-1 flex items-center justify-start px-4">
+                      <span className="flex items-center justify-start w-full">Created At</span>
                     </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-around text-right">
-                      <span className="flex items-center justify-around w-full">Actions</span>
+                    <TableHead className="flex-1 flex items-center justify-end px-4 text-right">
+                      <span className="flex items-center justify-end w-full">Actions</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-border">
                   {filteredTickets.map((t) => (
-                    <TableRow key={t.id} className="hover:bg-muted/50 transition-colors flex items-center justify-around w-full">
-                      <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-around">
-                        <span className="flex items-center justify-around w-full">{t.title}</span>
+                    <TableRow key={t.id} className="hover:bg-muted/50 transition-colors flex items-center justify-start w-full">
+                      <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-start px-4">
+                        <span className="flex items-center justify-start w-full">{t.title}</span>
                       </TableCell>
-                      <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-around">
-                        <span className="flex items-center justify-around w-full">{t.customerName}</span>
+                      <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
+                        <span className="flex items-center justify-start w-full">{t.customerName}</span>
                       </TableCell>
-                      <TableCell className="flex-1 flex items-center justify-around">
-                        <span className="flex items-center justify-around w-full">
+                      <TableCell className="flex-1 flex items-center justify-start px-4">
+                        <span className="flex items-center justify-start w-full">
                           <TicketStatusBadge status={t.status} />
                         </span>
                       </TableCell>
-                      <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-around">
-                        <span className="flex items-center justify-around w-full">
+                      <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
+                        <span className="flex items-center justify-start w-full">
                           {new Date(t.createdAt).toLocaleDateString()}
                         </span>
                       </TableCell>
-                      <TableCell className="flex-1 text-right flex items-center justify-around">
-                        <span className="flex items-center justify-around w-full">
+                      <TableCell className="flex-1 text-right flex items-center justify-end px-4">
+                        <span className="flex items-center justify-end w-full">
                           <Button
                             variant="ghost"
                             size="sm"
