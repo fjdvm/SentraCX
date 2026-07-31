@@ -7,7 +7,7 @@ namespace Crm.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/customers")]
-// [Authorize] // TODO: Re-enable authentication before production/merge to main
+[Authorize]
 public class CustomersController(ICustomerService customerService) : ControllerBase
 {
     [HttpGet]
@@ -31,8 +31,15 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateCustomerRequestDto dto)
     {
-        var result = await customerService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        try
+        {
+            var result = await customerService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
     [HttpPut("{id:guid}/status")]
@@ -47,8 +54,15 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     public async Task<IActionResult> UpdateType(
         Guid id, [FromBody] UpdateCustomerTypeRequestDto dto)
     {
-        var success = await customerService.UpdateTypeAsync(id, dto);
-        return success ? NoContent() : NotFound();
+        try
+        {
+            var success = await customerService.UpdateTypeAsync(id, dto);
+            return success ? NoContent() : NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPut("{id:guid}/notes")]

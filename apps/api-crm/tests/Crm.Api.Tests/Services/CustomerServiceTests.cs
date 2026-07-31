@@ -101,6 +101,25 @@ public class CustomerServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_WhenEmailExists_ThrowsInvalidOperationException()
+    {
+        var dto = new CreateCustomerRequestDto
+        {
+            Email = "test@example.com",
+            FirstName = "Test",
+            LastName = "User",
+            CustomerType = "Regular"
+        };
+
+        var existingProfile = CreateTestProfile("any-id", "Test", "User");
+        _customerRepoMock
+            .Setup(r => r.GetByEmailAsync("test@example.com"))
+            .ReturnsAsync(existingProfile);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.CreateAsync(dto));
+    }
+
+    [Fact]
     public async Task UpdateStatusAsync_WhenExists_UpdatesAndReturnsTrue()
     {
         var id = Guid.NewGuid();
@@ -147,7 +166,7 @@ public class CustomerServiceTests
     }
 
     [Fact]
-    public async Task UpdateTypeAsync_WhenLead_ReturnsFalse()
+    public async Task UpdateTypeAsync_WhenLead_ThrowsInvalidOperationException()
     {
         var id = Guid.NewGuid();
         var profile = CreateTestProfile("user-1", "John", "Doe");
@@ -156,10 +175,9 @@ public class CustomerServiceTests
 
         _customerRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(profile);
 
-        var result = await _sut.UpdateTypeAsync(id,
-            new UpdateCustomerTypeRequestDto { CustomerType = "Regular" });
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _sut.UpdateTypeAsync(id, new UpdateCustomerTypeRequestDto { CustomerType = "Regular" }));
 
-        Assert.False(result);
         Assert.Equal("Lead", profile.CustomerType);
     }
 
