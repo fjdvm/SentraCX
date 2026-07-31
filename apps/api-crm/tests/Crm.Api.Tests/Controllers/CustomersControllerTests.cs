@@ -150,7 +150,7 @@ public class CustomersControllerTests(TestWebApplicationFactory factory)
     }
 
     [Fact]
-    public async Task UpdateType_WhenLead_ReturnsNotFound()
+    public async Task UpdateType_WhenLead_ReturnsBadRequest()
     {
         var customerId = await SeedCustomerAsync("Lead");
         var dto = new UpdateCustomerTypeRequestDto { CustomerType = "Regular" };
@@ -158,7 +158,7 @@ public class CustomersControllerTests(TestWebApplicationFactory factory)
         var response = await _client.PutAsJsonAsync(
             $"/api/v1/customers/{customerId}/type", dto);
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

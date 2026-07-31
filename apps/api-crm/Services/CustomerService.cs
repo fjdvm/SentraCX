@@ -39,6 +39,11 @@ public class CustomerService(
 
     public async Task<CustomerResponseDto> CreateAsync(CreateCustomerRequestDto dto)
     {
+        var existing = await customerRepo.GetByEmailAsync(dto.Email);
+        if (existing is not null)
+        {
+            throw new InvalidOperationException("A customer with this email already exists.");
+        }
         var user = new User
         {
             Id = !string.IsNullOrWhiteSpace(dto.ExternalUserId) ? dto.ExternalUserId : Guid.NewGuid().ToString(),
@@ -89,7 +94,7 @@ public class CustomerService(
         // Enforce that a lead's type is always fixed to "Lead" and cannot be changed
         if (profile.CustomerType.Equals("Lead", StringComparison.OrdinalIgnoreCase))
         {
-            return false;
+            throw new InvalidOperationException("A lead's customer type cannot be updated.");
         }
 
         profile.CustomerType = dto.CustomerType;

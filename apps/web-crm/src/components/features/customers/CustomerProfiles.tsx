@@ -57,7 +57,7 @@ export function CustomerProfiles() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-md">
         <Card className="shadow-none border-border">
           <CardHeader className="flex flex-row justify-between items-start space-y-0 pb-2 p-lg">
-            <span className="text-label-md text-muted-foreground font-medium uppercase tracking-wider">Total Customers</span>
+            <span className="text-label-md text-muted-foreground font-medium uppercase tracking-wider">Matching Results</span>
             <Users className="w-4 h-4 text-foreground" />
           </CardHeader>
           <CardContent className="p-lg pt-0">
@@ -66,7 +66,7 @@ export function CustomerProfiles() {
             ) : (
               <span className="text-display-sm font-bold text-foreground">{totalCount}</span>
             )}
-            <p className="text-body-sm text-muted-foreground mt-sm">Registered accounts</p>
+            <p className="text-body-sm text-muted-foreground mt-sm">Matching profiles</p>
           </CardContent>
         </Card>
       </div>
