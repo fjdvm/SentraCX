@@ -75,21 +75,21 @@ export function PromotionTable({ promotions, isLoading, onRefresh, onShowToast }
                 </p>
               </div>
             ) : (
-              <Table className="w-full text-left text-body-sm table-fixed">
+              <Table className="w-full text-left text-body-sm">
                 <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
                   <TableRow className="border-b border-border">
-                    <TableHead className="px-4 py-3 font-semibold w-[30%] text-left">Title</TableHead>
-                    <TableHead className="px-4 py-3 font-semibold w-[18%] text-left">Type</TableHead>
-                    <TableHead className="px-4 py-3 font-semibold w-[18%] text-left">Status</TableHead>
-                    <TableHead className="px-4 py-3 font-semibold w-[15%] text-left">Discount Value</TableHead>
-                    <TableHead className="px-4 py-3 font-semibold w-[14%] text-left">End Date</TableHead>
-                    <TableHead className="px-4 py-3 font-semibold w-[5%] text-right">Actions</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-left">Title</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-left">Type</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-left">Status</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-left">Discount Value</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-left">End Date</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-border">
                   {paginatedPromotions.map((p) => (
                     <TableRow key={p.id} className="hover:bg-muted/50 transition-colors">
-                      <TableCell className="px-4 py-3 font-semibold text-foreground text-left truncate">
+                      <TableCell className="px-4 py-3 font-semibold text-foreground text-left">
                         {p.title}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-left">
