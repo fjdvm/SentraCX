@@ -75,60 +75,44 @@ export function CampaignTable({ campaigns, isLoading, onRefresh, onShowToast }: 
                 </p>
               </div>
             ) : (
-              <Table className="min-w-[700px] w-full text-left text-body-sm">
+              <Table className="min-w-[700px] w-full text-left text-body-sm table-fixed">
                 <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
-                  <TableRow className="border-b border-border flex items-center justify-start w-full">
-                    <TableHead className="flex-1 flex items-center justify-start px-4">
-                      <span className="flex items-center justify-start w-full">Title</span>
-                    </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-start px-4">
-                      <span className="flex items-center justify-start w-full">Channels</span>
-                    </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-start px-4">
-                      <span className="flex items-center justify-start w-full">Status</span>
-                    </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-start px-4">
-                      <span className="flex items-center justify-start w-full">Created At</span>
-                    </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-end px-4 text-right">
-                      <span className="flex items-center justify-end w-full">Actions</span>
-                    </TableHead>
+                  <TableRow className="border-b border-border">
+                    <TableHead className="px-4 py-3 font-semibold w-[35%] text-left">Title</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold w-[25%] text-left">Channels</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold w-[20%] text-left">Status</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold w-[15%] text-left">Created At</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold w-[5%] text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-border">
                   {paginatedCampaigns.map((c) => (
-                    <TableRow key={c.id} className="hover:bg-muted/50 transition-colors flex items-center justify-start w-full">
-                      <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-start px-4">
-                        <span className="flex items-center justify-start w-full">{c.title}</span>
+                    <TableRow key={c.id} className="hover:bg-muted/50 transition-colors">
+                      <TableCell className="px-4 py-3 font-semibold text-foreground text-left truncate">
+                        {c.title}
                       </TableCell>
-                      <TableCell className="flex-1 flex items-center justify-start px-4">
-                        <span className="flex flex-wrap gap-1 items-center justify-start w-full">
+                      <TableCell className="px-4 py-3 text-left">
+                        <div className="flex flex-wrap gap-1">
                           {c.channels.map((ch) => (
                             <CampaignChannelBadge key={ch} channel={ch} />
                           ))}
-                        </span>
+                        </div>
                       </TableCell>
-                      <TableCell className="flex-1 flex items-center justify-start px-4">
-                        <span className="flex items-center justify-start w-full">
-                          <CampaignStatusBadge status={c.status} />
-                        </span>
+                      <TableCell className="px-4 py-3 text-left">
+                        <CampaignStatusBadge status={c.status} />
                       </TableCell>
-                      <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
-                        <span className="flex items-center justify-start w-full">
-                          {new Date(c.createdAt).toLocaleDateString()}
-                        </span>
+                      <TableCell className="px-4 py-3 text-muted-foreground text-left">
+                        {new Date(c.createdAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="flex-1 text-right flex items-center justify-end px-4">
-                        <span className="flex items-center justify-end w-full">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedCampaignId(c.id)}
-                            className="text-muted-foreground hover:text-foreground"
-                          >
-                            <Eye className="w-4 h-4 mr-1" /> View
-                          </Button>
-                        </span>
+                      <TableCell className="px-4 py-3 text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedCampaignId(c.id)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Eye className="w-4 h-4 mr-1" /> View
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

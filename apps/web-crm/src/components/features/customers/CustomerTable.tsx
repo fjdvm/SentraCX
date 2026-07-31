@@ -85,78 +85,50 @@ export function CustomerTable({
             </p>
           </div>
         ) : (
-          <Table className="min-w-[700px] w-full text-left text-body-sm">
+          <Table className="min-w-[700px] w-full text-left text-body-sm table-fixed">
             <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
-              <TableRow className="border-b border-border flex items-center justify-start w-full">
-                <TableHead className="flex-1 flex items-center justify-start px-4">
-                  <span className="flex items-center justify-start w-full">Customer Name</span>
-                </TableHead>
-                <TableHead className="flex-1 flex items-center justify-start px-4">
-                  <span className="flex items-center justify-start w-full">Email</span>
-                </TableHead>
-                <TableHead className="flex-1 flex items-center justify-start px-4">
-                  <span className="flex items-center justify-start w-full">Phone</span>
-                </TableHead>
-                <TableHead className="flex-1 flex items-center justify-start px-4">
-                  <span className="flex items-center justify-start w-full">Type</span>
-                </TableHead>
-                <TableHead className="flex-1 flex items-center justify-start px-4">
-                  <span className="flex items-center justify-start w-full">Status</span>
-                </TableHead>
-                <TableHead className="flex-1 flex items-center justify-start px-4">
-                  <span className="flex items-center justify-start w-full">Created At</span>
-                </TableHead>
-                <TableHead className="flex-1 flex items-center justify-end px-4 text-right">
-                  <span className="flex items-center justify-end w-full">Actions</span>
-                </TableHead>
+              <TableRow className="border-b border-border">
+                <TableHead className="px-4 py-3 font-semibold w-[20%] text-left">Customer Name</TableHead>
+                <TableHead className="px-4 py-3 font-semibold w-[25%] text-left">Email</TableHead>
+                <TableHead className="px-4 py-3 font-semibold w-[15%] text-left">Phone</TableHead>
+                <TableHead className="px-4 py-3 font-semibold w-[12%] text-left">Type</TableHead>
+                <TableHead className="px-4 py-3 font-semibold w-[12%] text-left">Status</TableHead>
+                <TableHead className="px-4 py-3 font-semibold w-[11%] text-left">Created At</TableHead>
+                <TableHead className="px-4 py-3 font-semibold w-[5%] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-border">
               {customers.map((c) => (
-                <TableRow key={c.id} className="hover:bg-muted/50 transition-colors flex items-center justify-start w-full">
-                  <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-start px-4">
-                    <span className="flex items-center justify-start w-full">
-                      <Link
-                        href={`/customers/${c.id}`}
-                        className="hover:underline hover:text-primary transition-colors"
-                      >
-                        {c.displayName}
-                      </Link>
-                    </span>
+                <TableRow key={c.id} className="hover:bg-muted/50 transition-colors">
+                  <TableCell className="px-4 py-3 font-semibold text-foreground text-left">
+                    <Link
+                      href={`/customers/${c.id}`}
+                      className="hover:underline hover:text-primary transition-colors"
+                    >
+                      {c.displayName}
+                    </Link>
                   </TableCell>
-                  <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
-                    <span className="flex items-center justify-start w-full">{c.email}</span>
+                  <TableCell className="px-4 py-3 text-muted-foreground text-left truncate">{c.email}</TableCell>
+                  <TableCell className="px-4 py-3 text-muted-foreground text-left">{c.phoneNumber || "-"}</TableCell>
+                  <TableCell className="px-4 py-3 text-left">
+                    <CustomerTypeBadge customerType={c.customerType} />
                   </TableCell>
-                  <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
-                    <span className="flex items-center justify-start w-full">{c.phoneNumber || "-"}</span>
+                  <TableCell className="px-4 py-3 text-left">
+                    <CustomerStatusBadge status={c.status} />
                   </TableCell>
-                  <TableCell className="flex-1 flex items-center justify-start px-4">
-                    <span className="flex items-center justify-start w-full">
-                      <CustomerTypeBadge customerType={c.customerType} />
-                    </span>
+                  <TableCell className="px-4 py-3 text-muted-foreground text-left">
+                    {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
                   </TableCell>
-                  <TableCell className="flex-1 flex items-center justify-start px-4">
-                    <span className="flex items-center justify-start w-full">
-                      <CustomerStatusBadge status={c.status} />
-                    </span>
-                  </TableCell>
-                  <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
-                    <span className="flex items-center justify-start w-full">
-                      {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="flex-1 text-right flex items-center justify-end px-4">
-                    <span className="flex items-center justify-end w-full">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDeleteClick(c)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        title="Delete customer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </span>
+                  <TableCell className="px-4 py-3 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDeleteClick(c)}
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      title="Delete customer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

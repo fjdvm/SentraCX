@@ -75,64 +75,44 @@ export function PromotionTable({ promotions, isLoading, onRefresh, onShowToast }
                 </p>
               </div>
             ) : (
-              <Table className="min-w-[700px] w-full text-left text-body-sm">
+              <Table className="min-w-[700px] w-full text-left text-body-sm table-fixed">
                 <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
-                  <TableRow className="border-b border-border flex items-center justify-start w-full">
-                    <TableHead className="flex-1 flex items-center justify-start px-4">
-                      <span className="flex items-center justify-start w-full">Title</span>
-                    </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-start px-4">
-                      <span className="flex items-center justify-start w-full">Type</span>
-                    </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-start px-4">
-                      <span className="flex items-center justify-start w-full">Status</span>
-                    </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-start px-4">
-                      <span className="flex items-center justify-start w-full">Discount Value</span>
-                    </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-start px-4">
-                      <span className="flex items-center justify-start w-full">End Date</span>
-                    </TableHead>
-                    <TableHead className="flex-1 flex items-center justify-end px-4 text-right">
-                      <span className="flex items-center justify-end w-full">Actions</span>
-                    </TableHead>
+                  <TableRow className="border-b border-border">
+                    <TableHead className="px-4 py-3 font-semibold w-[30%] text-left">Title</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold w-[18%] text-left">Type</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold w-[18%] text-left">Status</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold w-[15%] text-left">Discount Value</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold w-[14%] text-left">End Date</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold w-[5%] text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-border">
                   {paginatedPromotions.map((p) => (
-                    <TableRow key={p.id} className="hover:bg-muted/50 transition-colors flex items-center justify-start w-full">
-                      <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-start px-4">
-                        <span className="flex items-center justify-start w-full">{p.title}</span>
+                    <TableRow key={p.id} className="hover:bg-muted/50 transition-colors">
+                      <TableCell className="px-4 py-3 font-semibold text-foreground text-left truncate">
+                        {p.title}
                       </TableCell>
-                      <TableCell className="flex-1 flex items-center justify-start px-4">
-                        <span className="flex items-center justify-start w-full">
-                          <PromotionTypeBadge type={p.promotionType} />
-                        </span>
+                      <TableCell className="px-4 py-3 text-left">
+                        <PromotionTypeBadge type={p.promotionType} />
                       </TableCell>
-                      <TableCell className="flex-1 flex items-center justify-start px-4">
-                        <span className="flex items-center justify-start w-full">
-                          <PromotionStatusBadge status={p.status} />
-                        </span>
+                      <TableCell className="px-4 py-3 text-left">
+                        <PromotionStatusBadge status={p.status} />
                       </TableCell>
-                      <TableCell className="flex-1 font-mono text-body-sm text-muted-foreground flex items-center justify-start px-4">
-                        <span className="flex items-center justify-start w-full">{p.discountValue ?? "—"}</span>
+                      <TableCell className="px-4 py-3 font-mono text-body-sm text-muted-foreground text-left">
+                        {p.discountValue ?? "—"}
                       </TableCell>
-                      <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
-                        <span className="flex items-center justify-start w-full">
-                          {p.endDate ? new Date(p.endDate).toLocaleDateString() : "—"}
-                        </span>
+                      <TableCell className="px-4 py-3 text-muted-foreground text-left">
+                        {p.endDate ? new Date(p.endDate).toLocaleDateString() : "—"}
                       </TableCell>
-                      <TableCell className="flex-1 text-right flex items-center justify-end px-4">
-                        <span className="flex items-center justify-end w-full">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedPromotionId(p.id)}
-                            className="text-muted-foreground hover:text-foreground"
-                          >
-                            <Eye className="w-4 h-4 mr-1" /> View
-                          </Button>
-                        </span>
+                      <TableCell className="px-4 py-3 text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedPromotionId(p.id)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Eye className="w-4 h-4 mr-1" /> View
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

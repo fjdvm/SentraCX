@@ -130,41 +130,29 @@ export function TicketsCustomerView({ customerId }: TicketsCustomerViewProps) {
                       </p>
                     </div>
                   ) : (
-                    <Table className="min-w-[700px] w-full text-left text-body-sm">
+                    <Table className="min-w-[700px] w-full text-left text-body-sm table-fixed">
                       <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
-                        <TableRow className="border-b border-border flex items-center justify-start w-full">
-                          <TableHead className="flex-1 flex items-center justify-start px-4">
-                            <span className="flex items-center justify-start w-full">Title</span>
-                          </TableHead>
-                          <TableHead className="flex-1 flex items-center justify-start px-4">
-                            <span className="flex items-center justify-start w-full">Status</span>
-                          </TableHead>
-                          <TableHead className="flex-1 flex items-center justify-start px-4">
-                            <span className="flex items-center justify-start w-full">Created At</span>
-                          </TableHead>
-                          <TableHead className="flex-1 flex items-center justify-end px-4 text-right">
-                            <span className="flex items-center justify-end w-full">Actions</span>
-                          </TableHead>
+                        <TableRow className="border-b border-border">
+                          <TableHead className="px-4 py-3 font-semibold w-[45%] text-left">Title</TableHead>
+                          <TableHead className="px-4 py-3 font-semibold w-[20%] text-left">Status</TableHead>
+                          <TableHead className="px-4 py-3 font-semibold w-[15%] text-left">Created At</TableHead>
+                          <TableHead className="px-4 py-3 font-semibold w-[20%] text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody className="divide-y divide-border">
                         {filteredTickets.map((t) => (
-                          <TableRow key={t.id} className="hover:bg-muted/50 transition-colors flex items-center justify-start w-full">
-                            <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-start px-4">
-                              <span className="flex items-center justify-start w-full">{t.title}</span>
+                          <TableRow key={t.id} className="hover:bg-muted/50 transition-colors">
+                            <TableCell className="px-4 py-3 font-semibold text-foreground text-left truncate">
+                              {t.title}
                             </TableCell>
-                            <TableCell className="flex-1 flex items-center justify-start px-4">
-                              <span className="flex items-center justify-start w-full">
-                                <TicketStatusBadge status={t.status} />
-                              </span>
+                            <TableCell className="px-4 py-3 text-left">
+                              <TicketStatusBadge status={t.status} />
                             </TableCell>
-                            <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-start px-4">
-                              <span className="flex items-center justify-start w-full">
-                                {new Date(t.createdAt).toLocaleDateString()}
-                              </span>
+                            <TableCell className="px-4 py-3 text-muted-foreground text-left">
+                              {new Date(t.createdAt).toLocaleDateString()}
                             </TableCell>
-                            <TableCell className="flex-1 text-right flex items-center justify-end px-4">
-                              <span className="flex items-center justify-end w-full gap-1">
+                            <TableCell className="px-4 py-3 text-right">
+                              <div className="flex items-center justify-end gap-1">
                                 <Button variant="ghost" size="sm" onClick={() => setSelectedTicketId(t.id)} className="text-muted-foreground hover:text-foreground">
                                   <Eye className="w-4 h-4 mr-1" /> View
                                 </Button>
