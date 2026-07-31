@@ -23,9 +23,20 @@ interface TicketTableProps {
   isLoading: boolean;
   onRefresh: () => void;
   onShowToast: (msg: string) => void;
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }
 
-export function TicketTable({ tickets, isLoading, onRefresh, onShowToast }: TicketTableProps) {
+export function TicketTable({
+  tickets,
+  isLoading,
+  onRefresh,
+  onShowToast,
+  page = 1,
+  totalPages = 1,
+  onPageChange,
+}: TicketTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
@@ -48,10 +59,13 @@ export function TicketTable({ tickets, isLoading, onRefresh, onShowToast }: Tick
               className="border-0 shadow-none focus-visible:ring-0 bg-transparent h-8 p-0 text-body-sm flex-1"
               placeholder="Search by title or customer name..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (onPageChange) onPageChange(1);
+              }}
             />
           </div>
-          <div className="w-full overflow-x-auto">
+          <div className="w-full overflow-auto h-[480px]">
             {isLoading ? (
               <div className="space-y-2 py-4 px-4 animate-pulse">
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -67,7 +81,7 @@ export function TicketTable({ tickets, isLoading, onRefresh, onShowToast }: Tick
               </div>
             ) : (
               <Table className="min-w-[700px] w-full text-left text-body-sm">
-                <TableHeader>
+                <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
                   <TableRow className="border-b border-border flex items-center justify-around w-full">
                     <TableHead className="flex-1 flex items-center justify-around">
                       <span className="flex items-center justify-around w-full">Title</span>
@@ -124,6 +138,35 @@ export function TicketTable({ tickets, isLoading, onRefresh, onShowToast }: Tick
             )}
           </div>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && onPageChange && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-sm pt-md border-t border-border mt-md">
+            <span className="text-label-sm text-muted-foreground order-2 sm:order-1">
+              Page {page} of {totalPages}
+            </span>
+            <div className="flex gap-sm w-full sm:w-auto justify-end order-1 sm:order-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1 || isLoading}
+                onClick={() => onPageChange(page - 1)}
+                className="flex-1 sm:flex-none"
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages || isLoading}
+                onClick={() => onPageChange(page + 1)}
+                className="flex-1 sm:flex-none"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
 
       <TicketDetailSheet

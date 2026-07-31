@@ -27,7 +27,7 @@ export function CustomerMarketingHistoryTab({ customerId }: CustomerMarketingHis
   const { interactions, totalPages, isLoading, error } = useCustomerMarketingHistory({
     customerId,
     page,
-    pageSize: 10,
+    pageSize: 20,
   });
 
   if (isLoading) {
@@ -58,9 +58,9 @@ export function CustomerMarketingHistoryTab({ customerId }: CustomerMarketingHis
 
   return (
     <div className="space-y-md">
-      <div className="w-full overflow-x-auto border rounded-md border-border">
+      <div className="w-full overflow-auto h-[400px] border rounded-md border-border">
         <Table className="min-w-[500px] w-full text-left text-body-sm">
-          <TableHeader>
+          <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
             <TableRow className="border-b border-border">
               <TableHead>Title</TableHead>
               <TableHead>Channel</TableHead>

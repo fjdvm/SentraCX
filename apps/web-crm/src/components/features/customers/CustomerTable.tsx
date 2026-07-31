@@ -15,6 +15,13 @@ import { Input } from "@/components/ui/input";
 import { CustomerListItem } from "@/types/customer";
 import { CustomerStatusBadge } from "./CustomerStatusBadge";
 import { CustomerTypeBadge } from "./CustomerTypeBadge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CustomerTableProps {
   customers: CustomerListItem[];
@@ -22,6 +29,8 @@ interface CustomerTableProps {
   onDeleteClick: (customer: CustomerListItem) => void;
   searchQuery: string;
   onSearchChange: (value: string) => void;
+  customerTypeFilter: "Contact" | "Regular" | "InstitutionalBuyer";
+  onCustomerTypeChange: (value: "Contact" | "Regular" | "InstitutionalBuyer") => void;
 }
 
 export function CustomerTable({
@@ -30,19 +39,38 @@ export function CustomerTable({
   onDeleteClick,
   searchQuery,
   onSearchChange,
+  customerTypeFilter,
+  onCustomerTypeChange,
 }: CustomerTableProps) {
   return (
     <div className="w-full border rounded-md border-border overflow-hidden bg-card">
-      <div className="flex items-center justify-around gap-3 px-4 py-2 border-b border-border bg-muted/20">
-        <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-        <Input
-          className="border-0 shadow-none focus-visible:ring-0 bg-transparent h-8 p-0 text-body-sm flex-1"
-          placeholder="Search by name or email..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
+      <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-border bg-muted/20">
+        <div className="flex items-center gap-2 flex-1">
+          <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+          <Input
+            className="border-0 shadow-none focus-visible:ring-0 bg-transparent h-8 p-0 text-body-sm flex-1"
+            placeholder="Search by name or email..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Select
+            value={customerTypeFilter}
+            onValueChange={(val: any) => onCustomerTypeChange(val)}
+          >
+            <SelectTrigger className="w-[150px] h-8 text-body-sm bg-transparent border-input">
+              <SelectValue placeholder="Customer Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Contact">All Contacts</SelectItem>
+              <SelectItem value="Regular">Regular</SelectItem>
+              <SelectItem value="InstitutionalBuyer">Institutional</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-      <div className="w-full overflow-x-auto">
+      <div className="w-full overflow-auto h-[480px]">
         {isLoading ? (
           <div className="space-y-2 py-4 px-4 animate-pulse">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -58,7 +86,7 @@ export function CustomerTable({
           </div>
         ) : (
           <Table className="min-w-[700px] w-full text-left text-body-sm">
-            <TableHeader>
+            <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
               <TableRow className="border-b border-border flex items-center justify-around w-full">
                 <TableHead className="flex-1 flex items-center justify-around">
                   <span className="flex items-center justify-around w-full">Customer Name</span>
