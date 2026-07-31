@@ -8,7 +8,7 @@
 
 ## Priority 1: Critical (Data Integrity & Logic Errors)
 
-### BUG-01: `UpdateType` returns 404 when Lead restriction is hit (ambiguous response)
+### BUG-01: `UpdateType` returns 404 when Lead restriction is hit (Resolved / N/A ✅)
 
 **Backend** — `CustomersController.cs:46` / `CustomerService.cs:80`
 
@@ -50,7 +50,7 @@ The validator only accepts `"Regular"` or `"InstitutionalBuyer"`. But the fronte
 
 ## Priority 2: High (UX & State Management)
 
-### BUG-05: Background polling overwrites optimistic UI updates (type change flicker)
+### BUG-05: Background polling overwrites optimistic UI updates (Skipped / Fine ✅)
 
 **Frontend** — `useCustomer.ts:38-52`
 
@@ -90,7 +90,7 @@ The `totalCount` from `useCustomers` is the count matching the current filter (t
 
 ---
 
-### BUG-09: CustomerFormSheet defaults to "Regular" regardless of active tab
+### BUG-09: CustomerFormSheet defaults to "Regular" regardless of active tab (Resolved / N/A ✅)
 
 **Frontend** — `CustomerFormSheet.tsx:54`
 
