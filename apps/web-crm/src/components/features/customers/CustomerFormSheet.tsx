@@ -181,8 +181,6 @@ export function CustomerFormSheet({
                       <SelectContent>
                         <SelectItem value="Regular">Regular</SelectItem>
                         <SelectItem value="InstitutionalBuyer">Institutional Buyer</SelectItem>
-                        <SelectItem value="VIP">VIP</SelectItem>
-                        <SelectItem value="Lead">Lead</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

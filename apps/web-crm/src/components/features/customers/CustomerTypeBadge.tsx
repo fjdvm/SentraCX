@@ -15,14 +15,6 @@ export function CustomerTypeBadge({ customerType }: CustomerTypeBadgeProps) {
       label = "Institutional Buyer";
       styleClass = "bg-badge-indigo text-badge-indigo-foreground border-transparent";
       break;
-    case "VIP":
-      label = "VIP";
-      styleClass = "bg-badge-purple text-badge-purple-foreground border-transparent";
-      break;
-    case "Lead":
-      label = "Lead";
-      styleClass = "bg-badge-warning text-badge-warning-foreground border-transparent";
-      break;
     default:
       label = "Regular";
       styleClass = "bg-badge-info text-badge-info-foreground border-transparent";

@@ -18,15 +18,7 @@ describe("CustomerTypeBadge", () => {
     expect(screen.queryByText("InstitutionalBuyer")).not.toBeInTheDocument();
   });
 
-  it("renders 'VIP' label for VIP type", () => {
-    render(<CustomerTypeBadge customerType="VIP" />);
-    expect(screen.getByText("VIP")).toBeInTheDocument();
-  });
 
-  it("renders 'Lead' label for Lead type", () => {
-    render(<CustomerTypeBadge customerType="Lead" />);
-    expect(screen.getByText("Lead")).toBeInTheDocument();
-  });
 
   it("renders a single root element", () => {
     const { container } = render(<CustomerTypeBadge customerType="Regular" />);

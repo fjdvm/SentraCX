@@ -62,20 +62,20 @@ describe("createCustomerSchema", () => {
     }
   });
 
-  it("accepts a VIP customer type", () => {
+  it("rejects a VIP customer type", () => {
     const result = createCustomerSchema.safeParse({
       ...validInput,
       customerType: "VIP",
     });
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
   });
 
-  it("accepts a Lead customer type", () => {
+  it("rejects a Lead customer type", () => {
     const result = createCustomerSchema.safeParse({
       ...validInput,
       customerType: "Lead",
     });
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
   });
 
   it("accepts an optional address", () => {

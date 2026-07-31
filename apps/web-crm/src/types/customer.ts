@@ -1,4 +1,4 @@
-export type CustomerType = "Regular" | "InstitutionalBuyer" | "VIP" | "Lead";
+export type CustomerType = "Regular" | "InstitutionalBuyer";
 export type CustomerStatus = "Active" | "Inactive" | "Suspended";
 
 export interface CustomerListItem {
