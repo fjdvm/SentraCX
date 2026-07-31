@@ -38,7 +38,7 @@ The validator only accepts `"Regular"` or `"InstitutionalBuyer"`. But the fronte
 
 ---
 
-### BUG-04: No duplicate email check on customer creation
+### BUG-04: No duplicate email check on customer creation (Resolved ✅)
 
 **Backend** — `CustomerService.cs:39-65`
 
