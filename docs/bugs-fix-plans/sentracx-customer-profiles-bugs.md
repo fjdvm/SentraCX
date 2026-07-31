@@ -28,7 +28,7 @@ The validator only accepts `"Regular"` or `"InstitutionalBuyer"`. But the fronte
 
 ---
 
-### BUG-03: Whitespace-only names pass frontend validation but submit empty strings
+### BUG-03: Whitespace-only names pass frontend validation but submit empty strings (Resolved ✅)
 
 **Frontend** — `customer-validators.ts:4-5` / `CustomerFormSheet.tsx:78`
 
@@ -80,7 +80,7 @@ The `totalCount` from `useCustomers` is the count matching the current filter (t
 
 ---
 
-### BUG-08: Search query persists across tab switches
+### BUG-08: Search query persists across tab switches (Resolved / N/A ✅)
 
 **Frontend** — `CustomerProfiles.tsx:35-37`
 
