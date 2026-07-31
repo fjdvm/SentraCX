@@ -114,7 +114,7 @@ export function CustomerTable({
                   </TableCell>
                   <TableCell className="flex-1 text-muted-foreground text-body-sm flex items-center justify-around">
                     <span className="flex items-center justify-around w-full">
-                      {new Date(c.createdAt).toLocaleDateString()}
+                      {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
                     </span>
                   </TableCell>
                   <TableCell className="flex-1 text-right flex items-center justify-around">

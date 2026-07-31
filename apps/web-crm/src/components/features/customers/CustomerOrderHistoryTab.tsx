@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { OrderHistory } from "@/types/customer";
 import { OrderDetailDialog } from "./OrderDetailDialog";
 
@@ -21,6 +22,7 @@ interface CustomerOrderHistoryTabProps {
 
 export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabProps) {
   const [selectedOrder, setSelectedOrder] = useState<OrderHistory | null>(null);
+  const [page, setPage] = useState(1);
   const { orders, isLoading, error } = useCustomerOrders(customerId);
 
   if (isLoading) {
@@ -49,6 +51,10 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
     );
   }
 
+  const pageSize = 10;
+  const totalPages = Math.ceil(orders.length / pageSize);
+  const paginatedOrders = orders.slice((page - 1) * pageSize, page * pageSize);
+
   return (
     <div className="space-y-md">
       <div className="w-full overflow-x-auto border rounded-md border-border">
@@ -62,7 +68,7 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-border">
-            {orders.map((item) => (
+            {paginatedOrders.map((item) => (
               <TableRow
                 key={item.id}
                 onClick={() => setSelectedOrder(item)}
@@ -85,6 +91,34 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-sm pt-sm border-t border-border">
+          <span className="text-label-sm text-muted-foreground order-2 sm:order-1">
+            Page {page} of {totalPages}
+          </span>
+          <div className="flex gap-sm w-full sm:w-auto justify-end order-1 sm:order-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="flex-1 sm:flex-none"
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+              className="flex-1 sm:flex-none"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
 
       <OrderDetailDialog
         order={selectedOrder}
