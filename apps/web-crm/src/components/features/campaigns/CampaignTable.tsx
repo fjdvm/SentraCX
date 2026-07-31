@@ -75,20 +75,20 @@ export function CampaignTable({ campaigns, isLoading, onRefresh, onShowToast }: 
                 </p>
               </div>
             ) : (
-              <Table className="w-full text-left text-body-sm table-fixed">
+              <Table className="w-full text-left text-body-sm">
                 <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
                   <TableRow className="border-b border-border">
-                    <TableHead className="px-4 py-3 font-semibold w-[35%] text-left">Title</TableHead>
-                    <TableHead className="px-4 py-3 font-semibold w-[25%] text-left">Channels</TableHead>
-                    <TableHead className="px-4 py-3 font-semibold w-[20%] text-left">Status</TableHead>
-                    <TableHead className="px-4 py-3 font-semibold w-[15%] text-left">Created At</TableHead>
-                    <TableHead className="px-4 py-3 font-semibold w-[5%] text-right">Actions</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-left">Title</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-left">Channels</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-left">Status</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-left">Created At</TableHead>
+                    <TableHead className="px-4 py-3 font-semibold text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-border">
                   {paginatedCampaigns.map((c) => (
                     <TableRow key={c.id} className="hover:bg-muted/50 transition-colors">
-                      <TableCell className="px-4 py-3 font-semibold text-foreground text-left truncate">
+                      <TableCell className="px-4 py-3 font-semibold text-foreground text-left">
                         {c.title}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-left">

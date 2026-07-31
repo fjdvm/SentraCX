@@ -85,16 +85,16 @@ export function CustomerTable({
             </p>
           </div>
         ) : (
-          <Table className="w-full text-left text-body-sm table-fixed">
+          <Table className="w-full text-left text-body-sm">
             <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
               <TableRow className="border-b border-border">
-                <TableHead className="px-4 py-3 font-semibold w-[20%] text-left">Customer Name</TableHead>
-                <TableHead className="px-4 py-3 font-semibold w-[25%] text-left">Email</TableHead>
-                <TableHead className="px-4 py-3 font-semibold w-[15%] text-left">Phone</TableHead>
-                <TableHead className="px-4 py-3 font-semibold w-[12%] text-left">Type</TableHead>
-                <TableHead className="px-4 py-3 font-semibold w-[12%] text-left">Status</TableHead>
-                <TableHead className="px-4 py-3 font-semibold w-[11%] text-left">Created At</TableHead>
-                <TableHead className="px-4 py-3 font-semibold w-[5%] text-right">Actions</TableHead>
+                <TableHead className="px-4 py-3 font-semibold text-left">Customer Name</TableHead>
+                <TableHead className="px-4 py-3 font-semibold text-left">Email</TableHead>
+                <TableHead className="px-4 py-3 font-semibold text-left">Phone</TableHead>
+                <TableHead className="px-4 py-3 font-semibold text-left">Type</TableHead>
+                <TableHead className="px-4 py-3 font-semibold text-left">Status</TableHead>
+                <TableHead className="px-4 py-3 font-semibold text-left">Created At</TableHead>
+                <TableHead className="px-4 py-3 font-semibold text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-border">
@@ -108,7 +108,7 @@ export function CustomerTable({
                       {c.displayName}
                     </Link>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-muted-foreground text-left truncate">{c.email}</TableCell>
+                  <TableCell className="px-4 py-3 text-muted-foreground text-left">{c.email}</TableCell>
                   <TableCell className="px-4 py-3 text-muted-foreground text-left">{c.phoneNumber || "-"}</TableCell>
                   <TableCell className="px-4 py-3 text-left">
                     <CustomerTypeBadge customerType={c.customerType} />
