@@ -19,6 +19,7 @@ export function CustomerProfiles() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<CustomerListItem | null>(null);
+  const [customerTypeFilter, setCustomerTypeFilter] = useState<"Contact" | "Regular" | "InstitutionalBuyer">("Contact");
 
   React.useEffect(() => {
     const handler = setTimeout(() => {
@@ -31,7 +32,7 @@ export function CustomerProfiles() {
     page,
     pageSize: 20,
     search: debouncedSearch,
-    customerType: "Contact",
+    customerType: customerTypeFilter,
   });
 
   return (
@@ -97,6 +98,11 @@ export function CustomerProfiles() {
             searchQuery={searchQuery}
             onSearchChange={(val) => {
               setSearchQuery(val);
+              setPage(1);
+            }}
+            customerTypeFilter={customerTypeFilter}
+            onCustomerTypeChange={(val) => {
+              setCustomerTypeFilter(val);
               setPage(1);
             }}
           />

@@ -31,9 +31,10 @@ export function TicketsCustomerView({ customerId }: TicketsCustomerViewProps) {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   const apiStatus = activeTab === "Pending" ? "Unclaimed" : activeTab === "Ongoing" ? "Ongoing" : activeTab === "Completed" ? "Completed" : "Canceled";
-  const { data, isLoading, refetch } = useTickets(1, 50, apiStatus, customerId);
+  const { data, isLoading, refetch } = useTickets(page, 20, apiStatus, customerId);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -72,7 +73,14 @@ export function TicketsCustomerView({ customerId }: TicketsCustomerViewProps) {
         <TicketCreateSheet customerId={customerId} onSuccess={refetch} onShowToast={showToast} />
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-md">
+      <Tabs
+        value={activeTab}
+        onValueChange={(val) => {
+          setActiveTab(val);
+          setPage(1);
+        }}
+        className="w-full space-y-md"
+      >
         <TabsList className="w-full sm:w-auto overflow-x-auto justify-start border-b border-border bg-transparent p-0">
           <TabsTrigger value="Pending" className="px-lg py-sm font-medium data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
             Pending
@@ -101,10 +109,13 @@ export function TicketsCustomerView({ customerId }: TicketsCustomerViewProps) {
                     className="border-0 shadow-none focus-visible:ring-0 bg-transparent h-8 p-0 text-body-sm flex-1"
                     placeholder="Search tickets by title..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setPage(1);
+                    }}
                   />
                 </div>
-                <div className="w-full overflow-x-auto">
+                <div className="w-full overflow-auto h-[480px]">
                   {isLoading ? (
                     <div className="space-y-2 py-4 px-4">
                       {[1, 2, 3, 4, 5].map((i) => (
@@ -120,7 +131,7 @@ export function TicketsCustomerView({ customerId }: TicketsCustomerViewProps) {
                     </div>
                   ) : (
                     <Table className="min-w-[700px] w-full text-left text-body-sm">
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
                         <TableRow className="border-b border-border flex items-center justify-around w-full">
                           <TableHead className="flex-1 flex items-center justify-around">
                             <span className="flex items-center justify-around w-full">Title</span>
@@ -176,6 +187,35 @@ export function TicketsCustomerView({ customerId }: TicketsCustomerViewProps) {
                   )}
                 </div>
               </div>
+
+              {/* Pagination Controls */}
+              {data && data.totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-sm pt-md border-t border-border mt-md">
+                  <span className="text-label-sm text-muted-foreground order-2 sm:order-1">
+                    Page {page} of {data.totalPages}
+                  </span>
+                  <div className="flex gap-sm w-full sm:w-auto justify-end order-1 sm:order-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page <= 1 || isLoading}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      className="flex-1 sm:flex-none"
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page >= data.totalPages || isLoading}
+                      onClick={() => setPage((p) => p + 1)}
+                      className="flex-1 sm:flex-none"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

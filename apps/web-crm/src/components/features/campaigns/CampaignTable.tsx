@@ -29,10 +29,20 @@ interface CampaignTableProps {
 export function CampaignTable({ campaigns, isLoading, onRefresh, onShowToast }: CampaignTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   const filteredCampaigns = campaigns.filter((c) =>
     c.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const pageSize = 20;
+  const totalPages = Math.ceil(filteredCampaigns.length / pageSize);
+  const paginatedCampaigns = filteredCampaigns.slice((page - 1) * pageSize, page * pageSize);
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setPage(1);
+  };
 
   return (
     <Card className="shadow-none border-border flex flex-col">
@@ -47,17 +57,17 @@ export function CampaignTable({ campaigns, isLoading, onRefresh, onShowToast }: 
               className="border-0 shadow-none focus-visible:ring-0 bg-transparent h-8 p-0 text-body-sm flex-1"
               placeholder="Search campaigns by title..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
-          <div className="w-full overflow-x-auto">
+          <div className="w-full overflow-auto h-[480px]">
             {isLoading ? (
               <div className="space-y-2 py-4 px-4 animate-pulse">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Skeleton key={i} className="h-12 w-full rounded-md bg-muted/60" />
                 ))}
               </div>
-            ) : filteredCampaigns.length === 0 ? (
+            ) : paginatedCampaigns.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground flex flex-col items-center justify-around">
                 <p className="text-body-sm font-medium flex justify-around">No campaigns found.</p>
                 <p className="text-label-sm text-muted-foreground mt-xs flex justify-around">
@@ -66,7 +76,7 @@ export function CampaignTable({ campaigns, isLoading, onRefresh, onShowToast }: 
               </div>
             ) : (
               <Table className="min-w-[700px] w-full text-left text-body-sm">
-                <TableHeader>
+                <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
                   <TableRow className="border-b border-border flex items-center justify-around w-full">
                     <TableHead className="flex-1 flex items-center justify-around">
                       <span className="flex items-center justify-around w-full">Title</span>
@@ -86,7 +96,7 @@ export function CampaignTable({ campaigns, isLoading, onRefresh, onShowToast }: 
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-border">
-                  {filteredCampaigns.map((c) => (
+                  {paginatedCampaigns.map((c) => (
                     <TableRow key={c.id} className="hover:bg-muted/50 transition-colors flex items-center justify-around w-full">
                       <TableCell className="flex-1 font-semibold text-foreground flex items-center justify-around">
                         <span className="flex items-center justify-around w-full">{c.title}</span>
@@ -127,6 +137,35 @@ export function CampaignTable({ campaigns, isLoading, onRefresh, onShowToast }: 
             )}
           </div>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-sm pt-md border-t border-border mt-md">
+            <span className="text-label-sm text-muted-foreground order-2 sm:order-1">
+              Page {page} of {totalPages}
+            </span>
+            <div className="flex gap-sm w-full sm:w-auto justify-end order-1 sm:order-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="flex-1 sm:flex-none"
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="flex-1 sm:flex-none"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
 
       <CampaignDetailSheet

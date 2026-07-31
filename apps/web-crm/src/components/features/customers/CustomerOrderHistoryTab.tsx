@@ -51,15 +51,15 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
     );
   }
 
-  const pageSize = 10;
+  const pageSize = 20;
   const totalPages = Math.ceil(orders.length / pageSize);
   const paginatedOrders = orders.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="space-y-md">
-      <div className="w-full overflow-x-auto border rounded-md border-border">
+      <div className="w-full overflow-auto h-[400px] border rounded-md border-border">
         <Table className="min-w-[500px] w-full text-left text-body-sm">
-          <TableHeader>
+          <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
             <TableRow className="border-b border-border">
               <TableHead>Order Number</TableHead>
               <TableHead>Total Amount</TableHead>

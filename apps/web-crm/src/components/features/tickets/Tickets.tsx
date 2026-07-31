@@ -10,8 +10,9 @@ import { TicketTable } from "./TicketTable";
 export function Tickets() {
   const [activeTab, setActiveTab] = useState<string>("Unclaimed");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
-  const { data, isLoading, refetch } = useTickets(1, 50, activeTab);
+  const { data, isLoading, refetch } = useTickets(page, 20, activeTab);
 
   const showToast = useCallback((msg: string) => {
     setToastMsg(msg);
@@ -50,7 +51,14 @@ export function Tickets() {
         <TicketCreateSheet onSuccess={refetch} onShowToast={showToast} />
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-md">
+      <Tabs
+        value={activeTab}
+        onValueChange={(val) => {
+          setActiveTab(val);
+          setPage(1);
+        }}
+        className="w-full space-y-md"
+      >
         <TabsList className="w-full sm:w-auto overflow-x-auto justify-start border-b border-border bg-transparent p-0">
           <TabsTrigger value="Unclaimed" className="px-lg py-sm font-medium data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
             Available (Unclaimed)
@@ -69,6 +77,9 @@ export function Tickets() {
             isLoading={isLoading}
             onRefresh={refetch}
             onShowToast={showToast}
+            page={page}
+            totalPages={data?.totalPages ?? 1}
+            onPageChange={setPage}
           />
         </TabsContent>
       </Tabs>
