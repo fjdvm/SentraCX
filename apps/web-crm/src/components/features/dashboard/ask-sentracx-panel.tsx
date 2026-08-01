@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { aiClient } from "@/lib/api/ai-client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send, Sparkles, History, HelpCircle, X } from "lucide-react";
+import { Send, Sparkles, History, HelpCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { renderMessageContent, type Message } from "./ask-sentracx-message-renderer";
 
@@ -84,7 +84,7 @@ export function AskSentraCXPanel() {
           onClick={() => setIsOpen(true)}
           className="fixed bottom-6 right-6 md:bottom-8 md:right-8 h-14 w-14 rounded-full shadow-lg hover:scale-105 transition-all duration-300 bg-primary text-primary-foreground z-[999] border border-border/20 cursor-pointer flex items-center justify-center"
         >
-          <MessageSquare className="w-6 h-6 animate-pulse" />
+          <Sparkles className="w-6 h-6 animate-pulse" />
         </button>
       )}
 
