@@ -18,20 +18,19 @@ import { AiBadge } from "@/components/ui/ai-badge";
 
 interface TicketDetailSheetProps {
   ticketId: string | null;
-  staffUserId?: string;
   onClose: () => void;
   onRefresh: () => void;
   onShowToast: (msg: string) => void;
 }
 
-export function TicketDetailSheet({ ticketId, staffUserId = "user-001", onClose, onRefresh, onShowToast }: TicketDetailSheetProps) {
+export function TicketDetailSheet({ ticketId, onClose, onRefresh, onShowToast }: TicketDetailSheetProps) {
   const { data: ticket, isLoading } = useTicket(ticketId);
 
   if (!ticketId) return null;
 
   const handleClaim = async () => {
     try {
-      await crmClient.tickets.claim(ticketId, staffUserId);
+      await crmClient.tickets.claim(ticketId);
       onShowToast("Ticket claimed successfully.");
       onRefresh();
       onClose();
@@ -119,13 +118,15 @@ export function TicketDetailSheet({ ticketId, staffUserId = "user-001", onClose,
             </div>
 
             <div className="pt-4 flex flex-wrap justify-end gap-2 border-t border-border">
-              <Button variant="outline" asChild>
-                <Link href={`/conversations?ticketId=${ticket.id}`}>
-                  <MessageSquare className="w-4 h-4 mr-1.5" /> Message
-                </Link>
-              </Button>
+              {(ticket.status === "Claimed" || ticket.status === "Ongoing") && (
+                <Button variant="outline" asChild>
+                  <Link href={`/conversations?ticketId=${ticket.id}`}>
+                    <MessageSquare className="w-4 h-4 mr-1.5" /> Message
+                  </Link>
+                </Button>
+              )}
 
-              {ticket.status === "Unclaimed" && (
+              {(ticket.status === "Unclaimed" || (ticket.status === "Ongoing" && !ticket.assignedToId)) && (
                 <Button onClick={handleClaim}>Claim Ticket</Button>
               )}
 

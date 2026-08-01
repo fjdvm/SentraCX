@@ -32,6 +32,16 @@ import {
 
 const CRM_BASE = process.env.NEXT_PUBLIC_CRM_API_URL ?? "https://localhost:7001";
 
+let clientAccessToken: string | undefined;
+
+export function setClientAccessToken(token: string | undefined) {
+  clientAccessToken = token;
+}
+
+export function getClientAccessToken(): string | undefined {
+  return clientAccessToken;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${CRM_BASE}${path}`;
   const headers: Record<string, string> = { ...(init?.headers as Record<string, string>) };
@@ -46,9 +56,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const session = await auth();
     token = session?.accessToken;
   } else {
-    const { getSession } = await import("next-auth/react");
-    const session = await getSession();
-    token = session?.accessToken;
+    token = clientAccessToken;
   }
 
   if (token) {
@@ -226,8 +234,8 @@ export const crmClient = {
         method: "POST",
         body: JSON.stringify(body),
       }),
-    claim: (id: string, staffUserId: string) =>
-      request<void>(`/api/v1/tickets/${id}/claim?staffUserId=${encodeURIComponent(staffUserId)}`, {
+    claim: (id: string) =>
+      request<void>(`/api/v1/tickets/${id}/claim`, {
         method: "PUT",
       }),
     unclaim: (id: string) =>
