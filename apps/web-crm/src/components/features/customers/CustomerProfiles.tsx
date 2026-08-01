@@ -72,15 +72,6 @@ export function CustomerProfiles() {
         </Card>
       </div>
 
-      {/* Error Banner */}
-      {error && (
-        <div className="p-lg bg-destructive/10 border border-destructive/20 text-destructive rounded-lg text-body-sm flex flex-col sm:flex-row sm:items-center justify-between gap-sm">
-          <span>{error}</span>
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            Retry
-          </Button>
-        </div>
-      )}
 
       {/* Main Customers Table Card */}
       <Card className="shadow-none border-border flex flex-col">

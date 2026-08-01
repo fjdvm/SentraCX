@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Hanken_Grotesk, Geist_Mono } from "next/font/google";
 import { AppShell } from "@/components/shared/AppShell";
 import { SessionProvider } from "next-auth/react";
+import { TokenSync } from "@/components/shared/TokenSync";
 import "./globals.css";
 
 const hankenGrotesk = Hanken_Grotesk({
@@ -27,6 +28,7 @@ export default async function RootLayout({
     <html lang="en" className={`${hankenGrotesk.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-screen bg-background text-foreground font-sans">
         <SessionProvider>
+          <TokenSync />
           <AppShell>{children}</AppShell>
         </SessionProvider>
       </body>

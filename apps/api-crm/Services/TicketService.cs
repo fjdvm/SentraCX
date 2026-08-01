@@ -122,7 +122,10 @@ public class TicketService(
         var ticket = await ticketRepo.GetByIdAsync(id);
         if (ticket is null) return false;
 
-        if (ticket.Status != "Unclaimed") return false;
+        // Allow claiming tickets that are Unclaimed, or Ongoing with no current assignee
+        // (escalated tickets that need a human agent to pick them up).
+        if (ticket.Status != "Unclaimed" && !(ticket.Status == "Ongoing" && ticket.AssignedToId == null))
+            return false;
 
         ticket.Status = "Claimed";
         ticket.AssignedToId = staffUserId;
@@ -219,7 +222,7 @@ public class TicketService(
             ticket.Description = $"{ticket.Description}\n\n--- Bot Context ---\n{botSummary}";
         }
 
-        ticket.Status = "Ongoing";
+        ticket.Status = "Unclaimed";
         ticket.AssignedToId = null;
         ticket.UpdatedAt = DateTime.UtcNow;
 

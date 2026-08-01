@@ -31,9 +31,8 @@ export function useDashboardHub({ onMetricsUpdated }: UseDashboardHubOptions = {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
         accessTokenFactory: async () => {
-          const { getSession } = await import("next-auth/react");
-          const session = await getSession();
-          return session?.accessToken ?? "";
+          const { getClientAccessToken } = await import("@/lib/api/crm-client");
+          return getClientAccessToken() ?? "";
         }
       })
       .withAutomaticReconnect()

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useCustomer } from "@/hooks/useCustomer";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -48,10 +48,15 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
             <ArrowLeft /> Back to Customers
           </Button>
         </Link>
-        <div className="p-lg bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-center">
-          <p className="font-bold text-body-md">Customer Not Found</p>
-          <p className="text-body-sm mt-xs">{error || "The requested customer profile could not be loaded."}</p>
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-md">
+        <div className="p-lg bg-muted/50 border border-border rounded-xl text-center flex flex-col items-center gap-md py-2xl">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          <div>
+            <p className="font-bold text-body-md text-foreground">Looking for customer...</p>
+            <p className="text-body-sm text-muted-foreground mt-xs">
+              {error || "The customer profile is being loaded. This may take a moment."}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-sm">
             Retry
           </Button>
         </div>

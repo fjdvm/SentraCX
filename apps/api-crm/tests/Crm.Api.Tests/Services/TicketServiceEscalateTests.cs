@@ -88,7 +88,7 @@ public class TicketServiceEscalateTests
 
         // Assert
         Assert.True(result);
-        Assert.Equal("Ongoing", ticket.Status);
+        Assert.Equal("Unclaimed", ticket.Status);
         Assert.Null(ticket.AssignedToId);
         Assert.Contains("Original description", ticket.Description);
         Assert.Contains("--- Bot Context ---", ticket.Description);

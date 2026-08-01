@@ -11,6 +11,7 @@ namespace Crm.Api.Controllers;
 public class MessagesController(IMessageService messageService) : ControllerBase
 {
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetByTicket(Guid ticketId)
     {
         var messages = await messageService.GetByTicketIdAsync(ticketId);
@@ -18,10 +19,11 @@ public class MessagesController(IMessageService messageService) : ControllerBase
     }
 
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IActionResult> Create(
         Guid ticketId,
         [FromBody] CreateMessageRequestDto dto,
-        [FromQuery] string senderId) // TODO: Extract from JWT claims when auth is re-enabled
+        [FromQuery] string senderId)
     {
         var result = await messageService.CreateAsync(ticketId, senderId, dto);
         return result is null ? BadRequest("Ticket is not active or does not exist.") : Created("", result);

@@ -16,13 +16,26 @@ interface ConversationsProps {
 }
 
 export function Conversations({ initialTicketId }: ConversationsProps) {
-  // TODO (auth): In dev, no assignedToId is passed (returns all Claimed/Ongoing tickets).
-  //              When auth is re-enabled, pass session user ID here.
-  const { tickets, isLoading: isTicketsLoading, error: ticketsError, refetch: refetchTickets } = useTickets(
+  // Fetch both Claimed and Ongoing tickets so the sidebar shows all conversations
+  // the staff user is actively handling (claimed but not yet started, or in-progress).
+  const { tickets: claimedTickets, isLoading: isClaimedLoading, error: claimedError, refetch: refetchClaimed } = useTickets(
+    1,
+    100,
+    "Claimed"
+  );
+  const { tickets: ongoingTickets, isLoading: isOngoingLoading, error: ongoingError, refetch: refetchOngoing } = useTickets(
     1,
     100,
     "Ongoing"
   );
+
+  const tickets = [...claimedTickets, ...ongoingTickets];
+  const isTicketsLoading = isClaimedLoading || isOngoingLoading;
+  const ticketsError = claimedError || ongoingError;
+  const refetchTickets = useCallback(() => {
+    refetchClaimed();
+    refetchOngoing();
+  }, [refetchClaimed, refetchOngoing]);
 
   const [activeTicketId, setActiveTicketId] = useState<string | null>(initialTicketId ?? null);
   const [activeTab, setActiveTab] = useState<"all" | "unread" | "read">("all");
