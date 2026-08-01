@@ -25,7 +25,10 @@ from app.ml.conversation_analyzer import ConversationAnalyzer
 from app.repositories.redis.conversation_cache_repository import ConversationCacheRepository
 from app.services.conversation_analysis_service import ConversationAnalysisService
 from app.services.dashboard_service import DashboardService
+from app.services.watchlist_service import WatchlistService
 from app.services.forecast_service import ForecastService
+from app.services.context_snapshot_service import ContextSnapshotService
+from app.repositories.redis.context_snapshot_cache_repository import ContextSnapshotCacheRepository
 
 
 
@@ -124,6 +127,19 @@ def get_conversation_analysis_service() -> ConversationAnalysisService:
     )
 
 
+def get_context_snapshot_service() -> ContextSnapshotService:
+    """Build and return ContextSnapshotService with dependencies."""
+    settings = get_settings()
+    database = get_database()
+    redis_client = get_redis_client()
+    cache_repo = ContextSnapshotCacheRepository(redis_client)
+    crm_client = CrmClient(
+        base_url=settings.crm_api_base_url,
+        service_token=settings.crm_service_token,
+    )
+    return ContextSnapshotService(database=database, crm_client=crm_client, cache=cache_repo)
+
+
 def get_dashboard_service() -> DashboardService:
     """Build and return DashboardService with all dependencies."""
     settings = get_settings()
@@ -136,13 +152,46 @@ def get_dashboard_service() -> DashboardService:
         base_url=settings.crm_api_base_url,
         service_token=settings.crm_service_token,
     )
-    return DashboardService(database=database, groq_client=groq_client, crm_client=crm_client)
+    context_snapshot_svc = get_context_snapshot_service()
+    return DashboardService(
+        database=database,
+        groq_client=groq_client,
+        crm_client=crm_client,
+        context_snapshot_service=context_snapshot_svc
+    )
+
+
+def get_watchlist_service() -> WatchlistService:
+    """Build and return WatchlistService with dependencies."""
+    from app.services.watchlist_service import WatchlistService
+    settings = get_settings()
+    database = get_database()
+    crm_client = CrmClient(
+        base_url=settings.crm_api_base_url,
+        service_token=settings.crm_service_token,
+    )
+    return WatchlistService(database=database, crm_client=crm_client)
 
 
 def get_forecast_service() -> ForecastService:
     """Build and return ForecastService with all dependencies."""
+    settings = get_settings()
     database = get_database()
-    return ForecastService(database=database)
+    redis_client = get_redis_client()
+    
+    crm_client = CrmClient(
+        base_url=settings.crm_api_base_url,
+        service_token=settings.crm_service_token,
+    )
+    
+    from app.repositories.redis.forecast_cache_repository import ForecastCacheRepository
+    cache_repo = ForecastCacheRepository(redis_client)
+    
+    return ForecastService(
+        database=database,
+        crm_client=crm_client,
+        cache_repo=cache_repo,
+    )
 
 
 def get_chatbot_log_repository() -> ChatbotLogRepository:

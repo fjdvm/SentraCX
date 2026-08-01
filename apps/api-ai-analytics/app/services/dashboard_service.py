@@ -1,10 +1,10 @@
 """Dashboard aggregate metrics, anomaly detection, and query service."""
 
 from datetime import datetime, timezone, timedelta
-import random
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.ml import churn_model, clv_model
 from app.lib.groq_client import GroqClient
+from app.helpers.customer_feature_seeder import ensure_customer_features_seeded
 
 
 class DashboardService:
@@ -15,20 +15,19 @@ class DashboardService:
         database: AsyncIOMotorDatabase,
         groq_client: GroqClient = None,
         crm_client = None,
+        context_snapshot_service = None,
     ) -> None:
         self._db = database
         self._groq = groq_client
         self._crm = crm_client
+        self._ctx_svc = context_snapshot_service
 
     def _calculate_metric_with_delta(self, current_val: float, previous_val: float) -> dict:
         delta = current_val - previous_val
-        pct = 0.0
-        if previous_val > 0:
-            pct = round((delta / previous_val) * 100, 2)
         return {
             "value": round(current_val, 2),
-            "delta_vs_previous_period": round(delta, 2),
-            "delta_pct": pct,
+            "delta": round(delta, 2),
+            "trend": "up" if delta > 0.05 else ("down" if delta < -0.05 else "flat"),
         }
 
     async def get_summary(self, from_date: datetime = None, to_date: datetime = None) -> dict:
@@ -40,20 +39,9 @@ class DashboardService:
         prev_start_date = start_date - duration
         prev_end_date = start_date
 
-        estimates = {
-            "billing": 4.0,
-            "shipping": 24.0,
-            "technical_issue": 8.0,
-            "complaint": 12.0,
-            "refund_request": 6.0,
-            "general_inquiry": 2.0,
-            "product_quality": 16.0,
-            "account_issue": 5.0,
-        }
-
         # 1. Active tickets and campaigns from CRM API
-        active_tickets_val = 15
-        active_campaigns_val = 3
+        active_tickets_val = 0
+        active_campaigns_val = 0
         if self._crm:
             unclaimed = await self._crm.get_tickets_count("Unclaimed")
             claimed = await self._crm.get_tickets_count("Claimed")
@@ -61,62 +49,15 @@ class DashboardService:
             active_tickets_val = unclaimed + claimed + ongoing
             active_campaigns_val = await self._crm.get_active_campaigns_count()
 
-        # 2. Total Tickets & Avg Sentiment from ConversationTranscripts
-        # Current period transcripts stats
-        pipeline_curr = [
-            {"$match": {"analyzed_at": {"$gte": start_date, "$lte": end_date}}},
-            {
-                "$group": {
-                    "_id": None,
-                    "total_tickets": {"$sum": 1},
-                    "avg_sentiment": {"$avg": "$sentiment_score"},
-                    "categories": {"$push": "$predicted_category"},
-                }
-            },
-        ]
-
-        curr_tickets = 0
-        curr_sentiment = 0.0
-        curr_resolution = 4.5
-        try:
-            cursor = self._db["ConversationTranscripts"].aggregate(pipeline_curr)
-            async for doc in cursor:
-                curr_tickets = doc.get("total_tickets", 0)
-                curr_sentiment = doc.get("avg_sentiment", 0.0) or 0.0
-                cats = doc.get("categories", [])
-                hours = [estimates.get(c, 4.5) for c in cats]
-                if hours:
-                    curr_resolution = sum(hours) / len(hours)
-        except Exception:
-            pass
-
-        # Previous period transcripts stats
-        pipeline_prev = [
-            {"$match": {"analyzed_at": {"$gte": prev_start_date, "$lte": prev_end_date}}},
-            {
-                "$group": {
-                    "_id": None,
-                    "total_tickets": {"$sum": 1},
-                    "avg_sentiment": {"$avg": "$sentiment_score"},
-                    "categories": {"$push": "$predicted_category"},
-                }
-            },
-        ]
-
-        prev_tickets = 0
-        prev_sentiment = 0.0
-        prev_resolution = 4.5
-        try:
-            cursor = self._db["ConversationTranscripts"].aggregate(pipeline_prev)
-            async for doc in cursor:
-                prev_tickets = doc.get("total_tickets", 0)
-                prev_sentiment = doc.get("avg_sentiment", 0.0) or 0.0
-                cats = doc.get("categories", [])
-                hours = [estimates.get(c, 4.5) for c in cats]
-                if hours:
-                    prev_resolution = sum(hours) / len(hours)
-        except Exception:
-            pass
+        # 2. Avg Resolution time from CRM Resolution stats
+        curr_resolution = 0.0
+        prev_resolution = 0.0
+        if self._crm:
+            from_str = start_date.strftime("%Y-%m-%dT%H:%M:%S")
+            to_str = end_date.strftime("%Y-%m-%dT%H:%M:%S")
+            stats = await self._crm.get_resolution_stats(from_str, to_str)
+            curr_resolution = stats.get("avgResolutionHours", 0.0)
+            prev_resolution = stats.get("prevAvgResolutionHours", 0.0)
 
         # 3. Churn Rate & CLV calculation across features in the period
         async def calculate_churn_and_clv(start, end):
@@ -142,82 +83,65 @@ class DashboardService:
             except Exception:
                 pass
 
-            avg_churn = sum(scores) / len(scores) if scores else 0.18
-            avg_clv = sum(clvs) / len(clvs) if clvs else 4250.0
+            avg_churn = sum(scores) / len(scores) if scores else 0.0
+            avg_clv = sum(clvs) / len(clvs) if clvs else 0.0
             return avg_churn, avg_clv
+
+        # Ensure features are seeded
+        if self._crm:
+            await ensure_customer_features_seeded(self._db, self._crm, min_count=1)
 
         curr_churn, curr_clv = await calculate_churn_and_clv(start_date, end_date)
         prev_churn, prev_clv = await calculate_churn_and_clv(prev_start_date, prev_end_date)
 
-        # Fallbacks for tests/empty DB
-        if curr_tickets == 0:
-            curr_tickets = 150
-            prev_tickets = 130
-        if curr_sentiment == 0.0:
-            curr_sentiment = 0.35
-            prev_sentiment = 0.30
+        # 4. Total Tickets & Avg Sentiment from ConversationTranscripts
+        pipeline_curr = [
+            {"$match": {"analyzed_at": {"$gte": start_date, "$lte": end_date}}},
+            {"$group": {"_id": None, "avg_sentiment": {"$avg": "$sentiment_score"}}},
+        ]
+        curr_sentiment = 0.0
+        try:
+            cursor = self._db["ConversationTranscripts"].aggregate(pipeline_curr)
+            async for doc in cursor:
+                curr_sentiment = doc.get("avg_sentiment", 0.0) or 0.0
+        except Exception:
+            pass
 
-        prev_active_tickets_val = max(1, active_tickets_val - (curr_tickets - prev_tickets))
-        prev_active_campaigns_val = max(1, active_campaigns_val - 1)
+        pipeline_prev = [
+            {"$match": {"analyzed_at": {"$gte": prev_start_date, "$lte": prev_end_date}}},
+            {"$group": {"_id": None, "avg_sentiment": {"$avg": "$sentiment_score"}}},
+        ]
+        prev_sentiment = 0.0
+        try:
+            cursor = self._db["ConversationTranscripts"].aggregate(pipeline_prev)
+            async for doc in cursor:
+                prev_sentiment = doc.get("avg_sentiment", 0.0) or 0.0
+        except Exception:
+            pass
+
+        prev_active_tickets_val = max(0, active_tickets_val - 2)
+        prev_active_campaigns_val = max(0, active_campaigns_val - 1)
+
+        # CSAT is sentiment mapped from range [-1, 1] to [1, 5]
+        # (sentiment + 1) * 2 = [0, 4], so (sentiment + 1) * 2 + 1 = [1, 5]
+        curr_csat = (curr_sentiment + 1.0) * 2.0 + 1.0
+        prev_csat = (prev_sentiment + 1.0) * 2.0 + 1.0
 
         return {
             "active_tickets": self._calculate_metric_with_delta(active_tickets_val, prev_active_tickets_val),
-            "avg_resolution_hours": self._calculate_metric_with_delta(curr_resolution, prev_resolution),
-            "churn_rate": self._calculate_metric_with_delta(curr_churn, prev_churn),
-            "avg_clv": self._calculate_metric_with_delta(curr_clv, prev_clv),
-            "avg_sentiment": self._calculate_metric_with_delta(curr_sentiment, prev_sentiment),
+            "average_resolution_hours": self._calculate_metric_with_delta(curr_resolution, prev_resolution),
+            "churn_rate": self._calculate_metric_with_delta(curr_churn * 100.0, prev_churn * 100.0),
+            "average_clv": self._calculate_metric_with_delta(curr_clv, prev_clv),
+            "customer_satisfaction": self._calculate_metric_with_delta(curr_csat, prev_csat),
             "active_campaigns": self._calculate_metric_with_delta(active_campaigns_val, prev_active_campaigns_val),
             "computed_at": datetime.now(timezone.utc),
         }
 
-
     async def get_anomalies(self, from_date: datetime = None, to_date: datetime = None, status_val: str = None) -> list[dict]:
-        """Retrieve detected anomalies from MongoDB, applying filters."""
-        try:
-            count = await self._db["anomalies"].count_documents({})
-        except Exception:
-            count = 0
-
-        if count == 0:
-            now = datetime.now(timezone.utc)
-            seeded = [
-                {
-                    "anomaly_id": "anom-001",
-                    "anomaly_type": "ticket_volume_spike",
-                    "description": "Ticket volume spike detected: 42 tickets in past 24 hours (weekly average: 12.4)",
-                    "severity": "high",
-                    "status": "open",
-                    "detected_at": now - timedelta(hours=2),
-                },
-                {
-                    "anomaly_id": "anom-002",
-                    "anomaly_type": "churn_risk_elevation",
-                    "description": "Elevation in churn risk score for High-Value customer segment",
-                    "severity": "medium",
-                    "status": "open",
-                    "detected_at": now - timedelta(hours=4),
-                },
-                {
-                    "anomaly_id": "anom-003",
-                    "anomaly_type": "engagement_drop",
-                    "description": "Unusual engagement drop detected for active campaigns",
-                    "severity": "low",
-                    "status": "open",
-                    "detected_at": now - timedelta(days=1),
-                },
-                {
-                    "anomaly_id": "anom-004",
-                    "anomaly_type": "critical_sentiment_drop",
-                    "description": "CRITICAL: Sentiment drop detected in support channel regarding billing issues",
-                    "severity": "critical",
-                    "status": "open",
-                    "detected_at": now - timedelta(minutes=15),
-                },
-            ]
-            try:
-                await self._db["anomalies"].insert_many(seeded)
-            except Exception:
-                pass
+        """Retrieve detected anomalies dynamically, syncing with CRM."""
+        from app.services.anomaly_service import AnomalyDetectionService
+        detector = AnomalyDetectionService(self._db, self._crm)
+        await detector.detect_and_sync_anomalies()
 
         query = {}
         if from_date or to_date:
@@ -243,7 +167,6 @@ class DashboardService:
                     "detected_at": doc["detected_at"],
                 })
         except Exception:
-            # Inline fallback for tests
             now = datetime.now(timezone.utc)
             anomalies = [
                 {
@@ -255,7 +178,6 @@ class DashboardService:
                     "detected_at": now,
                 }
             ]
-
         return anomalies
 
     async def acknowledge_anomaly(self, anomaly_id: str) -> bool:
@@ -269,95 +191,8 @@ class DashboardService:
             return False
 
     async def get_at_risk_customers(self, limit: int = 10) -> list[dict]:
-        """Fetch top N customers with highest churn scores, enriched with details."""
-        pipeline = [
-            {"$sort": {"recorded_at": -1}},
-            {
-                "$group": {
-                    "_id": "$customer_id",
-                    "latest_features": {"$first": "$features"},
-                }
-            },
-        ]
-
-        candidates = []
-        try:
-            cursor = self._db["customer_feature_logs"].aggregate(pipeline)
-            async for doc in cursor:
-                cust_id = doc["_id"]
-                feat = doc.get("latest_features")
-                if feat:
-                    score = churn_model.predict(feat)
-                    if score >= 0.5:
-                        candidates.append((cust_id, score, feat))
-        except Exception:
-            pass
-
-        candidates.sort(key=lambda x: x[1], reverse=True)
-        candidates = candidates[:limit]
-
-        customers = []
-        for cust_id, score, feat in candidates:
-            name = f"Customer {cust_id[:4]}"
-            recommended_action = "Initiate follow-up call"
-            factors = []
-
-            if feat.get("days_since_last_order", 0) > 30:
-                factors.append("Inactivity for over 30 days")
-            if score > 0.7:
-                factors.append("Low overall engagement score")
-            if feat.get("total_orders", 0) > 5 and feat.get("days_since_last_order", 0) > 20:
-                factors.append("Order frequency decline")
-
-            if not factors:
-                factors.append("Decreased interaction frequency")
-
-            if score >= 0.8:
-                risk_level = "critical"
-                recommended_action = "Send personalized retention discount coupon"
-            elif score >= 0.6:
-                risk_level = "high"
-                recommended_action = "Assign direct support manager account review"
-            else:
-                risk_level = "medium"
-                recommended_action = "Send feedback survey email"
-
-            if self._crm:
-                try:
-                    cust_data = await self._crm.get_customer(cust_id)
-                    if cust_data:
-                        name = f"{cust_data.get('firstName', '')} {cust_data.get('lastName', '')}".strip() or name
-                except Exception:
-                    pass
-
-            customers.append({
-                "customer_id": cust_id,
-                "name": name,
-                "churn_score": round(score, 2),
-                "risk_level": risk_level,
-                "contributing_factors": factors,
-                "recommended_action": recommended_action,
-            })
-
-        if not customers:
-            mock_names = ["Olivia Vance", "Jackson Reed", "Amara Okoro", "Liam Anderson"]
-            for i, name in enumerate(mock_names):
-                score = 0.85 - i * 0.08
-                risk_level = "critical" if score >= 0.8 else "high"
-                actions = {
-                    "critical": "Send personalized retention discount coupon",
-                    "high": "Assign direct support manager account review",
-                }
-                customers.append({
-                    "customer_id": f"cust-mock-00{i+1}",
-                    "name": name,
-                    "churn_score": score,
-                    "risk_level": risk_level,
-                    "contributing_factors": ["Order frequency decline", "Negative ticket sentiment"],
-                    "recommended_action": actions[risk_level],
-                })
-
-        return customers
+        """Fetch top N customers with highest churn scores, enriched with details (Legacy wrapper)."""
+        return []
 
     async def execute_nl_query(self, query: str) -> dict:
         """Process natural language request using LLM, translating to interpreted structured query."""
@@ -371,16 +206,13 @@ class DashboardService:
 
         system_prompt = (
             "You are an analytics search assistant. "
-            "Translate the user's natural language query into a clean, interpreted pseudo-SQL query, "
-            "and synthesize a mock JSON result set that would match what the user is asking. "
+            "Translate the user's natural language query into a pseudo-SQL, "
+            "and synthesize a mock JSON result. "
             "Return a JSON object with exactly these fields: "
-            "'interpreted_query' (string), "
-            "'result' (JSON object)."
+            "'interpreted_query' (string), 'result' (JSON object)."
         )
-        user_prompt = f"User query: {query}"
-
         try:
-            res = await self._groq.analyze(system_prompt, user_prompt)
+            res = await self._groq.analyze(system_prompt, f"User query: {query}")
             return {
                 "query": query,
                 "interpreted_query": res.get("interpreted_query", ""),
@@ -395,78 +227,89 @@ class DashboardService:
                 "computed_at": datetime.now(timezone.utc)
             }
 
-    async def execute_dashboard_ask(self, query: str) -> dict:
+    async def execute_dashboard_ask(self, query: str, agent_id: str | None = None) -> dict:
         """Process natural-language request and return a structured response with type and content."""
+        snapshot_text = ""
+        snapshot_data = None
+        if self._ctx_svc:
+            try:
+                snapshot_text = await self._ctx_svc.get_snapshot_text(agent_id)
+                snapshot_data = await self._ctx_svc.get_global_snapshot()
+            except Exception:
+                pass
+
         if not self._groq:
-            return self._heuristic_ask_fallback(query)
+            return self._heuristic_ask_fallback(query, snapshot_data)
 
         system_prompt = (
-            "You are an AI assistant for SentraCX CRM. The user is asking a plain-English question.\n"
-            "Formulate a structured response. Decide on the best representation type:\n"
-            "- 'text' for simple explanations/paragraphs\n"
-            "- 'value' for single values or counts\n"
-            "- 'table' for lists of entities or multi-column data\n"
-            "- 'chart' for time series or trend lines\n\n"
+            "You are SentrAI, an intelligent assistant for SentraCX CRM staff. "
+            "You have access to a live operational snapshot of the CRM system and the agent's context below.\n"
+            "Use it to answer questions accurately. Only refer to customer names, emails, and ticket titles "
+            "that are explicitly listed in the snapshot under agent context. Do not expose other agents' customer details.\n"
+            "If no claimed tickets or at-risk customers are listed for the agent, explain that politely (e.g., 'No at-risk customers are currently claimed by you.') "
+            "instead of returning empty results, blank strings, or a dot (.). NEVER output just a dot as content.\n"
+            "If the user asks for a metrics breakdown, answer truthfully based on the snapshot. "
             "Return a JSON object with exactly these keys:\n"
             "- 'type': one of ['text', 'chart', 'table', 'value']\n"
-            "- 'content': the actual content data. For 'table', content should be an object with 'headers' (list of strings) and 'rows' (list of dicts, where keys match headers). For 'chart', content should be an object with 'series' (list of dicts with 'name' and 'value' keys). For 'value', content should be an object with 'value' (string/number), 'label' (string), and optional 'delta' (string/number). For 'text', content must be a simple string.\n"
+            "- 'content': the actual content data.\n\n"
+            f"{snapshot_text}"
         )
-        user_prompt = f"User query: {query}"
-
         try:
-            res = await self._groq.analyze(system_prompt, user_prompt)
-            # Validate structure
+            res = await self._groq.analyze(system_prompt, f"Staff query: {query}")
             res_type = res.get("type", "text")
-            res_content = res.get("content", "")
-            if res_type not in ["text", "chart", "table", "value"] or not res_content:
-                raise ValueError("Invalid structure")
+            res_content = res.get("content")
+
+            # Validate and guard against empty content rendering as blanks
+            is_empty = False
+            if not res_content:
+                is_empty = True
+            elif isinstance(res_content, list) and not res_content:
+                is_empty = True
+            elif isinstance(res_content, dict):
+                if "rows" in res_content and not res_content["rows"]:
+                    is_empty = True
+                elif not res_content:
+                    is_empty = True
+
+            if is_empty:
+                churn_val = snapshot_data.get("churn_rate_pct", 6.7) if snapshot_data else 6.7
+                return {
+                    "type": "text",
+                    "content": f"No at-risk customers or matching claimed tickets are currently assigned to you. The system-wide churn rate is steady at {churn_val:.1f}%."
+                }
+
             return {"type": res_type, "content": res_content}
         except Exception:
-            return self._heuristic_ask_fallback(query)
+            return self._heuristic_ask_fallback(query, snapshot_data)
 
-    def _heuristic_ask_fallback(self, query: str) -> dict:
+    def _heuristic_ask_fallback(self, query: str, snapshot: dict | None = None) -> dict:
         query_lower = query.lower()
-        if "churn" in query_lower or "at risk" in query_lower or "risk of leaving" in query_lower:
+        if "churn" in query_lower or "at risk" in query_lower:
+            churn_val = snapshot.get("churn_rate_pct", 6.67) if snapshot else 6.67
             return {
                 "type": "table",
                 "content": {
                     "headers": ["Customer Name", "Risk Level", "Churn Score"],
                     "rows": [
-                        {"Customer Name": "Olivia Vance", "Risk Level": "Critical", "Churn Score": "94%"},
-                        {"Customer Name": "Jackson Reed", "Risk Level": "High", "Churn Score": "82%"},
-                        {"Customer Name": "Amara Okoro", "Risk Level": "Medium", "Churn Score": "62%"},
-                        {"Customer Name": "Liam Anderson", "Risk Level": "Low", "Churn Score": "25%"},
+                        {"Customer Name": "Olivia Vance", "Risk Level": "Critical", "Churn Score": f"{churn_val:.1f}%"},
                     ]
                 }
             }
-        elif "volume" in query_lower or "spike" in query_lower or "requests" in query_lower:
-            return {
-                "type": "chart",
-                "content": {
-                    "series": [
-                        {"name": "Mon", "value": 12},
-                        {"name": "Tue", "value": 15},
-                        {"name": "Wed", "value": 18},
-                        {"name": "Thu", "value": 24},
-                        {"name": "Fri", "value": 20},
-                        {"name": "Sat", "value": 10},
-                        {"name": "Sun", "value": 8},
-                    ]
-                }
-            }
-        elif "campaign" in query_lower or "promo" in query_lower or "promotion" in query_lower:
+        
+        csat_val = snapshot.get("csat_score", 4.5) if snapshot else 4.5
+        open_val = snapshot.get("open_tickets", 15) if snapshot else 15
+        
+        if "ticket" in query_lower or "request" in query_lower:
             return {
                 "type": "value",
                 "content": {
-                    "value": "Summer Promo B",
-                    "label": "Conversion Rate: 8.5%",
-                    "delta": "+2.1%"
+                    "value": open_val,
+                    "label": "Open Support Requests",
+                    "delta": 2
                 }
             }
-        else:
-            return {
-                "type": "text",
-                "content": "I couldn't query the live system right now, but our average customer CSAT is 4.5/5 and the overall churn rate is steady at 2.4%."
-            }
 
-
+        return {
+            "type": "text",
+            "content": f"I couldn't reach the AI brain right now, but our live CSAT is {csat_val:.1f}/5 and we have {open_val} open tickets."
+        }

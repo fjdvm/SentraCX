@@ -1,7 +1,8 @@
 """Watchlist and anomaly action endpoints for the analytics module."""
 
 from fastapi import APIRouter, Query, Depends, HTTPException, status
-from app.api.v1.deps import get_dashboard_service
+from app.api.v1.deps import get_watchlist_service, get_dashboard_service
+from app.services.watchlist_service import WatchlistService
 from app.services.dashboard_service import DashboardService
 from app.schemas.watchlist_schemas import AtRiskCustomerListResponse
 from app.schemas.dashboard_schemas import AnomalyItem
@@ -17,7 +18,7 @@ router = APIRouter(tags=["watchlist"])
 )
 async def get_at_risk_customers(
     limit: int = Query(default=10, ge=1, le=100, description="Max number of customers to return"),
-    service: DashboardService = Depends(get_dashboard_service),
+    service: WatchlistService = Depends(get_watchlist_service),
 ) -> AtRiskCustomerListResponse:
     data = await service.get_at_risk_customers(limit)
     return AtRiskCustomerListResponse(customers=data)

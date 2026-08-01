@@ -9,18 +9,18 @@ class MetricWithDelta(BaseModel):
     """Metric value along with comparisons to previous period."""
 
     value: float = Field(description="Current value of the metric")
-    delta_vs_previous_period: float = Field(description="Absolute difference compared to previous period")
-    delta_pct: float = Field(description="Percentage difference compared to previous period")
+    delta: float = Field(description="Absolute difference compared to previous period")
+    trend: str = Field(description="Trend direction: up, down, or flat")
 
 
 class DashboardSummaryResponse(BaseModel):
     """Response schema for dashboard summary metrics."""
 
     active_tickets: MetricWithDelta
-    avg_resolution_hours: MetricWithDelta
+    average_resolution_hours: MetricWithDelta
     churn_rate: MetricWithDelta
-    avg_clv: MetricWithDelta
-    avg_sentiment: MetricWithDelta
+    average_clv: MetricWithDelta
+    customer_satisfaction: MetricWithDelta
     active_campaigns: MetricWithDelta
     computed_at: datetime
 
@@ -62,6 +62,7 @@ class AskRequest(BaseModel):
     """Request schema for Ask SentraCX query."""
 
     query: str = Field(description="Plain-English question about dashboard metrics or predictions")
+    agent_id: str | None = Field(default=None, description="Optional agent ID to fetch personal claimed tickets")
 
 
 class AskResponse(BaseModel):

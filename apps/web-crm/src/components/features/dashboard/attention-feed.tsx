@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { ShieldAlert, Check, CheckCircle2 } from "lucide-react";
 
 interface Anomaly {
-  id: string;
+  anomaly_id: string;
   description: string;
   severity: "low" | "medium" | "high" | "critical";
   status: "open" | "investigating" | "resolved" | "acknowledged";
@@ -32,13 +32,13 @@ export function AttentionFeed() {
 
       // Trigger warning toast notifications for new critical anomalies (avoiding red error toasts)
       openAnomalies.forEach((a: Anomaly) => {
-        if (a.severity === "critical" && !toastedIds.current.has(a.id)) {
-          toastedIds.current.add(a.id);
+        if (a.severity === "critical" && !toastedIds.current.has(a.anomaly_id)) {
+          toastedIds.current.add(a.anomaly_id);
           toast.warning(`Critical Alert: ${a.description}`, {
             duration: 10000,
             action: {
               label: "Acknowledge",
-              onClick: () => handleAcknowledge(a.id),
+              onClick: () => handleAcknowledge(a.anomaly_id),
             },
           });
         }
@@ -136,7 +136,7 @@ export function AttentionFeed() {
         ) : (
           anomalies.map((a, index) => (
             <div
-              key={a.id ?? index}
+              key={a.anomaly_id ?? index}
               className="flex flex-col md:flex-row md:items-center justify-between gap-md border border-border/80 rounded-xl p-md bg-muted/20 hover:bg-muted/40 transition-all duration-300 animate-in fade-in duration-300"
             >
               <div className="space-y-xs flex-1">
@@ -155,7 +155,7 @@ export function AttentionFeed() {
                   size="sm"
                   variant="outline"
                   className="gap-xs border-border/80 text-body-sm bg-background hover:bg-muted duration-300 font-medium"
-                  onClick={() => handleAcknowledge(a.id)}
+                  onClick={() => handleAcknowledge(a.anomaly_id)}
                 >
                   <Check className="w-3.5 h-3.5" />
                   Acknowledge

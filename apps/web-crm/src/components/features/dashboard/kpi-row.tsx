@@ -58,13 +58,13 @@ export function KpiRow({ data, isLoading }: KpiRowProps) {
     const sign = delta > 0 ? "+" : delta < 0 ? "-" : "";
     const prefix = isCurrency ? "$" : "";
     const suffix = isPercent ? "%" : "";
-    
+
     if (delta === 0) return "Steady";
-    
+
     if (isCurrency && abs >= 1000) {
       return `${sign}${prefix}${(abs / 1000).toFixed(1)}k`;
     }
-    
+
     return `${sign}${prefix}${abs.toFixed(isPercent ? 1 : 0)}${suffix}`;
   };
 
@@ -82,7 +82,7 @@ export function KpiRow({ data, isLoading }: KpiRowProps) {
   const activeCampaigns = data.active_campaigns ?? defaultMetric;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-md">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-md">
       <KpiCard
         label="Open Support Requests"
         value={activeTickets.value.toLocaleString()}
@@ -107,14 +107,14 @@ export function KpiRow({ data, isLoading }: KpiRowProps) {
         icon={TrendingDown}
         isNegativeBad={true}
       />
-      <KpiCard
-        label="Avg Customer Value"
-        value={formatClv(avgClv.value)}
-        change={formatDelta(avgClv.delta, false, true)}
-        trend={avgClv.trend}
-        icon={DollarSign}
-        isNegativeBad={false}
-      />
+      {/* <KpiCard
+         label="Avg Customer Value"
+         value={formatClv(avgClv.value)}
+         change={formatDelta(avgClv.delta, false, true)}
+         trend={avgClv.trend}
+         icon={DollarSign}
+         isNegativeBad={false}
+      /> */}
       <KpiCard
         label="Customer Mood"
         value={formatCSAT(csat.value)}

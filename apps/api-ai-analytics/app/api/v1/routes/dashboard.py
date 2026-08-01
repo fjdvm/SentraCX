@@ -75,6 +75,6 @@ async def ask_dashboard(
     service: DashboardService = Depends(get_dashboard_service),
 ) -> AskResponse:
     """Process natural language dashboard question."""
-    data = await service.execute_dashboard_ask(request.query)
+    data = await service.execute_dashboard_ask(request.query, request.agent_id)
     return AskResponse(**data)
 

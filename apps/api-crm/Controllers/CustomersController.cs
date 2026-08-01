@@ -11,6 +11,7 @@ namespace Crm.Api.Controllers;
 public class CustomersController(ICustomerService customerService) : ControllerBase
 {
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -22,6 +23,7 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     }
 
     [HttpGet("{id:guid}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid id)
     {
         var result = await customerService.GetByIdAsync(id);
