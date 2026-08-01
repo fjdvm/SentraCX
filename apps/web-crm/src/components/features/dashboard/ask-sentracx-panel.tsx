@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { aiClient } from "@/lib/api/ai-client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Sparkles, History, HelpCircle, X } from "lucide-react";
+import { Send, Sparkles, History, HelpCircle, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { renderMessageContent, type Message } from "./ask-sentracx-message-renderer";
 
@@ -15,6 +16,7 @@ const SUGGESTED_QUERIES = [
 ];
 
 export function AskSentraCXPanel() {
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [queryText, setQueryText] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -59,7 +61,8 @@ export function AskSentraCXPanel() {
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
 
     try {
-      const response = await aiClient.dashboard.ask(trimmed);
+      const agentId = session?.user?.id || session?.user?.email || undefined;
+      const response = await aiClient.dashboard.ask(trimmed, agentId);
       saveMessagesToSession([...updatedMessages, { role: "assistant", type: response.type, content: response.content }]);
     } catch {
       toast.error("Failed to process your request. Please try again.");
@@ -74,6 +77,11 @@ export function AskSentraCXPanel() {
     setHistory([]);
     try { localStorage.removeItem("sentracx:ask_query_history"); } catch (e) { console.error(e); }
     toast.success("Query history cleared.");
+  };
+
+  const handleClearChat = () => {
+    saveMessagesToSession([]);
+    toast.success("Conversation cleared.");
   };
 
   return (
@@ -111,13 +119,25 @@ export function AskSentraCXPanel() {
               </div>
               <h2 className="text-headline-sm font-bold text-foreground">Ask SentrAI</h2>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="rounded-sm p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </button>
+            <div className="flex items-center gap-sm">
+              {messages.length > 0 && (
+                <button
+                  onClick={handleClearChat}
+                  title="Clear conversation"
+                  className="rounded-sm p-1 opacity-70 transition-opacity hover:opacity-100 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Clear conversation</span>
+                </button>
+              )}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="rounded-sm p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </button>
+            </div>
           </div>
           <p className="text-body-sm text-muted-foreground">
             Get instant AI insights on customers, support queue, campaigns, and sentiment.

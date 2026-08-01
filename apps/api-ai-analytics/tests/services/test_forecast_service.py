@@ -1,7 +1,7 @@
 """Tests for ForecastService."""
 
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from app.services.forecast_service import ForecastService
 
 
@@ -22,8 +22,26 @@ def database() -> MagicMock:
 
 
 @pytest.fixture
-def service(database) -> ForecastService:
-    return ForecastService(database)
+def crm_client() -> MagicMock:
+    client = MagicMock()
+    client.get_daily_ticket_counts = AsyncMock(return_value=[])
+    client.get_revenue_by_customer_type = AsyncMock(return_value=[])
+    client.get_tickets = AsyncMock(return_value=[])
+    client.get_customers = AsyncMock(return_value=[])
+    return client
+
+
+@pytest.fixture
+def cache_repo() -> MagicMock:
+    repo = MagicMock()
+    repo.get_forecast = AsyncMock(return_value=None)
+    repo.set_forecast = AsyncMock()
+    return repo
+
+
+@pytest.fixture
+def service(database, crm_client, cache_repo) -> ForecastService:
+    return ForecastService(database, crm_client, cache_repo)
 
 
 async def test_get_ticket_volume_forecast(service: ForecastService, database: MagicMock) -> None:
@@ -39,6 +57,25 @@ async def test_get_ticket_volume_forecast(service: ForecastService, database: Ma
     assert len(resp["historical_series"]) == 2
     assert len(resp["forecast_series"]) == 7
     assert "confidence_band_upper" in resp
+
+
+async def test_get_ticket_volume_forecast_crm_backfill(
+    service: ForecastService, database: MagicMock, crm_client: MagicMock
+) -> None:
+    collection_mock = MagicMock()
+    collection_mock.aggregate.return_value = MockCursor([])  # Empty database
+    database.__getitem__.return_value = collection_mock
+
+    crm_client.get_daily_ticket_counts.return_value = [
+        {"date": "2026-07-20", "count": 10},
+        {"date": "2026-07-21", "count": 15},
+    ]
+
+    resp = await service.get_ticket_volume_forecast("7d")
+
+    assert len(resp["historical_series"]) == 2
+    assert resp["historical_series"][0]["count"] == 10
+    crm_client.get_daily_ticket_counts.assert_called_once()
 
 
 async def test_get_revenue_forecast(service: ForecastService, database: MagicMock) -> None:

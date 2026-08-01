@@ -4,13 +4,15 @@ import pytest
 from httpx import AsyncClient, ASGITransport
 from unittest.mock import AsyncMock
 from app.main import app
-from app.api.v1.deps import get_dashboard_service
+from app.api.v1.deps import get_watchlist_service, get_dashboard_service
+from app.services.watchlist_service import WatchlistService
+from app.services.dashboard_service import DashboardService
 
 
 @pytest.fixture(autouse=True)
-def mock_dashboard_service():
-    service_mock = AsyncMock()
-    service_mock.get_at_risk_customers.return_value = [
+def mock_watchlist_and_dashboard_services():
+    watchlist_mock = AsyncMock()
+    watchlist_mock.get_at_risk_customers.return_value = [
         {
             "customer_id": "cust-001",
             "name": "John Doe",
@@ -20,10 +22,13 @@ def mock_dashboard_service():
             "recommended_action": "Retention offer",
         }
     ]
-    service_mock.acknowledge_anomaly.return_value = True
 
-    app.dependency_overrides[get_dashboard_service] = lambda: service_mock
-    yield service_mock
+    dashboard_mock = AsyncMock()
+    dashboard_mock.acknowledge_anomaly.return_value = True
+
+    app.dependency_overrides[get_watchlist_service] = lambda: watchlist_mock
+    app.dependency_overrides[get_dashboard_service] = lambda: dashboard_mock
+    yield watchlist_mock, dashboard_mock
     app.dependency_overrides.clear()
 
 

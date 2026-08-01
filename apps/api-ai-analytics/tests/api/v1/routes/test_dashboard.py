@@ -13,15 +13,15 @@ def mock_dashboard_service():
     service_mock = AsyncMock()
     metric_mock = {
         "value": 10.0,
-        "delta_vs_previous_period": 2.0,
-        "delta_pct": 20.0,
+        "delta": 2.0,
+        "trend": "up",
     }
     service_mock.get_summary.return_value = {
         "active_tickets": metric_mock,
-        "avg_resolution_hours": metric_mock,
+        "average_resolution_hours": metric_mock,
         "churn_rate": metric_mock,
-        "avg_clv": metric_mock,
-        "avg_sentiment": metric_mock,
+        "average_clv": metric_mock,
+        "customer_satisfaction": metric_mock,
         "active_campaigns": metric_mock,
         "computed_at": datetime.now(timezone.utc),
     }
@@ -41,6 +41,10 @@ def mock_dashboard_service():
         "result": {"count": 14, "timeframe": "last_30_days"},
         "computed_at": datetime.now(timezone.utc),
     }
+    service_mock.execute_dashboard_ask.return_value = {
+        "type": "text",
+        "content": "hello world",
+    }
 
     app.dependency_overrides[get_dashboard_service] = lambda: service_mock
     yield service_mock
@@ -53,10 +57,10 @@ async def test_get_dashboard_summary() -> None:
     assert response.status_code == 200
     data = response.json()
     assert "active_tickets" in data
-    assert "avg_resolution_hours" in data
+    assert "average_resolution_hours" in data
     assert "churn_rate" in data
-    assert "avg_clv" in data
-    assert "avg_sentiment" in data
+    assert "average_clv" in data
+    assert "customer_satisfaction" in data
     assert "active_campaigns" in data
     assert "computed_at" in data
 
@@ -89,3 +93,15 @@ async def test_execute_natural_language_query() -> None:
     assert "interpreted_query" in data
     assert "result" in data
     assert "computed_at" in data
+
+
+async def test_ask_dashboard() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.post(
+            "/api/v1/dashboard/ask",
+            json={"query": "Show my claimed tickets", "agent_id": "agent-007"}
+        )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["type"] == "text"
+    assert data["content"] == "hello world"

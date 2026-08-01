@@ -10,7 +10,10 @@ public class DashboardHubTests
 {
     private readonly Mock<IConnectionMultiplexer> _redisMock = new();
     private readonly Mock<IDatabase> _dbMock = new();
+    private readonly Mock<ITicketRepository> _ticketRepoMock = new();
+    private readonly Mock<IMessageRepository> _messageRepoMock = new();
     private readonly Mock<IHubCallerClients> _clientsMock = new();
+    private readonly Mock<IClientProxy> _clientProxyMock = new();
     private readonly Mock<IGroupManager> _groupsMock = new();
     private readonly Mock<HubCallerContext> _contextMock = new();
     private readonly DashboardHub _sut;
@@ -19,8 +22,10 @@ public class DashboardHubTests
     {
         _redisMock.Setup(r => r.GetDatabase(It.IsAny<int>(), It.IsAny<object>())).Returns(_dbMock.Object);
         _contextMock.Setup(c => c.ConnectionId).Returns("conn-1");
+        
+        _clientsMock.Setup(c => c.Caller).Returns(_clientProxyMock.Object);
 
-        _sut = new DashboardHub(_redisMock.Object)
+        _sut = new DashboardHub(_ticketRepoMock.Object, _messageRepoMock.Object, _redisMock.Object)
         {
             Clients = _clientsMock.Object,
             Groups = _groupsMock.Object,

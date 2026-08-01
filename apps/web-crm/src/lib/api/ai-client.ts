@@ -114,10 +114,10 @@ export const aiClient = {
         method: "POST",
         body: JSON.stringify({ query: queryText }),
       }),
-    ask: (queryText: string) =>
+    ask: (queryText: string, agentId?: string) =>
       request<{ type: "text" | "chart" | "table" | "value"; content: any }>("/api/v1/dashboard/ask", {
         method: "POST",
-        body: JSON.stringify({ query: queryText }),
+        body: JSON.stringify({ query: queryText, agent_id: agentId }),
       }),
   },
   forecasts: {

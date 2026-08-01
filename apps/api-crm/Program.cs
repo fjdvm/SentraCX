@@ -77,6 +77,7 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
 builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
+builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 
 // Services
 builder.Services.AddScoped<ICustomerService, CustomerService>();
@@ -88,6 +89,7 @@ builder.Services.AddScoped<ICampaignService, CampaignService>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IPromotionService, PromotionService>();
 builder.Services.AddScoped<IDashboardBroadcastService, DashboardBroadcastService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 // Email & Campaign Dispatch Services
 builder.Services.Configure<SmtpOptions>(opts =>

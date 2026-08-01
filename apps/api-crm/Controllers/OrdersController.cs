@@ -10,6 +10,7 @@ namespace Crm.Api.Controllers;
 public class OrdersController(IOrderService orderService, ICustomerService customerService) : ControllerBase
 {
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetByCustomer(Guid customerId)
     {
         var customer = await customerService.GetByIdAsync(customerId);
