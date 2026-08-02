@@ -18,6 +18,7 @@ public static class TicketMapper
             CustomerName = ticket.Customer?.User?.DisplayName ?? string.Empty,
             AssignedToId = ticket.AssignedToId,
             AssignedToName = ticket.AssignedTo?.DisplayName,
+            HasStaffReplied = ticket.Messages != null && ticket.Messages.Any(m => m.SenderId != (ticket.Customer != null ? ticket.Customer.UserId : string.Empty) && m.SenderId != "bot" && m.SenderId != "system"),
             CreatedAt = ticket.CreatedAt,
             UpdatedAt = ticket.UpdatedAt
         };
@@ -31,7 +32,10 @@ public static class TicketMapper
             Title = ticket.Title,
             Status = ticket.Status,
             CustomerName = ticket.Customer?.User?.DisplayName ?? string.Empty,
-            UnreadMessageCount = ticket.Messages.Count(m => !m.IsRead),
+            AssignedToId = ticket.AssignedToId,
+            AssignedToName = ticket.AssignedTo?.DisplayName,
+            HasStaffReplied = ticket.Messages != null && ticket.Messages.Any(m => m.SenderId != (ticket.Customer != null ? ticket.Customer.UserId : string.Empty) && m.SenderId != "bot" && m.SenderId != "system"),
+            UnreadMessageCount = ticket.Messages != null ? ticket.Messages.Count(m => !m.IsRead) : 0,
             CreatedAt = ticket.CreatedAt
         };
     }

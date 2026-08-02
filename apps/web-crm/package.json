@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-http-header-size=32768' next dev --turbo -p 3005 --experimental-https --experimental-https-cert ./localhost.pem --experimental-https-key ./localhost-key.pem",
+    "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_OPTIONS='--max-http-header-size=32768' next dev --turbo -p 3005 --experimental-https --experimental-https-cert ./localhost.pem --experimental-https-key ./localhost-key.pem",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

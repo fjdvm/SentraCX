@@ -5,7 +5,7 @@ import * as signalR from "@microsoft/signalr";
 import { Message } from "@/types/message";
 import { Ticket } from "@/types/ticket";
 
-const CRM_BASE = process.env.NEXT_PUBLIC_CRM_API_URL ?? "https://localhost:7001";
+const CRM_BASE = process.env.NEXT_PUBLIC_CRM_API_URL ?? "https://localhost:5005";
 
 interface TicketStatusChangedPayload {
   ticketId: string;
@@ -155,10 +155,10 @@ export function useSignalR({
   );
 
   const markMessageRead = useCallback(
-    async (targetTicketId: string, messageId: string) => {
+    async (messageId: string) => {
       const connection = connectionRef.current;
       if (connection && connection.state === signalR.HubConnectionState.Connected) {
-        await connection.invoke("MarkMessageRead", targetTicketId, messageId);
+        await connection.invoke("MarkMessageRead", messageId);
       }
     },
     []

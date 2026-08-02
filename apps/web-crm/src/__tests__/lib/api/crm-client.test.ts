@@ -1,6 +1,6 @@
 import { crmClient } from "@/lib/api/crm-client";
 
-const BASE = "https://localhost:7001";
+const BASE = "https://localhost:5005";
 
 beforeEach(() => {
   jest.resetAllMocks();

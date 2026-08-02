@@ -8,14 +8,24 @@ namespace Crm.Api.Controllers;
 [ApiController]
 [Route("api/v1/tickets/{ticketId:guid}/messages")]
 [Authorize]
-public class MessagesController(IMessageService messageService) : ControllerBase
+public class MessagesController(
+    IMessageService messageService,
+    ILogger<MessagesController> logger) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetByTicket(Guid ticketId)
     {
-        var messages = await messageService.GetByTicketIdAsync(ticketId);
-        return Ok(messages);
+        try
+        {
+            var messages = await messageService.GetByTicketIdAsync(ticketId);
+            return Ok(messages);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to fetch messages for ticket {TicketId}", ticketId);
+            return StatusCode(500, new { error = "Failed to fetch messages." });
+        }
     }
 
     [HttpPost]

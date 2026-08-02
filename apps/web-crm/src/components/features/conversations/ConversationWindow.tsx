@@ -26,6 +26,8 @@ interface ConversationWindowProps {
   ticket: Ticket | null;
   messages: Message[];
   isLoading: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   onSendMessage: (content: string) => void;
   onComplete: (ticketId: string) => void;
   onUnclaim: (ticketId: string) => void;
@@ -36,6 +38,8 @@ export function ConversationWindow({
   ticket,
   messages,
   isLoading,
+  error,
+  onRetry,
   onSendMessage,
   onComplete,
   onUnclaim,
@@ -158,6 +162,15 @@ export function ConversationWindow({
             <Skeleton className="h-12 w-2/3 rounded-xl bg-muted/60" />
             <Skeleton className="h-12 w-1/2 ml-auto rounded-xl bg-muted/60" />
             <Skeleton className="h-12 w-3/4 rounded-xl bg-muted/60" />
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-full gap-sm text-center">
+            <p className="text-body-sm text-destructive">{error}</p>
+            {onRetry && (
+              <Button variant="outline" size="sm" onClick={onRetry}>
+                Retry
+              </Button>
+            )}
           </div>
         ) : messages.length === 0 ? (
           <div className="text-center text-muted-foreground text-body-sm py-xl">
