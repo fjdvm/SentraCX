@@ -30,7 +30,27 @@ import {
   PaginatedTicketResponse,
 } from "@/types/ticket";
 
-const CRM_BASE = process.env.NEXT_PUBLIC_CRM_API_URL ?? "https://localhost:7001";
+const CRM_BASE = process.env.NEXT_PUBLIC_CRM_API_URL ?? "https://localhost:5005";
+
+// Client-side requests use the Next.js rewrite proxy to avoid browser cert issues.
+// The proxy maps /api/crm/* → CRM_BASE/api/v1/*
+// Server-side requests go directly to the CRM API.
+function getBaseUrl(path: string): string {
+  if (typeof window !== "undefined") {
+    // Client-side: use rewrite proxy (strips /api/v1 prefix, uses /api/crm instead)
+    if (path.startsWith("/api/v1/")) {
+      return "";  // Use relative URL — path will be rewritten to /api/crm/...
+    }
+  }
+  return CRM_BASE;
+}
+
+function rewritePath(path: string): string {
+  if (typeof window !== "undefined" && path.startsWith("/api/v1/")) {
+    return "/api/crm/" + path.slice("/api/v1/".length);
+  }
+  return path;
+}
 
 let clientAccessToken: string | undefined;
 
@@ -43,7 +63,9 @@ export function getClientAccessToken(): string | undefined {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const url = `${CRM_BASE}${path}`;
+  const base = getBaseUrl(path);
+  const finalPath = rewritePath(path);
+  const url = `${base}${finalPath}`;
   const headers: Record<string, string> = { ...(init?.headers as Record<string, string>) };
 
   if (!(init?.body instanceof FormData)) {
@@ -253,6 +275,11 @@ export const crmClient = {
   messages: {
     listByTicket: (ticketId: string) =>
       request<Message[]>(`/api/v1/tickets/${ticketId}/messages`),
+    create: (ticketId: string, senderId: string, content: string) =>
+      request<Message>(`/api/v1/tickets/${ticketId}/messages?senderId=${encodeURIComponent(senderId)}`, {
+        method: "POST",
+        body: JSON.stringify({ content }),
+      }),
     markRead: (ticketId: string, messageId: string) =>
       request<void>(`/api/v1/tickets/${ticketId}/messages/${messageId}/read`, {
         method: "PUT",

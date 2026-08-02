@@ -47,8 +47,19 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
     }
   }, [tickets, activeTicketId]);
 
+  // Sync activeTicketId with URL search params so browser refresh keeps the active conversation
+  useEffect(() => {
+    if (activeTicketId && typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("ticketId") !== activeTicketId) {
+        url.searchParams.set("ticketId", activeTicketId);
+        window.history.replaceState(null, "", url.toString());
+      }
+    }
+  }, [activeTicketId]);
+
   const { ticket, isLoading: isTicketLoading } = useTicket(activeTicketId);
-  const { messages, isLoading: isMessagesLoading, appendMessage, refetch: refetchMessages } = useMessages(
+  const { messages, isLoading: isMessagesLoading, error: messagesError, appendMessage, refetch: refetchMessages } = useMessages(
     activeTicketId
   );
 
@@ -78,7 +89,7 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
   );
 
   // SignalR connection hook
-  const { sendMessage } = useSignalR({
+  const { isConnected, sendMessage } = useSignalR({
     ticketId: activeTicketId,
     onReceiveMessage: handleReceiveMessage,
     onNewMessageNotification: handleNewMessageNotification,
@@ -124,12 +135,21 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
       appendMessage(optimisticMsg);
 
       try {
-        await sendMessage(activeTicketId, senderId, content);
+        if (isConnected) {
+          await sendMessage(activeTicketId, senderId, content);
+        } else {
+          // Fallback to REST API when SignalR is not connected
+          const created = await crmClient.messages.create(activeTicketId, senderId, content);
+          if (created) {
+            // Replace optimistic message with the real one from the server
+            appendMessage(created);
+          }
+        }
       } catch (err) {
-        console.error("Failed to send message via SignalR:", err);
+        console.error("Failed to send message:", err);
       }
     },
-    [activeTicketId, ticket, sendMessage, appendMessage]
+    [activeTicketId, ticket, sendMessage, appendMessage, isConnected]
   );
 
   const handleComplete = useCallback(
@@ -195,6 +215,8 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
         ticket={ticket}
         messages={messages}
         isLoading={isTicketLoading || isMessagesLoading}
+        error={messagesError}
+        onRetry={refetchMessages}
         onSendMessage={handleSendMessage}
         onComplete={handleComplete}
         onUnclaim={handleUnclaim}

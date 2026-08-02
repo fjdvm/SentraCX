@@ -13,7 +13,7 @@ public class MessageService(
     ITicketRepository ticketRepo,
     IDashboardBroadcastService broadcastService) : IMessageService
 {
-    private static readonly HashSet<string> ActiveStatuses = ["Claimed", "Ongoing"];
+    private static readonly HashSet<string> ActiveStatuses = ["Unclaimed", "Claimed", "Ongoing"];
 
     public async Task<List<MessageResponseDto>> GetByTicketIdAsync(Guid ticketId)
     {

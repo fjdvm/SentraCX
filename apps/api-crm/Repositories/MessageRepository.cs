@@ -2,18 +2,33 @@ using Crm.Api.Data;
 using Crm.Api.Interfaces.Repositories;
 using Crm.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Crm.Api.Repositories;
 
-public class MessageRepository(AppDbContext context) : IMessageRepository
+public class MessageRepository(AppDbContext context, ILogger<MessageRepository> logger) : IMessageRepository
 {
     public async Task<List<Message>> GetByTicketIdAsync(Guid ticketId)
     {
-        return await context.Messages
-            .Include(m => m.Sender)
-            .Where(m => m.TicketId == ticketId)
-            .OrderBy(m => m.SentAt)
-            .ToListAsync();
+        try
+        {
+            return await context.Messages
+                .Include(m => m.Sender)
+                .Where(m => m.TicketId == ticketId)
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            // Fallback: if Include(Sender) fails (e.g., FK constraint issue with orphaned SenderId),
+            // load messages without the Sender navigation property.
+            logger.LogWarning(ex, "Failed to load messages with Sender include for ticket {TicketId}. Falling back to query without Include.", ticketId);
+
+            return await context.Messages
+                .Where(m => m.TicketId == ticketId)
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+        }
     }
 
     public async Task AddAsync(Message message)

@@ -154,8 +154,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors();
 
-// Global exception handling middleware — runs inside the CORS pipeline so
-// error responses still carry Access-Control-Allow-Origin headers.
+// Global exception handling middleware — explicitly adds CORS headers on error
+// responses so browsers can read the error body instead of blocking with
+// "CORS Missing Allow Origin".
 app.Use(async (context, next) =>
 {
     try
@@ -166,6 +167,14 @@ app.Use(async (context, next) =>
     {
         if (!context.Response.HasStarted)
         {
+            // Ensure CORS headers are present even on error responses
+            var origin = context.Request.Headers.Origin.ToString();
+            if (!string.IsNullOrEmpty(origin) && corsOrigins.Contains(origin))
+            {
+                context.Response.Headers.Append("Access-Control-Allow-Origin", origin);
+                context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
+            }
+
             context.Response.StatusCode = 500;
             context.Response.ContentType = "application/json";
             var message = app.Environment.IsDevelopment()

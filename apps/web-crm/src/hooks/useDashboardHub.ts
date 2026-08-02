@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 
-const CRM_BASE = process.env.NEXT_PUBLIC_CRM_API_URL ?? "https://localhost:7001";
+const CRM_BASE = process.env.NEXT_PUBLIC_CRM_API_URL ?? "https://localhost:5005";
 
 export interface DashboardMetrics {
   activeTickets: number;

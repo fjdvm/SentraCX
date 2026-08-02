@@ -57,6 +57,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
       const isAuthPath = pathname.startsWith("/api/auth");
+      const isProxyPath = pathname.startsWith("/api/crm") || pathname.startsWith("/hubs/");
       const isSignInPage = pathname === "/signin";
       const isAccessDeniedPage = pathname === "/access-denied";
 
@@ -111,7 +112,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return true;
       }
 
-      if (!isAuthPath && !isSignInPage && !isAccessDeniedPage) {
+      if (!isAuthPath && !isSignInPage && !isAccessDeniedPage && !isProxyPath) {
         return false; // Redirect to signin
       }
       return true;

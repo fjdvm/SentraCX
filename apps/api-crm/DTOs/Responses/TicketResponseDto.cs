@@ -13,6 +13,7 @@ public class TicketResponseDto
     public string? AssignedToName { get; set; }
     public string Category { get; set; } = "Uncategorized";
     public string Sentiment { get; set; } = "neutral";
+    public bool HasStaffReplied { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

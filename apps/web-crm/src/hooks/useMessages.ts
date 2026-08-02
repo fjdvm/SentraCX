@@ -28,32 +28,8 @@ export function useMessages(ticketId: string | null) {
   }, [ticketId]);
 
   useEffect(() => {
-    if (!ticketId) {
-      setMessages([]);
-      setIsLoading(false);
-      return;
-    }
-    let isMounted = true;
-    setIsLoading(true);
-    crmClient.messages
-      .listByTicket(ticketId)
-      .then((data) => {
-        if (isMounted) {
-          setMessages(data);
-          setError(null);
-          setIsLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : "Failed to load messages.");
-          setIsLoading(false);
-        }
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, [ticketId]);
+    fetchMessages();
+  }, [fetchMessages]);
 
   const appendMessage = useCallback((msg: Message) => {
     setMessages((prev) => {

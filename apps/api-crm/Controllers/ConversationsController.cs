@@ -11,7 +11,8 @@ namespace Crm.Api.Controllers;
 [Authorize]
 public class ConversationsController(IMessageService messageService) : ControllerBase
 {
-    [HttpGet("{id:guid}/messages")]
+    [HttpGet("{id:guid}/messages/since")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetMessagesSince(Guid id, [FromQuery] DateTime since)
     {
         var messages = await messageService.GetSinceAsync(id, since);
