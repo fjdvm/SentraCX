@@ -64,12 +64,12 @@ describe("Dashboard Components", () => {
       active_campaigns: { value: 3, delta: 0, trend: "flat" as const },
     };
 
-    it("renders all 6 KPI cards with correct formatted values and labels", () => {
+    it("renders all 5 active KPI cards with correct formatted values and labels", () => {
       render(<KpiRow data={mockData} isLoading={false} />);
       expect(screen.getByText("Open Support Requests")).toBeInTheDocument();
       expect(screen.getByText("Avg Time to Resolve")).toBeInTheDocument();
       expect(screen.getByText("Customers Leaving (%)")).toBeInTheDocument();
-      expect(screen.getByText("Avg Customer Value")).toBeInTheDocument();
+      expect(screen.queryByText("Avg Customer Value")).not.toBeInTheDocument();
       expect(screen.getByText("Customer Mood")).toBeInTheDocument();
       expect(screen.getByText("Running Promotions")).toBeInTheDocument();
 
@@ -77,14 +77,14 @@ describe("Dashboard Components", () => {
       expect(screen.getByText("15")).toBeInTheDocument();
       expect(screen.getByText("4h 30m")).toBeInTheDocument();
       expect(screen.getByText("2.4%")).toBeInTheDocument();
-      expect(screen.getByText("$4.3k")).toBeInTheDocument();
+      expect(screen.queryByText("$4.3k")).not.toBeInTheDocument();
       expect(screen.getByText("Positive 😊")).toBeInTheDocument();
       expect(screen.getByText("3")).toBeInTheDocument();
     });
 
     it("renders skeleton loader when loading", () => {
       const { container } = render(<KpiRow data={null} isLoading={true} />);
-      expect(container.getElementsByClassName("animate-pulse").length).toBe(6);
+      expect(container.getElementsByClassName("animate-pulse").length).toBe(5);
     });
   });
 
@@ -118,7 +118,7 @@ describe("Dashboard Components", () => {
     it("renders anomalies and handles acknowledge trigger", async () => {
       const mockAnomalies = [
         {
-          id: "anom-1",
+          anomaly_id: "anom-1",
           description: "Unusual ticket volume spike detected",
           severity: "critical",
           status: "open",

@@ -1,3 +1,10 @@
+/**
+ * @jest-environment node
+ */
+jest.mock("@/auth", () => ({
+  auth: jest.fn().mockResolvedValue(null),
+}));
+
 import { crmClient } from "@/lib/api/crm-client";
 
 const BASE = "https://localhost:5005";

@@ -14,8 +14,8 @@ interface KpiRowProps {
 export function KpiRow({ data, isLoading }: KpiRowProps) {
   if (isLoading || !data) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-md">
-        {Array.from({ length: 6 }).map((_, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-md">
+        {Array.from({ length: 5 }).map((_, i) => (
           <Card
             key={i}
             className="bg-card border-border rounded-xl flex flex-col justify-between shadow-none animate-pulse h-[140px]"
