@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TicketListItem } from "@/types/ticket";
+import { formatConversationTime } from "@/lib/format-conversation-time";
 
 interface ConversationListProps {
   tickets: TicketListItem[];
@@ -26,7 +27,10 @@ export function ConversationList({
   activeTab,
   onTabChange,
 }: ConversationListProps) {
-  const unreadTotal = tickets.reduce((acc, t) => acc + ((t.unreadMessageCount ?? 0) > 0 ? 1 : 0), 0);
+  const unreadTotal = tickets.reduce(
+    (acc, t) => acc + ((t.unreadMessageCount ?? 0) > 0 ? 1 : 0),
+    0
+  );
 
   const filteredTickets = tickets.filter((t) => {
     const count = t.unreadMessageCount ?? 0;
@@ -90,17 +94,18 @@ export function ConversationList({
         ) : (
           filteredTickets.map((ticket) => {
             const hasUnread = (ticket.unreadMessageCount ?? 0) > 0;
-            const initials = ticket.customerName
-              .split(" ")
-              .map((n) => n[0])
-              .filter(Boolean)
-              .join("")
-              .toUpperCase() || "C";
+            const initials =
+              ticket.customerName
+                .split(" ")
+                .map((n) => n[0])
+                .filter(Boolean)
+                .join("")
+                .toUpperCase() || "C";
 
-            const formattedTime = new Date(ticket.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
+            const activityTimestamp =
+              ticket.lastMessageAt || ticket.updatedAt || ticket.createdAt;
+            const formattedTime = formatConversationTime(activityTimestamp);
+            const previewText = ticket.lastMessageContent || ticket.title;
 
             return (
               <div
@@ -120,16 +125,22 @@ export function ConversationList({
                     <h4 className="text-body-sm font-bold text-foreground truncate">
                       {ticket.customerName}
                     </h4>
-                    <span className="text-label-sm text-muted-foreground font-mono">
+                    <span
+                      className={`text-label-sm font-mono ${
+                        hasUnread ? "text-primary font-bold" : "text-muted-foreground"
+                      }`}
+                    >
                       {formattedTime}
                     </span>
                   </div>
                   <p
                     className={`text-label-sm truncate ${
-                      hasUnread ? "text-foreground font-bold" : "text-muted-foreground"
+                      hasUnread
+                        ? "text-foreground font-bold"
+                        : "text-muted-foreground"
                     }`}
                   >
-                    {ticket.title}
+                    {previewText}
                   </p>
                 </div>
                 {hasUnread && (

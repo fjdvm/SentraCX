@@ -1,4 +1,5 @@
 using Crm.Api.Hubs;
+using Crm.Api.Interfaces.Repositories;
 using Microsoft.AspNetCore.SignalR;
 using Moq;
 using StackExchange.Redis;
@@ -13,7 +14,7 @@ public class DashboardHubTests
     private readonly Mock<ITicketRepository> _ticketRepoMock = new();
     private readonly Mock<IMessageRepository> _messageRepoMock = new();
     private readonly Mock<IHubCallerClients> _clientsMock = new();
-    private readonly Mock<IClientProxy> _clientProxyMock = new();
+    private readonly Mock<ISingleClientProxy> _clientProxyMock = new();
     private readonly Mock<IGroupManager> _groupsMock = new();
     private readonly Mock<HubCallerContext> _contextMock = new();
     private readonly DashboardHub _sut;

@@ -26,6 +26,10 @@ public static class TicketMapper
 
     public static TicketListResponseDto ToListResponse(Ticket ticket)
     {
+        var lastMessage = ticket.Messages?
+            .OrderByDescending(m => m.SentAt)
+            .FirstOrDefault();
+
         return new TicketListResponseDto
         {
             Id = ticket.Id,
@@ -36,7 +40,10 @@ public static class TicketMapper
             AssignedToName = ticket.AssignedTo?.DisplayName,
             HasStaffReplied = ticket.Messages != null && ticket.Messages.Any(m => m.SenderId != (ticket.Customer != null ? ticket.Customer.UserId : string.Empty) && m.SenderId != "bot" && m.SenderId != "system"),
             UnreadMessageCount = ticket.Messages != null ? ticket.Messages.Count(m => !m.IsRead) : 0,
-            CreatedAt = ticket.CreatedAt
+            CreatedAt = ticket.CreatedAt,
+            UpdatedAt = ticket.UpdatedAt,
+            LastMessageAt = lastMessage?.SentAt,
+            LastMessageContent = lastMessage?.Content
         };
     }
 }

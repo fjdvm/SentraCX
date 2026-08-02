@@ -39,6 +39,8 @@ public class MessageService(
         };
 
         await messageRepo.AddAsync(message);
+        ticket.UpdatedAt = message.SentAt;
+        await ticketRepo.UpdateAsync(ticket);
         await broadcastService.BroadcastMetricsAsync();
 
         // Reload with Sender navigation property

@@ -30,7 +30,7 @@ public class TicketRepository(AppDbContext context) : ITicketRepository
         // TODO (perf): At large ticket volumes, replace the Messages include with a subquery or
         //              a denormalized UnreadMessageCount column to avoid N+1 load.
 
-        query = query.OrderByDescending(t => t.CreatedAt);
+        query = query.OrderByDescending(t => t.Messages.Select(m => (DateTime?)m.SentAt).Max() ?? t.CreatedAt);
 
         var totalCount = await query.CountAsync();
         var items = await query

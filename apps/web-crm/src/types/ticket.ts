@@ -8,6 +8,9 @@ export interface TicketListItem {
   unreadMessageCount?: number;
   assignedToName?: string | null;
   createdAt: string;
+  updatedAt?: string;
+  lastMessageAt?: string | null;
+  lastMessageContent?: string | null;
 }
 
 export interface Ticket extends TicketListItem {
