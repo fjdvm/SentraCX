@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
 import { ConversationList } from "./ConversationList";
 import { ConversationWindow } from "./ConversationWindow";
 import { CustomerContextPanel } from "./CustomerContextPanel";
-import { useTickets } from "@/hooks/useTickets";
+import { useConversationTickets } from "@/hooks/useConversationTickets";
 import { useTicket } from "@/hooks/useTicket";
 import { useMessages } from "@/hooks/useMessages";
 import { useSignalR } from "@/hooks/useSignalR";
@@ -16,77 +16,51 @@ interface ConversationsProps {
 }
 
 export function Conversations({ initialTicketId }: ConversationsProps) {
-  // Fetch both Claimed and Ongoing tickets so the sidebar shows all conversations
-  // the staff user is actively handling (claimed but not yet started, or in-progress).
-  const { tickets: claimedTickets, isLoading: isClaimedLoading, error: claimedError, refetch: refetchClaimed } = useTickets(
-    1,
-    100,
-    "Claimed"
-  );
-  const { tickets: ongoingTickets, isLoading: isOngoingLoading, error: ongoingError, refetch: refetchOngoing } = useTickets(
-    1,
-    100,
-    "Ongoing"
-  );
-
-  const tickets = [...claimedTickets, ...ongoingTickets];
-  const isTicketsLoading = isClaimedLoading || isOngoingLoading;
-  const ticketsError = claimedError || ongoingError;
-  const refetchTickets = useCallback(() => {
-    refetchClaimed();
-    refetchOngoing();
-  }, [refetchClaimed, refetchOngoing]);
-
-  const [activeTicketId, setActiveTicketId] = useState<string | null>(initialTicketId ?? null);
-  const [activeTab, setActiveTab] = useState<"all" | "unread" | "read">("all");
-
-  // Set initial active ticket once tickets load if not set
-  useEffect(() => {
-    if (!activeTicketId && tickets.length > 0) {
-      setActiveTicketId(tickets[0].id);
-    }
-  }, [tickets, activeTicketId]);
-
-  // Sync activeTicketId with URL search params so browser refresh keeps the active conversation
-  useEffect(() => {
-    if (activeTicketId && typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get("ticketId") !== activeTicketId) {
-        url.searchParams.set("ticketId", activeTicketId);
-        window.history.replaceState(null, "", url.toString());
-      }
-    }
-  }, [activeTicketId]);
+  const {
+    tickets,
+    activeTicketId,
+    setActiveTicketId,
+    activeTab,
+    setActiveTab,
+    isLoading: isTicketsLoading,
+    error: ticketsError,
+    refetchTickets,
+    onMessageActivity,
+    markTicketAsRead,
+    removeTicket,
+  } = useConversationTickets(initialTicketId);
 
   const { ticket, isLoading: isTicketLoading } = useTicket(activeTicketId);
-  const { messages, isLoading: isMessagesLoading, error: messagesError, appendMessage, refetch: refetchMessages } = useMessages(
-    activeTicketId
-  );
+  const {
+    messages,
+    isLoading: isMessagesLoading,
+    error: messagesError,
+    appendMessage,
+    refetch: refetchMessages,
+  } = useMessages(activeTicketId);
 
-  // Incoming SignalR message callback
+  // Incoming SignalR message callback for active ticket
   const handleReceiveMessage = useCallback(
     (incomingMsg: Message) => {
       appendMessage(incomingMsg);
-      refetchTickets();
-    },
-    [appendMessage, refetchTickets]
-  );
-
-  const handleNewMessageNotification = useCallback(
-    (ticketId: string, incomingMsg: Message) => {
-      if (ticketId !== activeTicketId) {
-        refetchTickets();
+      if (activeTicketId) {
+        onMessageActivity(activeTicketId, incomingMsg, true);
       }
     },
-    [activeTicketId, refetchTickets]
+    [appendMessage, onMessageActivity, activeTicketId]
   );
 
-  const handleTicketStatusChanged = useCallback(
-    () => {
-      refetchTickets();
+  // Incoming SignalR notification for any ticket
+  const handleNewMessageNotification = useCallback(
+    (ticketId: string, incomingMsg: Message) => {
+      onMessageActivity(ticketId, incomingMsg, ticketId === activeTicketId);
     },
-    [refetchTickets]
+    [onMessageActivity, activeTicketId]
   );
+
+  const handleTicketStatusChanged = useCallback(() => {
+    refetchTickets();
+  }, [refetchTickets]);
 
   // SignalR connection hook
   const { isConnected, sendMessage } = useSignalR({
@@ -99,7 +73,8 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
   const handleSelectTicket = useCallback(
     (ticketId: string) => {
       setActiveTicketId(ticketId);
-      // Mark initial batch as read if unread count > 0
+      markTicketAsRead(ticketId);
+
       const selected = tickets.find((t) => t.id === ticketId);
       if (selected && (selected.unreadMessageCount ?? 0) > 0) {
         crmClient.messages
@@ -108,12 +83,11 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
             msgs.filter((m) => !m.isRead).forEach((m) => {
               crmClient.messages.markRead(ticketId, m.id).catch(console.error);
             });
-            refetchTickets();
           })
           .catch(console.error);
       }
     },
-    [tickets, refetchTickets]
+    [setActiveTicketId, markTicketAsRead, tickets]
   );
 
   const handleSendMessage = useCallback(
@@ -133,15 +107,14 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
       };
 
       appendMessage(optimisticMsg);
+      onMessageActivity(activeTicketId, optimisticMsg, true);
 
       try {
         if (isConnected) {
           await sendMessage(activeTicketId, senderId, content);
         } else {
-          // Fallback to REST API when SignalR is not connected
           const created = await crmClient.messages.create(activeTicketId, senderId, content);
           if (created) {
-            // Replace optimistic message with the real one from the server
             appendMessage(created);
           }
         }
@@ -149,55 +122,46 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
         console.error("Failed to send message:", err);
       }
     },
-    [activeTicketId, ticket, sendMessage, appendMessage, isConnected]
+    [activeTicketId, ticket, sendMessage, appendMessage, isConnected, onMessageActivity]
   );
 
   const handleComplete = useCallback(
     async (ticketId: string) => {
       try {
         await crmClient.tickets.updateStatus(ticketId, "Completed");
+        removeTicket(ticketId);
         refetchTickets();
-        if (activeTicketId === ticketId) {
-          const next = tickets.find((t) => t.id !== ticketId);
-          setActiveTicketId(next ? next.id : null);
-        }
       } catch (err) {
         console.error("Failed to complete ticket:", err);
       }
     },
-    [activeTicketId, tickets, refetchTickets]
+    [removeTicket, refetchTickets]
   );
 
   const handleUnclaim = useCallback(
     async (ticketId: string) => {
       try {
         await crmClient.tickets.unclaim(ticketId);
+        removeTicket(ticketId);
         refetchTickets();
-        if (activeTicketId === ticketId) {
-          const next = tickets.find((t) => t.id !== ticketId);
-          setActiveTicketId(next ? next.id : null);
-        }
       } catch (err) {
         console.error("Failed to unclaim ticket:", err);
       }
     },
-    [activeTicketId, tickets, refetchTickets]
+    [removeTicket, refetchTickets]
   );
 
   const handleCancel = useCallback(
     async (ticketId: string) => {
       try {
         await crmClient.tickets.cancel(ticketId);
+        removeTicket(ticketId);
         refetchTickets();
-        if (activeTicketId === ticketId) {
-          const next = tickets.find((t) => t.id !== ticketId);
-          setActiveTicketId(next ? next.id : null);
-        }
       } catch (err) {
         console.error("Failed to cancel ticket:", err);
       }
     },
-    [activeTicketId, tickets, refetchTickets]
+    [removeTicket, refetchTickets]
   );
 
   return (

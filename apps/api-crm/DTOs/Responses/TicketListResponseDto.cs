@@ -11,4 +11,7 @@ public class TicketListResponseDto
     public bool HasStaffReplied { get; set; }
     public int UnreadMessageCount { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public DateTime? LastMessageAt { get; set; }
+    public string? LastMessageContent { get; set; }
 }

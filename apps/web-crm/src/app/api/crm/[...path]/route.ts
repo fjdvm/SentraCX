@@ -47,6 +47,14 @@ async function proxyRequest(request: NextRequest, context: { params: Promise<{ p
       }
     });
 
+    const NULL_BODY_STATUSES = new Set([101, 204, 205, 304]);
+    if (NULL_BODY_STATUSES.has(response.status) || responseBody.byteLength === 0) {
+      return new NextResponse(null, {
+        status: response.status,
+        headers: responseHeaders,
+      });
+    }
+
     return new NextResponse(Buffer.from(responseBody), {
       status: response.status,
       headers: responseHeaders,
