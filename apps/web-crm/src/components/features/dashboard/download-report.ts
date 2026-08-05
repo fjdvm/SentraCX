@@ -40,7 +40,7 @@ export function downloadDashboardReport(
 
   // KPI Summary Section
   sections.push("=== KPI Summary ===");
-  sections.push(buildCsvRows([["Metric", "Value", "Change (%)", "Trend"]]));
+  sections.push(buildCsvRows([["Metric", "Value", "Change", "Trend"]]));
   if (summary) {
     const metrics: [string, keyof DashboardSummaryData][] = [
       ["Churn Rate", "churn_rate"],
@@ -61,48 +61,102 @@ export function downloadDashboardReport(
   }
   sections.push("");
 
-  // Ticket Volume Forecast
+  // Ticket Volume Forecast (Historical and Forecast)
   sections.push("=== Ticket Volume Forecast ===");
-  if (forecasts.ticketVolume?.series?.length) {
-    sections.push(buildCsvRows([["Date", "Predicted Volume"]]));
-    for (const point of forecasts.ticketVolume.series) {
-      sections.push(buildCsvRows([[point.name || point.date, point.value || point.volume]]));
+  const historicalTickets = forecasts.ticketVolume?.historical_series ?? [];
+  const forecastTickets = forecasts.ticketVolume?.forecast_series ?? [];
+
+  if (historicalTickets.length || forecastTickets.length) {
+    sections.push(buildCsvRows([["Type", "Date", "Ticket Count"]]));
+    for (const point of historicalTickets) {
+      sections.push(buildCsvRows([["Historical", point.date, point.count]]));
+    }
+    for (const point of forecastTickets) {
+      sections.push(buildCsvRows([["Forecasted", point.date, point.count]]));
     }
   } else {
     sections.push("No ticket volume data available");
   }
   sections.push("");
 
-  // Revenue by Segment
-  sections.push("=== Revenue by Segment ===");
-  if (forecasts.revenueBySegment?.series?.length) {
-    sections.push(buildCsvRows([["Segment", "Revenue"]]));
-    for (const point of forecasts.revenueBySegment.series) {
-      sections.push(buildCsvRows([[point.name || point.segment, point.value || point.revenue]]));
+  // Revenue by Segment & Projection
+  sections.push("=== Revenue Forecast ===");
+  const revenueSeries = forecasts.revenueBySegment?.forecast_series ?? [];
+  const segments = forecasts.revenueBySegment?.by_segment ?? {};
+
+  sections.push(buildCsvRows([["Total Projected Revenue", forecasts.revenueBySegment?.total_projected ?? ""]]));
+  sections.push(buildCsvRows([["Model Confidence (%)", forecasts.revenueBySegment?.confidence ? `${Math.round(forecasts.revenueBySegment.confidence * 100)}%` : ""]]));
+  sections.push("");
+
+  sections.push("--- Revenue Segments ---");
+  const segmentEntries = Object.entries(segments);
+  if (segmentEntries.length) {
+    sections.push(buildCsvRows([["Segment", "Projected Revenue"]]));
+    for (const [segment, val] of segmentEntries) {
+      sections.push(buildCsvRows([[segment, val as number]]));
     }
   } else {
-    sections.push("No revenue segment data available");
+    sections.push("No segment breakdown available");
   }
   sections.push("");
 
-  // Churn Distribution
-  sections.push("=== Churn Risk Distribution ===");
-  if (forecasts.churnDistribution?.series?.length) {
-    sections.push(buildCsvRows([["Risk Level", "Count"]]));
-    for (const point of forecasts.churnDistribution.series) {
-      sections.push(buildCsvRows([[point.name || point.level, point.value || point.count]]));
+  sections.push("--- Revenue Forecast Trajectory ---");
+  if (revenueSeries.length) {
+    sections.push(buildCsvRows([["Date", "Projected Revenue"]]));
+    for (const point of revenueSeries) {
+      sections.push(buildCsvRows([[point.date, point.revenue]]));
     }
   } else {
-    sections.push("No churn distribution data available");
+    sections.push("No revenue forecast trajectory available");
+  }
+  sections.push("");
+
+  // Churn Risk Distribution
+  sections.push("=== Churn Risk Distribution ===");
+  const low = forecasts.churnDistribution?.low;
+  const medium = forecasts.churnDistribution?.medium;
+  const high = forecasts.churnDistribution?.high;
+  const critical = forecasts.churnDistribution?.critical;
+
+  if (low !== undefined || medium !== undefined || high !== undefined || critical !== undefined) {
+    sections.push(buildCsvRows([["Risk Level", "Count"]]));
+    sections.push(buildCsvRows([["Low", low]]));
+    sections.push(buildCsvRows([["Medium", medium]]));
+    sections.push(buildCsvRows([["High", high]]));
+    sections.push(buildCsvRows([["Critical", critical]]));
+  } else {
+    sections.push("No current churn risk distribution available");
+  }
+  sections.push("");
+
+  sections.push("--- Churn Risk Trend Series ---");
+  const churnTrend = forecasts.churnDistribution?.trend_series ?? [];
+  if (churnTrend.length) {
+    sections.push(buildCsvRows([["Date", "Low Risk Count", "Medium Risk Count", "High Risk Count", "Critical Risk Count"]]));
+    for (const point of churnTrend) {
+      sections.push(buildCsvRows([[point.date, point.low, point.medium, point.high, point.critical]]));
+    }
+  } else {
+    sections.push("No churn risk trend available");
   }
   sections.push("");
 
   // Sentiment Trend
   sections.push("=== Sentiment Trend ===");
-  if (forecasts.sentimentTrend?.series?.length) {
-    sections.push(buildCsvRows([["Period", "Score"]]));
-    for (const point of forecasts.sentimentTrend.series) {
-      sections.push(buildCsvRows([[point.name || point.period, point.value || point.score]]));
+  const sentimentScores = forecasts.sentimentTrend?.daily_scores ?? [];
+  const sentimentMA = forecasts.sentimentTrend?.moving_average ?? [];
+  const sentimentForecast = forecasts.sentimentTrend?.forecast_next_7d ?? [];
+
+  if (sentimentScores.length || sentimentMA.length || sentimentForecast.length) {
+    sections.push(buildCsvRows([["Type", "Date", "Score"]]));
+    for (const point of sentimentScores) {
+      sections.push(buildCsvRows([["Daily Average", point.date, point.score]]));
+    }
+    for (const point of sentimentMA) {
+      sections.push(buildCsvRows([["7-Day Moving Average", point.date, point.score]]));
+    }
+    for (const point of sentimentForecast) {
+      sections.push(buildCsvRows([["Next 7 Days Forecast", point.date, point.score]]));
     }
   } else {
     sections.push("No sentiment trend data available");
