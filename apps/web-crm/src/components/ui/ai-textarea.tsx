@@ -52,7 +52,7 @@ const AiTextarea = React.forwardRef<HTMLTextAreaElement, AiTextareaProps>(
             }
             if (onKeyDown) onKeyDown(e);
           }}
-          className="relative z-10 bg-transparent"
+          className="relative z-10 bg-transparent !min-h-0 resize-none overflow-y-auto"
           {...props}
         />
       </div>

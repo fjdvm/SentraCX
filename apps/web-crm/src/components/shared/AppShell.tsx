@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { Sidebar } from "./Sidebar";
@@ -55,7 +55,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Floating AI Chat — placed outside all layout containers to avoid
           transform/transition containment breaking fixed positioning on md+ screens */}
-      <AskSentraCXPanel />
+      <Suspense fallback={null}>
+        <AskSentraCXPanel />
+      </Suspense>
     </SidebarProvider>
   );
 }
