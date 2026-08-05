@@ -152,7 +152,8 @@ async def test_get_resolution_estimate(service: TicketAnalysisService, redis_rep
 
 
 async def test_get_volume_forecast(service: TicketAnalysisService, mongo_repo: AsyncMock) -> None:
-    mongo_repo._collection = AsyncMock()
+    from unittest.mock import MagicMock
+    mongo_repo._collection = MagicMock()
     mongo_repo._collection.aggregate.return_value = MockCursor([{"count": 10}, {"count": 20}])
 
     resp = await service.get_volume_forecast("7d")
