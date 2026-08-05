@@ -37,7 +37,6 @@ public class MessageServiceCreateTests
             CreatedAt = DateTime.UtcNow.AddHours(-2),
             UpdatedAt = DateTime.UtcNow.AddHours(-2)
         };
-
         var createdMessage = new Message
         {
             Id = Guid.NewGuid(),
@@ -54,7 +53,6 @@ public class MessageServiceCreateTests
             .Returns(Task.CompletedTask);
         _ticketRepoMock.Setup(r => r.UpdateAsync(It.IsAny<Ticket>())).Returns(Task.CompletedTask);
         _broadcastMock.Setup(b => b.BroadcastMetricsAsync()).Returns(Task.CompletedTask);
-
         _messageRepoMock.Setup(r => r.GetByTicketIdAsync(ticketId))
             .ReturnsAsync(new List<Message> { createdMessage });
 

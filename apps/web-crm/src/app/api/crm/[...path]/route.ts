@@ -36,7 +36,6 @@ async function proxyRequest(request: NextRequest, context: { params: Promise<{ p
       // Ignore if session lookup fails
     }
   }
-
   try {
     const fetchOptions: RequestInit = {
       method: request.method,

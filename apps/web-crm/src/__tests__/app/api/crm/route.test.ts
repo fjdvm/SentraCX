@@ -15,7 +15,6 @@ describe("CRM API Proxy Route Handler", () => {
   beforeEach(() => {
     (auth as jest.Mock).mockResolvedValue({ accessToken: "mock-session-token" });
   });
-
   afterEach(() => {
     global.fetch = originalFetch;
     jest.resetAllMocks();
@@ -142,7 +141,6 @@ describe("CRM API Proxy Route Handler", () => {
 
     expect(global.fetch).toHaveBeenCalledTimes(3);
   });
-
   it("injects Authorization Bearer token from session when not present in request headers", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       status: 200,
