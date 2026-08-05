@@ -9,12 +9,11 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DollarSign, Landmark } from "lucide-react";
 
-interface SegmentSeriesItem {
+interface ForecastPoint {
   timestamp?: string;
   date?: string;
   value?: number;
@@ -22,8 +21,8 @@ interface SegmentSeriesItem {
 }
 
 interface RevenueForecastData {
-  forecast_series: SegmentSeriesItem[];
-  by_segment: Record<string, number | SegmentSeriesItem[]>;
+  forecast_series: ForecastPoint[];
+  by_segment: Record<string, number>;
   total_projected: number;
   confidence: number;
 }
@@ -34,62 +33,46 @@ interface RevenueBySegmentChartProps {
   days?: number;
 }
 
+const SEGMENT_COLORS: Record<string, string> = {
+  "High-Value": "var(--info)",
+  "Regular": "var(--success)",
+  "New": "var(--warning)",
+  "At-Risk": "oklch(0.62 0.18 45)",
+};
+
+const getSegmentColor = (seg: string, idx: number) =>
+  SEGMENT_COLORS[seg] ?? ["var(--primary)", "var(--success)", "var(--warning)", "var(--info)"][idx % 4];
+
 export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySegmentChartProps) {
   const chartData = useMemo(() => {
-    if (!data) return [];
-
-    return data.forecast_series?.map((item, idx) => {
-      const raw = item.date || item.timestamp;
+    if (!data?.forecast_series) return [];
+    return data.forecast_series.map((item) => {
+      const raw = item.date ?? item.timestamp;
       const dateStr = raw
         ? isNaN(new Date(raw).getTime())
           ? raw
           : new Date(raw).toLocaleDateString(undefined, { month: "short", day: "numeric" })
         : "";
-
-      const totalVal = item.revenue ?? item.value ?? 0;
-      const pt: any = {
-        date: dateStr,
-        Total: totalVal,
-      };
-
-      if (data.by_segment) {
-        Object.entries(data.by_segment).forEach(([segment, val]) => {
-          if (typeof val === "number") {
-            pt[segment] = val;
-          } else if (Array.isArray(val)) {
-            const seriesVal = val[idx];
-            pt[segment] = seriesVal?.revenue ?? seriesVal?.value ?? 0;
-          }
-        });
-      }
-
-      return pt;
-    }) || [];
+      return { date: dateStr, Revenue: item.revenue ?? item.value ?? 0 };
+    });
   }, [data]);
 
-  const segments = useMemo(() => {
-    if (!data || !data.by_segment) return [];
-    return Object.keys(data.by_segment);
+  const segmentEntries = useMemo(() => {
+    if (!data?.by_segment) return [];
+    const total = Object.values(data.by_segment).reduce((a, b) => a + b, 0);
+    return Object.entries(data.by_segment).map(([name, val]) => ({
+      name,
+      value: val,
+      pct: total > 0 ? Math.round((val / total) * 100) : 0,
+    }));
   }, [data]);
-
-  const segmentColors: Record<string, string> = {
-    "Total": "var(--primary)",
-    "High-Value": "var(--info)",
-    "Regular": "var(--success)",
-    "New": "var(--warning)",
-    "At-Risk": "oklch(0.62 0.18 45)",
-  };
-
-  const getSegmentColor = (segment: string) => {
-    return segmentColors[segment] ?? "var(--muted-foreground)";
-  };
 
   if (isLoading || !data) {
     return (
       <Card className="bg-card border-border shadow-none h-[380px] animate-pulse">
         <CardHeader className="p-lg">
-          <div className="h-6 w-48 bg-muted rounded"></div>
-          <div className="h-4 w-64 bg-muted rounded mt-sm"></div>
+          <div className="h-6 w-48 bg-muted rounded" />
+          <div className="h-4 w-64 bg-muted rounded mt-sm" />
         </CardHeader>
         <CardContent className="h-[260px] flex items-center justify-center">
           <div className="text-muted-foreground text-body-sm">Loading Forecast...</div>
@@ -104,11 +87,14 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
         <CardHeader className="p-lg pb-0">
           <div className="flex items-center gap-sm">
             <Landmark className="w-5 h-5 text-primary" />
-            <CardTitle className="text-headline-sm font-bold text-foreground">Expected Revenue</CardTitle>
+            <CardTitle className="text-headline-sm font-bold text-foreground">
+              Expected Revenue
+            </CardTitle>
           </div>
           <CardDescription>Estimated Monthly Recurring Revenue (MRR)</CardDescription>
         </CardHeader>
         <CardContent className="p-lg pt-md space-y-md">
+          {/* Total projected + confidence */}
           <div className="bg-muted/30 border border-border/60 rounded-xl p-md flex items-center justify-between gap-md">
             <div className="flex items-center gap-sm">
               <div className="p-2 bg-success/10 rounded-lg text-[#10B981]">
@@ -133,9 +119,10 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
             </div>
           </div>
 
-          <div className="h-[200px] w-full">
+          {/* Revenue trajectory forecast line */}
+          <div className="h-[140px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 8, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" strokeOpacity={0.5} />
                 <XAxis
                   dataKey="date"
@@ -158,37 +145,46 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
                     borderRadius: "0.5rem",
                     fontSize: "12px",
                   }}
-                  formatter={(val: number) => [`$${val.toLocaleString()}`, ""]}
-                />
-                <Legend
-                  verticalAlign="bottom"
-                  height={36}
-                  iconType="circle"
-                  iconSize={8}
-                  wrapperStyle={{ fontSize: "10px", marginTop: "10px" }}
+                  formatter={(val: number) => [`$${val.toLocaleString()}`, "Revenue"]}
                 />
                 <Line
                   type="monotone"
-                  dataKey="Total"
-                  stroke={getSegmentColor("Total")}
-                  strokeWidth={3}
+                  dataKey="Revenue"
+                  stroke="var(--primary)"
+                  strokeWidth={2.5}
                   dot={false}
-                  name="Total Projected"
                 />
-                {segments.map((segment) => (
-                  <Line
-                    key={segment}
-                    type="monotone"
-                    dataKey={segment}
-                    stroke={getSegmentColor(segment)}
-                    strokeWidth={1.5}
-                    dot={false}
-                    name={segment}
-                  />
-                ))}
               </LineChart>
             </ResponsiveContainer>
           </div>
+
+          {/* Segment breakdown — scalar totals rendered as proportional bars */}
+          {segmentEntries.length > 0 && (
+            <div className="space-y-xs pt-xs border-t border-border/50">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                By Segment
+              </span>
+              {segmentEntries.map((seg, idx) => (
+                <div key={seg.name} className="flex items-center gap-sm">
+                  <span className="text-[11px] text-muted-foreground w-20 truncate shrink-0">
+                    {seg.name}
+                  </span>
+                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${seg.pct}%`,
+                        backgroundColor: getSegmentColor(seg.name, idx),
+                      }}
+                    />
+                  </div>
+                  <span className="text-[11px] font-semibold text-foreground w-8 text-right shrink-0">
+                    {seg.pct}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </div>
     </Card>
