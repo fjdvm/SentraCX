@@ -76,3 +76,12 @@ export interface Template {
   channel: string;
   createdAt: string;
 }
+
+export interface CampaignDispatchResult {
+  totalRecipients: number;
+  sentCount: number;
+  failedCount: number;
+  errors: string[];
+  message: string;
+}
+

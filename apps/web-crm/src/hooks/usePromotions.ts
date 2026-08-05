@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { crmClient } from "@/lib/api/crm-client";
 import { PromotionListItem } from "@/types/promotion";
 
 export function usePromotions(status?: string) {
+  const { data: session } = useSession();
   const [data, setData] = useState<PromotionListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -22,7 +24,7 @@ export function usePromotions(status?: string) {
 
   useEffect(() => {
     fetchPromotions();
-  }, [fetchPromotions]);
+  }, [fetchPromotions, session?.accessToken]);
 
   return { data, isLoading, error, refetch: fetchPromotions };
 }

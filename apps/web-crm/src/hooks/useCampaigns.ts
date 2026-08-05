@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { crmClient } from "@/lib/api/crm-client";
 import { CampaignListItem } from "@/types/campaign";
 
 export function useCampaigns(status?: string) {
+  const { data: session } = useSession();
   const [data, setData] = useState<CampaignListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -22,7 +24,7 @@ export function useCampaigns(status?: string) {
 
   useEffect(() => {
     fetchCampaigns();
-  }, [fetchCampaigns]);
+  }, [fetchCampaigns, session?.accessToken]);
 
   return { data, isLoading, error, refetch: fetchCampaigns };
 }

@@ -55,7 +55,7 @@ export function HeaderNotifications() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-80 bg-popover border-border text-popover-foreground z-[999]" align="end">
+      <DropdownMenuContent className="w-80 bg-popover border-border text-popover-foreground z-[99999]" align="end">
         <div className="flex items-center justify-between p-sm border-b border-border">
           <DropdownMenuLabel className="p-0 text-body-sm font-bold text-foreground">
             Notifications

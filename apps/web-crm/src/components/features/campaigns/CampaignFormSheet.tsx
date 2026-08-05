@@ -93,6 +93,11 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
         .map((e) => e.trim())
         .filter((e) => e.length > 0);
 
+      if (values.targetAudience === "Specific" && selectedCustomerIds.length === 0 && parsedEmails.length === 0) {
+        onShowToast("Please select at least one contact or enter at least one email address for Specific audience.");
+        return;
+      }
+
       const payload: CreateCampaignInput = {
         ...values,
         status: targetStatus,

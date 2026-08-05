@@ -90,7 +90,7 @@ export function AskSentraCXPanel() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 md:bottom-8 md:right-8 h-14 w-14 rounded-full shadow-lg hover:scale-105 transition-all duration-300 bg-primary text-primary-foreground z-[999] border border-border/20 cursor-pointer flex items-center justify-center"
+          className="fixed bottom-6 right-6 md:bottom-8 md:right-8 h-14 w-14 rounded-full shadow-lg hover:scale-105 transition-all duration-300 bg-primary text-primary-foreground z-[99999] border border-border/20 cursor-pointer flex items-center justify-center"
         >
           <Sparkles className="w-6 h-6 animate-pulse" />
         </button>
@@ -99,14 +99,14 @@ export function AskSentraCXPanel() {
       {/* Backdrop overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[999] bg-black/80 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[99999] bg-black/80 animate-in fade-in duration-200"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Side panel — fixed to viewport, slides in from right */}
       <div
-        className={`fixed top-0 right-0 z-[999] h-dvh w-full sm:w-[400px] md:w-[440px] bg-background border-l border-border shadow-lg flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 z-[99999] h-dvh w-full sm:w-[400px] md:w-[440px] bg-background border-l border-border shadow-lg flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
