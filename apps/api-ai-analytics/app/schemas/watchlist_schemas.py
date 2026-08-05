@@ -12,6 +12,7 @@ class AtRiskCustomerItem(BaseModel):
     risk_level: str
     contributing_factors: list[str] = Field(default_factory=list)
     recommended_action: str
+    last_order_date: str | None = None
 
 
 class AtRiskCustomerListResponse(BaseModel):

@@ -11,6 +11,8 @@ from app.schemas.dashboard_schemas import (
     NaturalLanguageQueryResponse,
     AskRequest,
     AskResponse,
+    AutocompleteRequest,
+    AutocompleteResponse,
 )
 
 router = APIRouter(tags=["dashboard"])
@@ -75,6 +77,19 @@ async def ask_dashboard(
     service: DashboardService = Depends(get_dashboard_service),
 ) -> AskResponse:
     """Process natural language dashboard question."""
-    data = await service.execute_dashboard_ask(request.query, request.agent_id)
+    data = await service.execute_dashboard_ask(request.query, request.agent_id, request.context)
     return AskResponse(**data)
 
+@router.post(
+    "/dashboard/autocomplete",
+    response_model=AutocompleteResponse,
+    summary="Get copilot-style autocomplete",
+    description="Predict the next words based on user input and context.",
+)
+async def autocomplete(
+    request: AutocompleteRequest,
+    service: DashboardService = Depends(get_dashboard_service),
+) -> AutocompleteResponse:
+    """Predict the rest of the sentence."""
+    data = await service.execute_autocomplete(request.prefix, request.context)
+    return AutocompleteResponse(**data)

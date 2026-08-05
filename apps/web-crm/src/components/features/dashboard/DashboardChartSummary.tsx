@@ -38,9 +38,9 @@ interface ChartSummaryProps {
 
 function StatBox({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-muted/30 p-3 rounded-lg">
+    <div className="bg-muted/30 p-sm rounded-lg">
       <span className="text-xs text-muted-foreground font-medium block">{label}</span>
-      <span className="text-xl font-bold text-foreground mt-1 block">{value}</span>
+      <span className="text-xl font-bold text-foreground mt-xs block">{value}</span>
     </div>
   );
 }
@@ -62,9 +62,9 @@ export function DashboardChartSummary({
     const peak = counts.length ? Math.max(...counts) : "--";
 
     return (
-      <div className="bg-card border border-border p-6 rounded-xl space-y-4 flex flex-col justify-between shadow-sm">
+      <div className="bg-card border border-border p-lg rounded-xl space-y-4 flex flex-col justify-between shadow-sm">
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+          <div className="flex items-center gap-sm text-primary font-semibold text-sm">
             <Sparkles className="w-4 h-4 text-primary" />
             <span>AI Workload Forecast Summary</span>
           </div>
@@ -76,7 +76,7 @@ export function DashboardChartSummary({
             Staffing allocation is recommended to maintain response SLAs.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
+        <div className="grid grid-cols-2 gap-sm pt-md border-t border-border">
           <StatBox label="Avg Daily Tickets" value={avg} />
           <StatBox label="Peak Expected" value={peak} />
         </div>
@@ -100,9 +100,9 @@ export function DashboardChartSummary({
       : "--";
 
     return (
-      <div className="bg-card border border-border p-6 rounded-xl space-y-4 flex flex-col justify-between shadow-sm">
+      <div className="bg-card border border-border p-lg rounded-xl space-y-4 flex flex-col justify-between shadow-sm">
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-success font-semibold text-sm">
+          <div className="flex items-center gap-sm text-success font-semibold text-sm">
             <DollarSign className="w-4 h-4 text-success" />
             <span>Revenue Breakdown</span>
           </div>
@@ -115,7 +115,7 @@ export function DashboardChartSummary({
               : "Segment revenue data is being computed from customer CLV profiles."}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
+        <div className="grid grid-cols-2 gap-sm pt-md border-t border-border">
           <StatBox
             label={topSegment ? `${topSegment[0]} Share` : "Top Segment"}
             value={topPct}
@@ -141,9 +141,9 @@ export function DashboardChartSummary({
         : "--";
 
     return (
-      <div className="bg-card border border-border p-6 rounded-xl space-y-4 flex flex-col justify-between shadow-sm">
+      <div className="bg-card border border-border p-lg rounded-xl space-y-4 flex flex-col justify-between shadow-sm">
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-info font-semibold text-sm">
+          <div className="flex items-center gap-sm text-info font-semibold text-sm">
             <Activity className="w-4 h-4 text-info" />
             <span>Sentiment Analysis</span>
           </div>
@@ -155,7 +155,7 @@ export function DashboardChartSummary({
             Positive interactions drive higher CSAT and lower churn risk.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
+        <div className="grid grid-cols-2 gap-sm pt-md border-t border-border">
           <StatBox label="Positive Sentiment" value={positivePct} />
           <StatBox label="CSAT Prediction" value={csatPrediction} />
         </div>
@@ -168,9 +168,9 @@ export function DashboardChartSummary({
   const criticalCount = churnDistribution?.critical ?? 0;
 
   return (
-    <div className="bg-card border border-border p-6 rounded-xl space-y-4 flex flex-col justify-between shadow-sm">
+    <div className="bg-card border border-border p-lg rounded-xl space-y-4 flex flex-col justify-between shadow-sm">
       <div className="space-y-3">
-        <div className="flex items-center gap-2 text-destructive font-semibold text-sm">
+        <div className="flex items-center gap-sm text-destructive font-semibold text-sm">
           <AlertTriangle className="w-4 h-4 text-destructive" />
           <span>Churn Risk Monitoring</span>
         </div>
@@ -180,7 +180,7 @@ export function DashboardChartSummary({
           ticket sentiment. Executive outreach or retention discounts are recommended.
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
+      <div className="grid grid-cols-2 gap-sm pt-md border-t border-border">
         <StatBox
           label="High Risk Count"
           value={highCount > 0 ? `${highCount} Accounts` : "--"}

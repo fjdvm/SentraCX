@@ -10,7 +10,7 @@ interface AiAccessRestrictedProps {
 export function AiAccessRestricted({ userRole }: AiAccessRestrictedProps) {
   return (
     <Card className="bg-card border border-border rounded-xl shadow-none">
-      <CardContent className="p-8 flex flex-col items-center justify-center text-center space-y-4">
+      <CardContent className="p-xl flex flex-col items-center justify-center text-center space-y-4">
         <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
           <Lock className="w-6 h-6 text-destructive" />
         </div>

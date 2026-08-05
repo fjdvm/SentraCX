@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Send, CheckCircle, Undo2, XCircle, ArrowUpFromLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
+import { AiTextarea as Textarea } from "@/components/ui/ai-textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -47,6 +47,7 @@ export function ConversationWindow({
 }: ConversationWindowProps) {
   const [typedMessage, setTypedMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -57,6 +58,9 @@ export function ConversationWindow({
     if (!typedMessage.trim() || !ticket) return;
     onSendMessage(typedMessage);
     setTypedMessage("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "40px";
+    }
   };
 
   if (!ticket) {
@@ -134,7 +138,7 @@ export function ConversationWindow({
                 Complete
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="w-[90vw] max-w-[90vw] sm:max-w-[80vw] md:max-w-[700px] lg:max-w-[900px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg sm:rounded-xl">
+            <AlertDialogContent className="w-[90vw] max-w-[90vw] sm:max-w-[80vw] md:max-w-[700px] lg:max-w-[900px] max-h-[90vh] overflow-y-auto p-md sm:p-lg rounded-lg sm:rounded-xl">
               <AlertDialogHeader>
                 <AlertDialogTitle>Mark Conversation as Completed?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -181,7 +185,7 @@ export function ConversationWindow({
             {hasBotContext && (
               <div className="flex items-center gap-sm py-xs">
                 <div className="flex-1 h-px bg-border" />
-                <div className="flex items-center gap-xs px-sm py-1 rounded-full bg-muted border border-border text-[10px] font-semibold text-muted-foreground shrink-0">
+                <div className="flex items-center gap-xs px-sm py-xs rounded-full bg-muted border border-border text-[10px] font-semibold text-muted-foreground shrink-0">
                   <ArrowUpFromLine className="w-3 h-3" />
                   Escalated from bot — live agent joined
                 </div>
@@ -202,14 +206,33 @@ export function ConversationWindow({
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t border-border bg-card flex gap-md">
-        <Input
+      <form onSubmit={handleSubmit} className="p-sm sm:p-md border-t border-border bg-card flex items-end gap-md">
+        <Textarea
+          ref={textareaRef}
+          context="Replying to customer support ticket."
           placeholder="Type message here..."
           value={typedMessage}
-          onChange={(e) => setTypedMessage(e.target.value)}
-          className="flex-1 bg-muted/50 border-border text-body-sm"
+          onChange={(e) => {
+            setTypedMessage(e.target.value);
+            if (textareaRef.current) {
+              textareaRef.current.style.height = "40px";
+              textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit(e as unknown as React.FormEvent);
+            }
+          }}
+          rows={1}
+          className="flex-1 bg-muted/50 border-border text-body-sm min-h-[40px] max-h-[120px] py-2 resize-none overflow-y-auto"
+          spellCheck={true}
+          autoComplete="on"
+          data-gramm="true"
+          data-gramm_editor="true"
         />
-        <Button type="submit" size="icon" className="bg-primary text-primary-foreground font-semibold" disabled={!typedMessage.trim()}>
+        <Button type="submit" size="icon" className="h-10 w-10 shrink-0 bg-primary text-primary-foreground font-semibold" disabled={!typedMessage.trim()}>
           <Send className="w-4 h-4 text-primary-foreground" />
         </Button>
       </form>

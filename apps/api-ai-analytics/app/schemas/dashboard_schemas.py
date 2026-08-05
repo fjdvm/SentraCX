@@ -63,6 +63,7 @@ class AskRequest(BaseModel):
 
     query: str = Field(description="Plain-English question about dashboard metrics or predictions")
     agent_id: str | None = Field(default=None, description="Optional agent ID to fetch personal claimed tickets")
+    context: str | None = Field(default=None, description="Current page context (pathname)")
 
 
 class AskResponse(BaseModel):
@@ -70,4 +71,14 @@ class AskResponse(BaseModel):
 
     type: str = Field(description="Type of response content: text, chart, table, or value")
     content: Any = Field(description="The response content matching the type")
+
+
+class AutocompleteRequest(BaseModel):
+    """Request schema for Copilot AI autocomplete."""
+    prefix: str = Field(description="The text typed so far by the user")
+    context: str | None = Field(default=None, description="Current page context or surrounding data")
+
+class AutocompleteResponse(BaseModel):
+    """Response schema for Copilot AI autocomplete."""
+    suffix: str = Field(description="The predicted completion text")
 

@@ -44,8 +44,8 @@ export function CustomerTable({
 }: CustomerTableProps) {
   return (
     <div className="w-full border rounded-md border-border overflow-hidden bg-card">
-      <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-border bg-muted/20">
-        <div className="flex items-center gap-2 flex-1">
+      <div className="flex items-center justify-between gap-sm px-md py-sm border-b border-border bg-muted/20">
+        <div className="flex items-center gap-sm flex-1">
           <Search className="w-4 h-4 text-muted-foreground shrink-0" />
           <Input
             className="border-0 shadow-none focus-visible:ring-0 bg-transparent h-8 p-0 text-body-sm flex-1"
@@ -54,7 +54,7 @@ export function CustomerTable({
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-sm shrink-0">
           <Select
             value={customerTypeFilter}
             onValueChange={(val: any) => onCustomerTypeChange(val)}
@@ -72,7 +72,7 @@ export function CustomerTable({
       </div>
       <div className="w-full overflow-auto h-[480px]">
         {isLoading ? (
-          <div className="space-y-2 py-4 px-4 animate-pulse">
+          <div className="space-y-2 py-md px-md animate-pulse">
             {[1, 2, 3, 4, 5].map((i) => (
               <Skeleton key={i} className="h-12 w-full rounded-md bg-muted/60" />
             ))}
@@ -88,19 +88,19 @@ export function CustomerTable({
           <Table className="w-full text-left text-body-sm">
             <TableHeader className="sticky top-0 bg-card z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
               <TableRow className="border-b border-border">
-                <TableHead className="px-4 py-3 font-semibold text-left">Customer Name</TableHead>
-                <TableHead className="px-4 py-3 font-semibold text-left">Email</TableHead>
-                <TableHead className="px-4 py-3 font-semibold text-left">Phone</TableHead>
-                <TableHead className="px-4 py-3 font-semibold text-left">Type</TableHead>
-                <TableHead className="px-4 py-3 font-semibold text-left">Status</TableHead>
-                <TableHead className="px-4 py-3 font-semibold text-left">Created At</TableHead>
-                <TableHead className="px-4 py-3 font-semibold text-right">Actions</TableHead>
+                <TableHead className="px-md py-sm font-semibold text-left">Customer Name</TableHead>
+                <TableHead className="px-md py-sm font-semibold text-left">Email</TableHead>
+                <TableHead className="px-md py-sm font-semibold text-left">Phone</TableHead>
+                <TableHead className="px-md py-sm font-semibold text-left">Type</TableHead>
+                <TableHead className="px-md py-sm font-semibold text-left">Status</TableHead>
+                <TableHead className="px-md py-sm font-semibold text-left">Created At</TableHead>
+                <TableHead className="px-md py-sm font-semibold text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-border">
               {customers.map((c) => (
                 <TableRow key={c.id} className="hover:bg-muted/50 transition-colors">
-                  <TableCell className="px-4 py-3 font-semibold text-foreground text-left">
+                  <TableCell className="px-md py-sm font-semibold text-foreground text-left">
                     <Link
                       href={`/customers/${c.id}`}
                       className="hover:underline hover:text-primary transition-colors"
@@ -108,18 +108,18 @@ export function CustomerTable({
                       {c.displayName}
                     </Link>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-muted-foreground text-left">{c.email}</TableCell>
-                  <TableCell className="px-4 py-3 text-muted-foreground text-left">{c.phoneNumber || "-"}</TableCell>
-                  <TableCell className="px-4 py-3 text-left">
+                  <TableCell className="px-md py-sm text-muted-foreground text-left">{c.email}</TableCell>
+                  <TableCell className="px-md py-sm text-muted-foreground text-left">{c.phoneNumber || "-"}</TableCell>
+                  <TableCell className="px-md py-sm text-left">
                     <CustomerTypeBadge customerType={c.customerType} />
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-left">
+                  <TableCell className="px-md py-sm text-left">
                     <CustomerStatusBadge status={c.status} />
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-muted-foreground text-left">
+                  <TableCell className="px-md py-sm text-muted-foreground text-left">
                     {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-right">
+                  <TableCell className="px-md py-sm text-right">
                     <Button
                       variant="ghost"
                       size="icon"

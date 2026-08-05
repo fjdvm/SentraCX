@@ -19,7 +19,7 @@ export function MessageBubble({ message, isStaff }: MessageBubbleProps) {
 
   return (
     <div className={`flex gap-xs ${isStaff ? "flex-row-reverse" : "flex-row"} items-end`}>
-      <Avatar className="h-6 w-6 shrink-0 mb-1">
+      <Avatar className="h-6 w-6 shrink-0 mb-xs">
         <AvatarFallback
           className={`text-[9px] font-bold ${
             isStaff
@@ -36,7 +36,7 @@ export function MessageBubble({ message, isStaff }: MessageBubbleProps) {
       </Avatar>
 
       <div className={`flex flex-col max-w-[72%] ${isStaff ? "items-end" : "items-start"}`}>
-        <span className="text-[10px] text-muted-foreground mb-0.5 px-1 font-medium">
+        <span className="text-[10px] text-muted-foreground mb-0.5 px-xs font-medium">
           {message.senderName}
         </span>
         <div

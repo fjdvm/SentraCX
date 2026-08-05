@@ -97,7 +97,7 @@ export function RevenueBySegmentChart({ data, isLoading, days = 7 }: RevenueBySe
           {/* Total projected + confidence */}
           <div className="bg-muted/30 border border-border/60 rounded-xl p-md flex items-center justify-between gap-md">
             <div className="flex items-center gap-sm">
-              <div className="p-2 bg-success/10 rounded-lg text-[#10B981]">
+              <div className="p-sm bg-success/10 rounded-lg text-[#10B981]">
                 <DollarSign className="w-5 h-5" />
               </div>
               <div className="flex flex-col">

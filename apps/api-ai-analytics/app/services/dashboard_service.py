@@ -159,25 +159,17 @@ class DashboardService:
             cursor = self._db["anomalies"].find(query).sort("detected_at", -1)
             async for doc in cursor:
                 anomalies.append({
-                    "anomaly_id": doc["anomaly_id"],
-                    "anomaly_type": doc["anomaly_type"],
-                    "description": doc["description"],
-                    "severity": doc["severity"],
-                    "status": doc["status"],
-                    "detected_at": doc["detected_at"],
+                    "anomaly_id": doc.get("anomaly_id"),
+                    "anomaly_type": doc.get("anomaly_type"),
+                    "description": doc.get("description"),
+                    "severity": doc.get("severity"),
+                    "status": doc.get("status"),
+                    "detected_at": doc.get("detected_at"),
                 })
-        except Exception:
-            now = datetime.now(timezone.utc)
-            anomalies = [
-                {
-                    "anomaly_id": "anom-001",
-                    "anomaly_type": "ticket_volume_spike",
-                    "description": "Spike in ticket volume regarding billing errors",
-                    "severity": "high",
-                    "status": "open",
-                    "detected_at": now,
-                }
-            ]
+        except Exception as e:
+            print(f"Error in get_anomalies: {e}")
+            pass
+
         return anomalies
 
     async def acknowledge_anomaly(self, anomaly_id: str) -> bool:
@@ -227,7 +219,7 @@ class DashboardService:
                 "computed_at": datetime.now(timezone.utc)
             }
 
-    async def execute_dashboard_ask(self, query: str, agent_id: str | None = None) -> dict:
+    async def execute_dashboard_ask(self, query: str, agent_id: str | None = None, context: str | None = None) -> dict:
         """Process natural-language request and return a structured response with type and content."""
         snapshot_text = ""
         snapshot_data = None
@@ -244,14 +236,36 @@ class DashboardService:
         system_prompt = (
             "You are SentrAI, an intelligent assistant for SentraCX CRM staff. "
             "You have access to a live operational snapshot of the CRM system and the agent's context below.\n"
-            "Use it to answer questions accurately. Only refer to customer names, emails, and ticket titles "
-            "that are explicitly listed in the snapshot under agent context. Do not expose other agents' customer details.\n"
+            f"The user is currently on the following page context: '{context or '/'}'\n"
+            "Use it to answer questions accurately and in detail in layman's terms. "
+            "You may fully utilize the DEEP SYSTEM STATE section to answer global system questions (e.g., most valuable customers, active campaigns, recent global tickets). "
+            "When summarizing the agent's *personal* queue, only refer to the specific agent context section to respect privacy.\n"
+            "CRITICAL CONTEXT RULE: If the user asks 'what is the meaning of this chart', 'explain this', 'summarize this page', or a similar vague question, you MUST deduce what they are looking at based on their current page context:\n"
+            " - If context is '/' or starts with '/?chart=', you are on the Dashboard. Pay attention to the active chart parameter:\n"
+            "    * '/?chart=workload' or just '/': Explain the Ticket Volume Forecast (AreaChart) showing historical and predicted workloads.\n"
+            "    * '/?chart=revenue': Explain the Revenue By Segment (LineChart) showing income per customer segment.\n"
+            "    * '/?chart=sentiment': Explain the Sentiment Trend (LineChart) mapping customer satisfaction.\n"
+            "    * '/?chart=risk': Explain the Churn Distribution (PieChart) categorizing customers by churn risk level.\n"
+            " - If context is '/tickets' or '/tickets/...', explain the ticket management interface, metrics like resolution time, active ticket count, and list the most important tickets assigned to them.\n"
+            " - If context is '/customers', summarize customer segments, most valuable customers, and those at risk of churn.\n"
+            " - If context is '/campaigns', summarize the active marketing campaigns and their target audiences.\n"
+            "If the user asks 'which one is the most important' or similar, recommend the most critical item based on their current page context.\n"
             "If no claimed tickets or at-risk customers are listed for the agent, explain that politely (e.g., 'No at-risk customers are currently claimed by you.') "
             "instead of returning empty results, blank strings, or a dot (.). NEVER output just a dot as content.\n"
             "If the user asks for a metrics breakdown, answer truthfully based on the snapshot. "
             "Return a JSON object with exactly these keys:\n"
             "- 'type': one of ['text', 'chart', 'table', 'value']\n"
             "- 'content': the actual content data.\n\n"
+            "=== SYSTEM ARCHITECTURE & FRONTEND CONTEXT ===\n"
+            "- Backend CRM: C# .NET 10, PostgreSQL\n"
+            "- Backend AI: Python FastAPI, MongoDB\n"
+            "- Frontend: Next.js, React, Tailwind CSS, shadcn/ui, Recharts\n"
+            "- Dashboard Charts implementation details:\n"
+            "  * Churn Distribution: PieChart\n"
+            "  * Ticket Volume & Forecast: AreaChart\n"
+            "  * Sentiment Trend: LineChart\n"
+            "  * Revenue By Segment: LineChart\n"
+            "============================================\n\n"
             f"{snapshot_text}"
         )
         try:
@@ -313,3 +327,23 @@ class DashboardService:
             "type": "text",
             "content": f"I couldn't reach the AI brain right now, but our live CSAT is {csat_val:.1f}/5 and we have {open_val} open tickets."
         }
+
+    async def execute_autocomplete(self, prefix: str, context: str | None = None) -> dict:
+        """Provide a ghost-text completion for the given prefix."""
+        if not self._groq or not prefix.strip():
+            return {"suffix": ""}
+        
+        system_prompt = (
+            "You are an inline autocomplete assistant for a CRM system (like GitHub Copilot). "
+            f"Context: {context or 'None'}\n"
+            "Given the user's text prefix, provide the REST of the sentence or thought. "
+            "Return ONLY the suffix text, exactly as it should be appended to the prefix. "
+            "Do NOT repeat the prefix. Do NOT include quotes unless necessary. "
+            "Keep it under 15 words. If the thought is already complete, return an empty string. "
+            "Return JSON: {\"suffix\": \"...\"}"
+        )
+        try:
+            res = await self._groq.analyze(system_prompt, f"Prefix: {prefix}")
+            return {"suffix": res.get("suffix", "")}
+        except Exception:
+            return {"suffix": ""}

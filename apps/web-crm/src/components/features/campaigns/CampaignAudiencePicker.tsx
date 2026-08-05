@@ -43,7 +43,7 @@ export function CampaignAudiencePicker({
         <Label htmlFor="target-audience-select">Target Audience</Label>
         <select
           id="target-audience-select"
-          className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background mt-1.5 focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full border border-input rounded-md px-sm py-sm text-sm bg-background mt-xs.5 focus:outline-none focus:ring-2 focus:ring-ring"
           value={targetAudience || "All"}
           onChange={(e) => onAudienceChange(e.target.value)}
         >
@@ -55,15 +55,15 @@ export function CampaignAudiencePicker({
       </div>
 
       {targetAudience === "Specific" && (
-        <div className="space-y-4 border border-border rounded-lg p-3 bg-muted/10">
+        <div className="space-y-4 border border-border rounded-lg p-sm bg-muted/10">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-semibold flex items-center gap-1.5">
+              <Label className="text-xs font-semibold flex items-center gap-xs.5">
                 <Users className="w-3.5 h-3.5 text-muted-foreground" />
                 Select Specific Customer Contacts
               </Label>
               {selectedCustomerIds.length > 0 && (
-                <span className="text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-medium text-primary bg-primary/10 px-sm py-0.5 rounded-full">
                   {selectedCustomerIds.length} selected
                 </span>
               )}
@@ -77,15 +77,15 @@ export function CampaignAudiencePicker({
                 placeholder="Search contacts by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 h-8 text-xs bg-background"
+                className="pl-xl h-8 text-xs bg-background"
               />
             </div>
 
-            <div className="space-y-1 max-h-36 overflow-y-auto pr-1 border rounded p-2 bg-background">
+            <div className="space-y-1 max-h-36 overflow-y-auto pr-xs border rounded p-sm bg-background">
               {isLoading ? (
-                <p className="text-xs text-muted-foreground py-2 text-center">Loading contacts...</p>
+                <p className="text-xs text-muted-foreground py-sm text-center">Loading contacts...</p>
               ) : filteredCustomers.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-2 text-center">
+                <p className="text-xs text-muted-foreground py-sm text-center">
                   {searchTerm ? "No matching contacts found." : "No contacts available."}
                 </p>
               ) : (
@@ -94,9 +94,9 @@ export function CampaignAudiencePicker({
                       return (
                         <label
                           key={c.id}
-                          className="flex items-center justify-between text-xs p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                          className="flex items-center justify-between text-xs p-xs.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
                         >
-                          <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-center gap-sm min-w-0">
                             <input
                               type="checkbox"
                               checked={checked}
@@ -110,7 +110,7 @@ export function CampaignAudiencePicker({
                             />
                             <span className="font-medium text-foreground truncate">{c.displayName}</span>
                           </div>
-                          <span className="text-muted-foreground text-[11px] shrink-0 ml-2 font-mono">{c.email}</span>
+                          <span className="text-muted-foreground text-[11px] shrink-0 ml-sm font-mono">{c.email}</span>
                         </label>
                       );
                     })

@@ -1,19 +1,48 @@
 "use client";
 
-import React from "react";
-import { User, Sparkles } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { User, Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Ticket } from "@/types/ticket";
+import { Message } from "@/types/message";
+import { aiClient } from "@/lib/api/ai-client";
 
 interface CustomerContextPanelProps {
   ticket: Ticket | null;
+  messages: Message[];
   onUseTemplate: (text: string) => void;
 }
 
-export function CustomerContextPanel({ ticket, onUseTemplate }: CustomerContextPanelProps) {
-  const smartReply =
-    "I checked the API access token scopes for your account. The keys have been re-verified. Please try generating a new token from the dashboard.";
+export function CustomerContextPanel({ ticket, messages, onUseTemplate }: CustomerContextPanelProps) {
+  const [smartReply, setSmartReply] = useState<string>("I'm looking into your request now and will get back to you shortly.");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    if (!ticket) return;
+    
+    // We only want to generate a new smart reply when there are messages
+    // and when it's the customer's turn, but for now we'll do it on every new message
+    // with a slight debounce to avoid spamming the API.
+    const generateReply = async () => {
+      setIsGenerating(true);
+      try {
+        const messageTexts = messages.map(m => m.content);
+        const res = await aiClient.tickets.generateSmartReply(ticket.id, messageTexts);
+        setSmartReply(res.smart_reply);
+      } catch (err) {
+        console.error("Failed to generate smart reply:", err);
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      generateReply();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [ticket, messages]);
 
   if (!ticket) {
     return (
@@ -69,14 +98,21 @@ export function CustomerContextPanel({ ticket, onUseTemplate }: CustomerContextP
           <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
           AI SUGGESTED SMART REPLY
         </div>
-        <p className="text-body-sm italic leading-relaxed text-muted-foreground">
-          &quot;{smartReply}&quot;
-        </p>
+        <div className="text-body-sm italic leading-relaxed text-muted-foreground min-h-[4rem] relative">
+          {isGenerating ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+            </div>
+          ) : (
+            <>&quot;{smartReply}&quot;</>
+          )}
+        </div>
         <Button
           variant="default"
           size="sm"
           className="w-full bg-primary text-primary-foreground font-bold text-label-sm mt-xs shadow-xs"
           onClick={() => onUseTemplate(smartReply)}
+          disabled={isGenerating}
         >
           Use Template
         </Button>

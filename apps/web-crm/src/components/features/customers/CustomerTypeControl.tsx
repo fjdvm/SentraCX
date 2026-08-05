@@ -40,7 +40,7 @@ export function CustomerTypeControl({
   };
 
   return (
-    <div className="flex items-center gap-2 w-full sm:w-auto">
+    <div className="flex items-center gap-sm w-full sm:w-auto">
       <span className="text-label-sm font-semibold text-muted-foreground whitespace-nowrap">Type:</span>
       <Select
         value={currentType}

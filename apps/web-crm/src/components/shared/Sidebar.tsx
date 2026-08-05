@@ -100,17 +100,17 @@ export function Sidebar() {
         />
       )}
       <aside className="fixed left-0 top-0 h-full w-64 flex flex-col border-r border-border bg-sidebar text-sidebar-foreground z-[60] transition-all duration-300 shadow-xl md:shadow-none animate-in slide-in-from-left duration-300">
-        <SidebarHeader className="p-4 border-b border-border/50">
-          <div className="flex items-center justify-between gap-1">
+        <SidebarHeader className="p-md border-b border-border/50">
+          <div className="flex items-center justify-between gap-xs">
             <div className="flex-1 min-w-0">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <div className="flex items-center justify-between p-2 rounded-lg hover:bg-sidebar-accent cursor-pointer transition-colors group">
-                    <div className="flex flex-col min-w-0 pr-2">
+                  <div className="flex items-center justify-between p-sm rounded-lg hover:bg-sidebar-accent cursor-pointer transition-colors group">
+                    <div className="flex flex-col min-w-0 pr-sm">
                       <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-sidebar-foreground truncate">
                         Bren Raphael&apos;s
                       </h1>
-                      <button className="text-xs font-semibold bg-violet-500 text-white px-2 py-1 rounded truncate mt-0.5 ">
+                      <button className="text-xs font-semibold bg-violet-500 text-white px-sm py-xs rounded truncate mt-0.5 ">
                         Customer Relationship Mgmt.
                       </button>
                     </div>
@@ -131,9 +131,9 @@ export function Sidebar() {
                     return (
                       <DropdownMenuItem
                         key={sys.fullName}
-                        className="cursor-pointer text-xs flex items-center justify-between py-2.5 px-3 hover:bg-accent font-medium"
+                        className="cursor-pointer text-xs flex items-center justify-between py-sm.5 px-sm hover:bg-accent font-medium"
                       >
-                        <div className="flex items-center gap-2.5 overflow-hidden">
+                        <div className="flex items-center gap-sm.5 overflow-hidden">
                           <SysIcon className="w-4 h-4 text-muted-foreground shrink-0" />
                           <div className="flex flex-col overflow-hidden">
                             <span
@@ -147,7 +147,7 @@ export function Sidebar() {
                           </div>
                         </div>
                         {sys.active && (
-                          <Check className="w-4 h-4 text-primary shrink-0 ml-2" />
+                          <Check className="w-4 h-4 text-primary shrink-0 ml-sm" />
                         )}
                       </DropdownMenuItem>
                     );
@@ -166,7 +166,7 @@ export function Sidebar() {
           </div>
         </SidebarHeader>
 
-        <SidebarContent className="p-4 overflow-y-auto">
+        <SidebarContent className="p-md overflow-y-auto">
           <SidebarGroup className="p-0">
             <SidebarGroupContent>
               <SidebarMenu>
@@ -178,7 +178,7 @@ export function Sidebar() {
                       <SidebarMenuButton
                         asChild
                         isActive={isActive}
-                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
+                        className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors"
                       >
                         <Link href={item.href} onClick={handleNavClick}>
                           <Icon className="w-4 h-4 shrink-0" />
@@ -193,14 +193,14 @@ export function Sidebar() {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter className="p-3 border-t border-border space-y-2">
+        <SidebarFooter className="p-sm border-t border-border space-y-2">
           {showSettings && (
             <SidebarMenu>
               <SidebarMenuItem key={settingsNavItem.name}>
                 <SidebarMenuButton
                   asChild
                   isActive={isSettingsActive}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
+                  className="w-full flex items-center gap-sm px-sm py-sm rounded-lg text-sm transition-colors"
                 >
                   <Link href={settingsNavItem.href} onClick={handleNavClick}>
                     <SettingsIcon className="w-4 h-4 shrink-0" />
@@ -211,7 +211,7 @@ export function Sidebar() {
             </SidebarMenu>
           )}
 
-          <div className="pt-2 border-t border-border">
+          <div className="pt-sm border-t border-border">
             <SidebarProfileFooter
               activeAccount={activeAccount}
               onSelectAccount={setActiveAccount}

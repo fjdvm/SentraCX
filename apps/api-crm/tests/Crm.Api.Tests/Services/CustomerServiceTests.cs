@@ -10,11 +10,12 @@ public class CustomerServiceTests
 {
     private readonly Mock<ICustomerProfileRepository> _customerRepoMock = new();
     private readonly Mock<IUserRepository> _userRepoMock = new();
+    private readonly Mock<ITicketRepository> _ticketRepoMock = new();
     private readonly CustomerService _sut;
 
     public CustomerServiceTests()
     {
-        _sut = new CustomerService(_customerRepoMock.Object, _userRepoMock.Object);
+        _sut = new CustomerService(_customerRepoMock.Object, _userRepoMock.Object, _ticketRepoMock.Object);
     }
 
     [Fact]
@@ -223,6 +224,30 @@ public class CustomerServiceTests
         var result = await _sut.SoftDeleteAsync(id);
 
         Assert.False(result);
+    }
+
+    [Fact]
+    public async Task ExecuteRetentionActionAsync_WhenExistsAndNotLead_UpdatesTypeAndCreatesTicket()
+    {
+        var id = Guid.NewGuid();
+        var profile = CreateTestProfile("user-1", "John", "Doe");
+        profile.Id = id;
+
+        _customerRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(profile);
+
+        var dto = new RetentionActionRequestDto("High", "Follow up call", 0.7);
+        var result = await _sut.ExecuteRetentionActionAsync(id, dto);
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.TicketId);
+        Assert.Equal("At-Risk", profile.CustomerType);
+        
+        _customerRepoMock.Verify(r => r.UpdateAsync(profile), Times.Once);
+        _ticketRepoMock.Verify(r => r.AddAsync(It.Is<Ticket>(t => 
+            t.CustomerId == id && 
+            t.Title == "[Retention] John Doe" && 
+            t.Description == "Follow up call"
+        )), Times.Once);
     }
 
     private static CustomerProfile CreateTestProfile(

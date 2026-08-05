@@ -112,7 +112,7 @@ export function AiSettingsTab({ hasAiAccess, userRole, showToast }: AiSettingsTa
   return (
     <div className="space-y-6">
       {aiError && (
-        <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg p-4 flex items-start gap-3">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg p-md flex items-start gap-sm">
           <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1">
             <h4 className="font-bold">Configuration Error</h4>
@@ -122,15 +122,15 @@ export function AiSettingsTab({ hasAiAccess, userRole, showToast }: AiSettingsTa
             type="button"
             variant="ghost"
             size="sm"
-            className="h-7 px-2 shrink-0 hover:bg-destructive/20 text-destructive"
+            className="h-7 px-sm shrink-0 hover:bg-destructive/20 text-destructive"
             onClick={fetchAiConfigs}
           >
-            <RefreshCw className="w-3 h-3 mr-1" /> Retry
+            <RefreshCw className="w-3 h-3 mr-xs" /> Retry
           </Button>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
         <AiRiskThresholdsCard
           churnThreshold={churnThreshold}
           setChurnThreshold={setChurnThreshold}
@@ -152,7 +152,7 @@ export function AiSettingsTab({ hasAiAccess, userRole, showToast }: AiSettingsTa
         disabled={aiLoading}
       />
 
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end gap-sm">
         <Button type="button" variant="outline" disabled={aiLoading} onClick={fetchAiConfigs}>
           Reset Fields
         </Button>

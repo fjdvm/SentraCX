@@ -184,5 +184,17 @@ class ContextSnapshotService:
             else:
                 lines.append(f"\nYOUR CLAIMED TICKETS (Agent: {agent_id}):\n- None found.")
 
-        lines.append("=== End of snapshot ===")
+        if self._crm:
+            deep_state = await self._crm.get_system_state_snapshot()
+            if deep_state:
+                lines.append("\n=== DEEP SYSTEM STATE (CRM DATABASE) ===")
+                lines.append(f"Recent Tickets: {len(deep_state.get('recentTickets', []))}")
+                lines.append(f"Recent Orders: {len(deep_state.get('recentOrders', []))}")
+                lines.append(f"Active Campaigns: {len(deep_state.get('activeCampaigns', []))}")
+                # We serialize the entire deep state briefly so the LLM can query it if asked context questions
+                lines.append("DATA_DUMP (JSON):")
+                import json
+                lines.append(json.dumps(deep_state, default=str)[:8000])  # limit to 8k chars to save context window
+
+        lines.append("\n=== End of snapshot ===")
         return "\n".join(lines)

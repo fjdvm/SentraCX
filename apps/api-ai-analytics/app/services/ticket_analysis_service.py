@@ -244,3 +244,14 @@ class TicketAnalysisService:
             "alert_triggered": alert_triggered,
         }
 
+    async def generate_smart_reply(self, ticket_id: str, messages: list[str]) -> str:
+        """Generate a smart reply for a ticket based on context and provided messages."""
+        try:
+            ticket = await self._crm_client.get_ticket(ticket_id)
+            if not ticket:
+                return "How can I help you today?"
+            title = ticket.get("title", "")
+            description = ticket.get("description", "")
+            return await self._analyzer.generate_smart_reply(title, description, messages)
+        except Exception as e:
+            return "I'm looking into your request now and will get back to you shortly."

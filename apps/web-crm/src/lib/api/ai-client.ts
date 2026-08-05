@@ -114,10 +114,15 @@ export const aiClient = {
         method: "POST",
         body: JSON.stringify({ query: queryText }),
       }),
-    ask: (queryText: string, agentId?: string) =>
+    ask: (queryText: string, agentId?: string, context?: string) =>
       request<{ type: "text" | "chart" | "table" | "value"; content: any }>("/api/v1/dashboard/ask", {
         method: "POST",
-        body: JSON.stringify({ query: queryText, agent_id: agentId }),
+        body: JSON.stringify({ query: queryText, agent_id: agentId, context }),
+      }),
+    getAutocomplete: (prefix: string, context?: string) =>
+      request<{ suffix: string }>("/api/v1/dashboard/autocomplete", {
+        method: "POST",
+        body: JSON.stringify({ prefix, context }),
       }),
   },
   forecasts: {
@@ -135,5 +140,12 @@ export const aiClient = {
       const range = days && days <= 7 ? "7d" : "30d";
       return request<any>(`/api/v1/forecasts/sentiment-trend?range=${range}`);
     },
+  },
+  tickets: {
+    generateSmartReply: (ticketId: string, messages: string[]) =>
+      request<{ smart_reply: string }>(`/api/v1/tickets/${ticketId}/smart-reply`, {
+        method: "POST",
+        body: JSON.stringify({ ticket_id: ticketId, messages }),
+      }),
   },
 };

@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { AiInput as Input } from "@/components/ui/ai-input";
+import { AiTextarea as Textarea } from "@/components/ui/ai-textarea";
 import {
   Dialog,
   DialogContent,
@@ -118,11 +118,11 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
     <Dialog open={isOpen} onOpenChange={(val) => { if (!val) form.reset(); setIsOpen(val); }}>
       <DialogTrigger asChild>
         <Button className="self-start sm:self-center">
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-4 h-4 mr-sm" />
           Create Campaign
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[90vw] max-w-[90vw] sm:max-w-[80vw] md:max-w-[700px] lg:max-w-[900px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg sm:rounded-xl">
+      <DialogContent className="w-[90vw] max-w-[90vw] sm:max-w-[80vw] md:max-w-[700px] lg:max-w-[900px] max-h-[90vh] overflow-y-auto p-md sm:p-lg rounded-lg sm:rounded-xl">
         <DialogHeader className="space-y-1.5 text-left">
           <DialogTitle className="text-xl sm:text-2xl font-bold tracking-tight">Create Campaign</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
@@ -131,11 +131,11 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
         </DialogHeader>
 
         <Form {...form}>
-          <form className="space-y-4 py-2">
+          <form className="space-y-4 py-sm">
             <FormField control={form.control} name="title" render={({ field }) => (
               <FormItem>
                 <FormLabel>Campaign Title *</FormLabel>
-                <FormControl><Input placeholder="e.g. Q4 Product Announcement" {...field} /></FormControl>
+                <FormControl><Input context="Marketing campaign title." placeholder="e.g. Q4 Product Announcement" autoComplete="on" spellCheck={true} data-gramm="true" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -143,7 +143,7 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
             <FormField control={form.control} name="subject" render={({ field }) => (
               <FormItem>
                 <FormLabel>Subject Line *</FormLabel>
-                <FormControl><Input placeholder="e.g. Introducing our new features!" {...field} /></FormControl>
+                <FormControl><Input context="Marketing campaign email subject line." placeholder="e.g. Introducing our new features!" autoComplete="on" spellCheck={true} data-gramm="true" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -151,7 +151,7 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
             <FormField control={form.control} name="description" render={({ field }) => (
               <FormItem>
                 <FormLabel>Description *</FormLabel>
-                <FormControl><Textarea rows={3} placeholder="Campaign copy and internal notes..." {...field} /></FormControl>
+                <FormControl><Textarea context="Marketing campaign copy." rows={3} placeholder="Campaign copy and internal notes..." autoComplete="on" spellCheck={true} data-gramm="true" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -197,7 +197,7 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
               onImageUpload={handleImageUpload}
             />
 
-            <DialogFooter className="pt-4 flex flex-col-reverse sm:flex-row justify-end gap-2">
+            <DialogFooter className="pt-md flex flex-col-reverse sm:flex-row justify-end gap-sm">
               <Button type="button" variant="outline" onClick={() => form.handleSubmit((v) => onSubmit(v, "Draft"))()}>
                 Save as Draft
               </Button>

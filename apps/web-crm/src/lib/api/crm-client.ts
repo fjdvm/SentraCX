@@ -143,6 +143,11 @@ export const crmClient = {
         method: "PUT",
         body: JSON.stringify(body),
       }),
+    executeRetentionAction: (id: string, body: { riskLevel: string; recommendedAction: string; churnScore: number }) =>
+      request<{ ticketId: string; message: string }>(`/api/v1/customers/${id}/retention-action`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
   },
   orders: {
     listByCustomer: (customerId: string) =>

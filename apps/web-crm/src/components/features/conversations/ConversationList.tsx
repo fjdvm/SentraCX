@@ -53,12 +53,12 @@ export function ConversationList({
         </div>
 
         {/* Tab Filters */}
-        <div className="flex bg-muted p-1 rounded-lg text-label-sm font-medium">
+        <div className="flex bg-muted p-xs rounded-lg text-label-sm font-medium">
           {(["all", "unread", "read"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => onTabChange(tab)}
-              className={`flex-1 py-1 text-center rounded-md capitalize transition-colors ${
+              className={`flex-1 py-xs text-center rounded-md capitalize transition-colors ${
                 activeTab === tab
                   ? "bg-primary text-primary-foreground font-bold shadow-xs"
                   : "text-muted-foreground hover:text-foreground font-semibold"
@@ -121,7 +121,7 @@ export function ConversationList({
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-baseline mb-1">
+                  <div className="flex justify-between items-baseline mb-xs">
                     <h4 className="text-body-sm font-bold text-foreground truncate">
                       {ticket.customerName}
                     </h4>
@@ -144,7 +144,7 @@ export function ConversationList({
                   </p>
                 </div>
                 {hasUnread && (
-                  <Badge className="h-5 px-1.5 min-w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold self-center flex items-center justify-center">
+                  <Badge className="h-5 px-xs.5 min-w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold self-center flex items-center justify-center">
                     {ticket.unreadMessageCount}
                   </Badge>
                 )}

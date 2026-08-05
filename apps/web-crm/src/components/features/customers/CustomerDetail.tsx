@@ -101,7 +101,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
 
         {/* Dynamic Controls - Stacked on mobile */}
         <div className="flex flex-wrap items-center gap-sm border-t sm:border-t-0 pt-sm sm:pt-0 border-border">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-sm w-full sm:w-auto">
             <span className="text-label-sm font-semibold text-muted-foreground whitespace-nowrap">Status:</span>
             <CustomerStatusBadge status={customer.status} />
           </div>
@@ -115,8 +115,8 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
 
       {/* Three Tabs View */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-md">
-        <div className="w-full overflow-x-auto pb-1">
-          <TabsList className={`w-full sm:w-auto grid ${isLead ? "grid-cols-2" : "grid-cols-3"} sm:inline-flex h-9 p-1`}>
+        <div className="w-full overflow-x-auto pb-xs">
+          <TabsList className={`w-full sm:w-auto grid ${isLead ? "grid-cols-2" : "grid-cols-3"} sm:inline-flex h-9 p-xs`}>
             <TabsTrigger value="overview" className="text-label-sm font-semibold">
               Overview
             </TabsTrigger>

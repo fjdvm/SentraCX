@@ -9,7 +9,8 @@ namespace Crm.Api.Services;
 
 public class CustomerService(
     ICustomerProfileRepository customerRepo,
-    IUserRepository userRepo) : ICustomerService
+    IUserRepository userRepo,
+    ITicketRepository ticketRepo) : ICustomerService
 {
     public async Task<PaginatedResponseDto<CustomerListResponseDto>> GetAllAsync(
         int page, int pageSize, string? customerType = null, string? searchTerm = null)
@@ -123,5 +124,40 @@ public class CustomerService(
         profile.User.UpdatedAt = DateTime.UtcNow;
         await userRepo.UpdateAsync(profile.User);
         return true;
+    }
+
+    public async Task<(bool Success, Guid? TicketId, string Message)> ExecuteRetentionActionAsync(Guid customerId, RetentionActionRequestDto dto)
+    {
+        var profile = await customerRepo.GetByIdAsync(customerId);
+        if (profile is null) return (false, null, "Customer not found");
+
+        // Enforce lead constraint
+        if (profile.CustomerType.Equals("Lead", StringComparison.OrdinalIgnoreCase))
+        {
+            return (false, null, "Cannot apply retention actions to a lead.");
+        }
+
+        // Update customer type if not already At-Risk
+        if (!profile.CustomerType.Equals("At-Risk", StringComparison.OrdinalIgnoreCase))
+        {
+            profile.CustomerType = "At-Risk";
+            profile.UpdatedAt = DateTime.UtcNow;
+            await customerRepo.UpdateAsync(profile);
+        }
+
+        // Create follow-up ticket
+        var ticket = new Ticket
+        {
+            Id = Guid.NewGuid(),
+            CustomerId = customerId,
+            Title = $"[Retention] {profile.User.FirstName} {profile.User.LastName}",
+            Description = dto.RecommendedAction,
+            Status = "Unclaimed",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        await ticketRepo.AddAsync(ticket);
+
+        return (true, ticket.Id, "Retention action executed successfully.");
     }
 }
