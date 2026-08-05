@@ -1,7 +1,5 @@
-import { PromotionListItem } from "./promotion";
-
 export type CampaignStatus = "Draft" | "Active" | "Ended";
-export type CampaignChannel = "Email" | "InApp" | "Facebook" | "Twitter" | "Instagram";
+export type CampaignChannel = "Email" | "InApp";
 export type ScheduleType = "SendNow" | "Scheduled" | "Recurring";
 export type RecurrenceDay = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
 
@@ -30,7 +28,6 @@ export interface Campaign extends CampaignListItem {
   imageUrl?: string | null;
   createdById?: string;
   schedule?: CampaignSchedule | null;
-  promotions?: PromotionListItem[];
 }
 
 export interface CreateCampaignInput {

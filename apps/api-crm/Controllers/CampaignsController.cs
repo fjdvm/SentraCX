@@ -47,14 +47,6 @@ public class CampaignsController(ICampaignService campaignService) : ControllerB
         return success ? NoContent() : NotFound();
     }
 
-    [HttpPost("{id:guid}/promotions")]
-    public async Task<IActionResult> AttachPromotions(
-        Guid id,
-        [FromBody] AttachPromotionsToCampaignRequestDto dto)
-    {
-        var success = await campaignService.AttachPromotionsAsync(id, dto.PromotionIds);
-        return success ? NoContent() : NotFound();
-    }
 
     [HttpPost("{id:guid}/send")]
     public async Task<IActionResult> Send(

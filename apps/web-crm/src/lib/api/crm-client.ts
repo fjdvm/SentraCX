@@ -19,12 +19,6 @@ import {
   CampaignDispatchResult,
 } from "@/types/campaign";
 import {
-  Promotion,
-  PromotionListItem,
-  CreatePromotionInput,
-  UpdatePromotionInput,
-} from "@/types/promotion";
-import {
   Ticket,
   TicketListItem,
   CreateTicketInput,
@@ -184,47 +178,12 @@ export const crmClient = {
       request<void>(`/api/v1/campaigns/${id}/status?status=${encodeURIComponent(status)}`, {
         method: "PUT",
       }),
-    attachPromotions: (id: string, promotionIds: string[]) =>
-      request<void>(`/api/v1/campaigns/${id}/promotions`, {
-        method: "POST",
-        body: JSON.stringify({ promotionIds }),
-      }),
     send: (id: string) =>
       request<CampaignDispatchResult>(`/api/v1/campaigns/${id}/send`, {
         method: "POST",
       }),
     delete: (id: string) =>
       request<void>(`/api/v1/campaigns/${id}`, {
-        method: "DELETE",
-      }),
-  },
-  promotions: {
-    list: (status?: string) => {
-      let url = `/api/v1/promotions`;
-      if (status && status !== "All") {
-        url += `?status=${encodeURIComponent(status)}`;
-      }
-      return request<PromotionListItem[]>(url);
-    },
-    getById: (id: string) =>
-      request<Promotion>(`/api/v1/promotions/${id}`),
-    create: (body: CreatePromotionInput) =>
-      request<Promotion>(`/api/v1/promotions`, {
-        method: "POST",
-        body: JSON.stringify(body),
-      }),
-    update: (id: string, body: UpdatePromotionInput) =>
-      request<void>(`/api/v1/promotions/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(body),
-      }),
-    updateStatus: (id: string, status: string) =>
-      request<void>(`/api/v1/promotions/${id}/status`, {
-        method: "PUT",
-        body: JSON.stringify({ status }),
-      }),
-    cancel: (id: string) =>
-      request<void>(`/api/v1/promotions/${id}/cancel`, {
         method: "DELETE",
       }),
   },

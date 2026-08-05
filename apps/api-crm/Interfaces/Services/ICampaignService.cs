@@ -10,6 +10,5 @@ public interface ICampaignService
     Task<CampaignResponseDto> CreateAsync(CreateCampaignRequestDto dto, string createdById);
     Task<bool> UpdateAsync(Guid id, UpdateCampaignRequestDto dto);
     Task<bool> UpdateStatusAsync(Guid id, string status);
-    Task<bool> AttachPromotionsAsync(Guid id, List<Guid> promotionIds);
     Task<bool> DeleteAsync(Guid id);
 }

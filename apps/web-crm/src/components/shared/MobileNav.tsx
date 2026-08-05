@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, MessageSquare, Ticket, Tag, Settings } from "lucide-react";
+import { LayoutDashboard, Users, MessageSquare, Ticket, Megaphone, Settings } from "lucide-react";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -11,7 +11,7 @@ export function MobileNav() {
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Customers", href: "/customers", icon: Users },
     { name: "Tickets", href: "/tickets", icon: Ticket },
-    { name: "Promotions", href: "/promotions", icon: Tag },
+    { name: "Campaigns", href: "/campaigns", icon: Megaphone },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 

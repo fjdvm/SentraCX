@@ -41,8 +41,7 @@ public static class CampaignMapper
                 RecurrenceDays = campaign.CampaignSchedule.RecurrenceDays,
                 StartDate = campaign.CampaignSchedule.StartDate,
                 EndDate = campaign.CampaignSchedule.EndDate
-            },
-            Promotions = campaign.CampaignPromotions.Select(cp => PromotionMapper.ToListDto(cp.Promotion)).ToList()
+            }
         };
     }
 

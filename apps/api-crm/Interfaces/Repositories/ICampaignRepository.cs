@@ -9,5 +9,4 @@ public interface ICampaignRepository
     Task<Campaign> AddAsync(Campaign campaign);
     Task UpdateAsync(Campaign campaign);
     Task DeleteAsync(Guid id);
-    Task AttachPromotionsAsync(Guid campaignId, IEnumerable<Guid> promotionIds);
 }

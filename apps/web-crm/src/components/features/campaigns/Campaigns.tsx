@@ -29,7 +29,7 @@ export function Campaigns() {
         <div className="space-y-sm">
           <h1 className="text-headline-md font-bold tracking-tight text-foreground">Marketing Campaigns</h1>
           <p className="text-body-md text-muted-foreground">
-            Create multi-channel marketing outreaches (Email, InApp, Facebook, Twitter, Instagram).
+            Create multi-channel marketing outreaches (In-App, Email).
           </p>
         </div>
         <CampaignFormSheet onSuccess={refetch} onShowToast={showToast} />

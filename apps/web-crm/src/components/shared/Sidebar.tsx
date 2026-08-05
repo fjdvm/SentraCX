@@ -83,7 +83,7 @@ export function Sidebar() {
     else if (item.href.startsWith("/customers")) modName = "Customer Profiles";
     else if (item.href.startsWith("/conversations")) modName = "Conversations";
     else if (item.href.startsWith("/tickets")) modName = "Tickets";
-    else if (item.href.startsWith("/campaigns") || item.href.startsWith("/promotions")) modName = "Campaigns";
+    else if (item.href.startsWith("/campaigns")) modName = "Campaigns";
 
     if (!modName) return true;
     return !!session.permissions?.CRMS?.[modName]?.canRead;

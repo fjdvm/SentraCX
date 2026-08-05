@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Upload, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -25,28 +24,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { crmClient } from "@/lib/api/crm-client";
-import { usePromotions } from "@/hooks/usePromotions";
 import { useTemplates } from "@/hooks/useTemplates";
-import { useCustomers } from "@/hooks/useCustomers";
-import { CampaignChannel, CreateCampaignInput, RecurrenceDay, ScheduleType } from "@/types/campaign";
+import { CampaignChannel, CreateCampaignInput } from "@/types/campaign";
+import { CampaignChannelPicker } from "./CampaignChannelPicker";
+import { CampaignAudiencePicker } from "./CampaignAudiencePicker";
+import { CampaignSchedulePicker } from "./CampaignSchedulePicker";
+import { CampaignMediaPicker } from "./CampaignMediaPicker";
 
 interface CampaignFormSheetProps {
   onSuccess: () => void;
   onShowToast: (msg: string) => void;
 }
 
-const CHANNELS: CampaignChannel[] = ["Email", "InApp", "Facebook", "Twitter", "Instagram"];
-const DAYS: RecurrenceDay[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-
 export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedPromotions, setSelectedPromotions] = useState<string[]>([]);
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<string[]>([]);
   const [customEmailsText, setCustomEmailsText] = useState("");
-  const { data: promotions } = usePromotions("Active");
   const { data: templates } = useTemplates();
-  const { customers } = useCustomers({ customerType: "Contact", pageSize: 50 });
 
   const form = useForm<CreateCampaignInput>({
     defaultValues: {
@@ -108,13 +103,8 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
 
       const created = await crmClient.campaigns.create(payload);
 
-      if (selectedPromotions.length > 0) {
-        await crmClient.campaigns.attachPromotions(created.id, selectedPromotions);
-      }
-
       onShowToast(`Campaign ${created.title} saved as ${targetStatus}!`);
       form.reset();
-      setSelectedPromotions([]);
       setSelectedCustomerIds([]);
       setCustomEmailsText("");
       setIsOpen(false);
@@ -136,7 +126,7 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
         <DialogHeader className="space-y-1.5 text-left">
           <DialogTitle className="text-xl sm:text-2xl font-bold tracking-tight">Create Campaign</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Configure target channels, scheduling, and attached promotions.
+            Configure target channels and scheduling strategy.
           </DialogDescription>
         </DialogHeader>
 
@@ -169,199 +159,43 @@ export function CampaignFormSheet({ onSuccess, onShowToast }: CampaignFormSheetP
             {/* Channels Multi-Select */}
             <FormField control={form.control} name="channels" render={({ field }) => (
               <FormItem>
-                <FormLabel>Marketing Channels *</FormLabel>
-                <div className="flex flex-wrap gap-2">
-                  {CHANNELS.map((ch) => {
-                    const isSelected = field.value.includes(ch);
-                    return (
-                      <Button
-                        type="button" key={ch} variant={isSelected ? "default" : "outline"} size="sm"
-                        onClick={() => {
-                          const updated = isSelected ? field.value.filter((c) => c !== ch) : [...field.value, ch];
-                          field.onChange(updated);
-                        }}
-                      >
-                        {ch}
-                      </Button>
-                    );
-                  })}
-                </div>
+                <CampaignChannelPicker selectedChannels={field.value} onChange={field.onChange} />
                 <FormMessage />
               </FormItem>
             )} />
 
-            {/* Target Audience Filter */}
+            {/* Target Audience Filter with Specific Email Search */}
             <FormField control={form.control} name="targetAudience" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Target Audience</FormLabel>
-                <select
-                  className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
-                  value={field.value ?? "All"}
-                  onChange={field.onChange}
-                >
-                  <option value="All">All Active Contacts</option>
-                  <option value="Regular">Regular Customers Only</option>
-                  <option value="InstitutionalBuyer">Institutional Buyers Only</option>
-                  <option value="Specific">Specific Customers / Emails</option>
-                </select>
-              </FormItem>
+              <CampaignAudiencePicker
+                targetAudience={field.value ?? "All"}
+                onAudienceChange={field.onChange}
+                selectedCustomerIds={selectedCustomerIds}
+                onSelectedCustomerIdsChange={setSelectedCustomerIds}
+                customEmailsText={customEmailsText}
+                onCustomEmailsTextChange={setCustomEmailsText}
+              />
             )} />
-
-            {/* Specific Customers & Emails Picker */}
-            {form.watch("targetAudience") === "Specific" && (
-              <div className="space-y-4 border border-border rounded-lg p-3 bg-muted/10">
-                {customers.length > 0 && (
-                  <div className="space-y-2">
-                    <FormLabel className="text-xs font-semibold">Select Customer Contacts</FormLabel>
-                    <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1 border rounded p-2 bg-background">
-                      {customers.map((c) => {
-                        const checked = selectedCustomerIds.includes(c.id);
-                        return (
-                          <label key={c.id} className="flex items-center justify-between text-xs p-1 rounded hover:bg-muted/50 cursor-pointer">
-                            <div className="flex items-center gap-2">
-                              <Checkbox
-                                checked={checked}
-                                onCheckedChange={(val) => {
-                                  setSelectedCustomerIds((prev) =>
-                                    val ? [...prev, c.id] : prev.filter((id) => id !== c.id)
-                                  );
-                                }}
-                              />
-                              <span className="font-medium">{c.displayName}</span>
-                            </div>
-                            <span className="text-muted-foreground">{c.email}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-1.5">
-                  <FormLabel className="text-xs font-semibold">Specific Email Addresses (Typed)</FormLabel>
-                  <Textarea
-                    rows={2}
-                    placeholder="Enter emails separated by commas or new lines, e.g. john@company.com, partner@org.com"
-                    value={customEmailsText}
-                    onChange={(e) => setCustomEmailsText(e.target.value)}
-                    className="text-xs font-mono"
-                  />
-                  <span className="text-[11px] text-muted-foreground block">
-                    You can type any specific email addresses here to receive the campaign.
-                  </span>
-                </div>
-              </div>
-            )}
 
             {/* Schedule Strategy */}
-            <FormField control={form.control} name="scheduleType" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Schedule Options</FormLabel>
-                <div className="flex gap-2">
-                  {(["SendNow", "Scheduled", "Recurring"] as ScheduleType[]).map((st) => (
-                    <Button
-                      type="button" key={st} variant={field.value === st ? "default" : "outline"} size="sm" className="flex-1"
-                      onClick={() => field.onChange(st)}
-                    >
-                      {st === "SendNow" ? "Send Now" : st}
-                    </Button>
-                  ))}
-                </div>
-              </FormItem>
-            )} />
+            <CampaignSchedulePicker
+              scheduleType={form.watch("scheduleType")}
+              onScheduleTypeChange={(st) => form.setValue("scheduleType", st)}
+              recurrenceDays={form.watch("recurrenceDays") ?? []}
+              onRecurrenceDaysChange={(days) => form.setValue("recurrenceDays", days)}
+              startDate={form.watch("startDate")}
+              onStartDateChange={(d) => form.setValue("startDate", d)}
+              endDate={form.watch("endDate")}
+              onEndDateChange={(d) => form.setValue("endDate", d)}
+            />
 
-            {/* Recurrence Days if Recurring */}
-            {form.watch("scheduleType") === "Recurring" && (
-              <div className="space-y-2 border border-border rounded-lg p-3">
-                <FormLabel className="text-xs font-semibold">Recurring Days (Mon/Tue/Wed)</FormLabel>
-                <div className="flex flex-wrap gap-3">
-                  {DAYS.map((day) => (
-                    <label key={day} className="flex items-center gap-1.5 text-xs">
-                      <Checkbox
-                        checked={form.watch("recurrenceDays")?.includes(day) ?? false}
-                        onCheckedChange={(checked) => {
-                          const curr = form.getValues("recurrenceDays") ?? [];
-                          const updated = checked ? [...curr, day] : curr.filter((d) => d !== day);
-                          form.setValue("recurrenceDays", updated);
-                        }}
-                      />
-                      {day.slice(0, 3)}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Dates for Scheduled/Recurring */}
-            {form.watch("scheduleType") !== "SendNow" && (
-              <div className="grid grid-cols-2 gap-3">
-                <FormField control={form.control} name="startDate" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Date</FormLabel>
-                    <FormControl><Input type="datetime-local" {...field} value={field.value ?? ""} /></FormControl>
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="endDate" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Date</FormLabel>
-                    <FormControl><Input type="datetime-local" {...field} value={field.value ?? ""} /></FormControl>
-                  </FormItem>
-                )} />
-              </div>
-            )}
-
-            {/* Template Picker */}
-            <FormField control={form.control} name="templateId" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email Template (Optional)</FormLabel>
-                <select
-                  className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
-                  value={field.value ?? ""} onChange={field.onChange}
-                >
-                  <option value="">Default Clean Email Layout</option>
-                  {templates.map((t) => (
-                    <option key={t.id} value={t.id}>{t.name} ({t.channel})</option>
-                  ))}
-                </select>
-              </FormItem>
-            )} />
-
-            {/* Image Upload */}
-            <div className="space-y-1">
-              <FormLabel>Optional Banner Image</FormLabel>
-              <div className="flex items-center gap-2">
-                <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
-                {isUploading && <Loader2 className="w-4 h-4 animate-spin shrink-0" />}
-              </div>
-            </div>
-
-            {/* CRM-004: Multi-Select Promotion Picker */}
-            {promotions.length > 0 && (
-              <div className="space-y-2 border border-border rounded-lg p-3">
-                <FormLabel className="text-xs font-semibold">Attach Promotions (Multi-Select)</FormLabel>
-                <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
-                  {promotions.map((p) => {
-                    const checked = selectedPromotions.includes(p.id);
-                    return (
-                      <label key={p.id} className="flex items-center justify-between text-xs p-1.5 rounded hover:bg-muted/50 cursor-pointer">
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            checked={checked}
-                            onCheckedChange={(val) => {
-                              setSelectedPromotions((prev) =>
-                                val ? [...prev, p.id] : prev.filter((id) => id !== p.id)
-                              );
-                            }}
-                          />
-                          <span className="font-medium text-foreground">{p.title}</span>
-                        </div>
-                        <span className="text-muted-foreground">{p.promotionType}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            {/* Template & Image Media Picker */}
+            <CampaignMediaPicker
+              templateId={form.watch("templateId")}
+              onTemplateIdChange={(id) => form.setValue("templateId", id)}
+              templates={templates}
+              isUploading={isUploading}
+              onImageUpload={handleImageUpload}
+            />
 
             <DialogFooter className="pt-4 flex flex-col-reverse sm:flex-row justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => form.handleSubmit((v) => onSubmit(v, "Draft"))()}>
