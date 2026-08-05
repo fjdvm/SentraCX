@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { crmClient } from "@/lib/api/crm-client";
 import { Template } from "@/types/campaign";
 
 export function useTemplates(channel?: string) {
+  const { data: session } = useSession();
   const [data, setData] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -22,7 +24,7 @@ export function useTemplates(channel?: string) {
 
   useEffect(() => {
     fetchTemplates();
-  }, [fetchTemplates]);
+  }, [fetchTemplates, session?.accessToken]);
 
   return { data, isLoading, error, refetch: fetchTemplates };
 }

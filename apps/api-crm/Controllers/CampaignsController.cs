@@ -69,8 +69,8 @@ public class CampaignsController(ICampaignService campaignService) : ControllerB
             return BadRequest(new { message = "Campaign does not include Email channel." });
         }
 
-        var sentCount = await dispatchService.DispatchAsync(id);
-        return Ok(new { message = $"Campaign dispatched to {sentCount} recipients.", sentCount });
+        var result = await dispatchService.DispatchAsync(id);
+        return Ok(result);
     }
 
     [HttpDelete("{id:guid}")]

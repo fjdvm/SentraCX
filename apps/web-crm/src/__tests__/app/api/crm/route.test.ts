@@ -1,12 +1,20 @@
 /**
  * @jest-environment node
  */
+jest.mock("@/auth", () => ({
+  auth: jest.fn(),
+}));
+
 import { NextRequest } from "next/server";
+import { auth } from "@/auth";
 import { GET, POST, PUT, DELETE, PATCH } from "@/app/api/crm/[...path]/route";
 
 describe("CRM API Proxy Route Handler", () => {
   const originalFetch = global.fetch;
 
+  beforeEach(() => {
+    (auth as jest.Mock).mockResolvedValue({ accessToken: "mock-session-token" });
+  });
   afterEach(() => {
     global.fetch = originalFetch;
     jest.resetAllMocks();
@@ -132,5 +140,28 @@ describe("CRM API Proxy Route Handler", () => {
     await PATCH(patchReq, { params: Promise.resolve({ path: ["customers", "123"] }) });
 
     expect(global.fetch).toHaveBeenCalledTimes(3);
+  });
+  it("injects Authorization Bearer token from session when not present in request headers", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      status: 200,
+      headers: new Headers({ "content-type": "application/json" }),
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(0)),
+    } as unknown as Response);
+
+    const req = createRequest("http://localhost:3000/api/crm/campaigns", {
+      method: "GET",
+    });
+    const context = { params: Promise.resolve({ path: ["campaigns"] }) };
+
+    await GET(req, context);
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://localhost:5005/api/v1/campaigns",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          authorization: "Bearer mock-session-token",
+        }),
+      })
+    );
   });
 });

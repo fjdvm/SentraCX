@@ -1,3 +1,4 @@
+using Crm.Api.DTOs.Responses;
 using Crm.Api.Interfaces.Repositories;
 using Crm.Api.Interfaces.Services;
 using Crm.Api.Models;
@@ -11,20 +12,32 @@ public class CampaignDispatchService(
     IEmailService emailService,
     ILogger<CampaignDispatchService> logger) : ICampaignDispatchService
 {
-    public async Task<int> DispatchAsync(Guid campaignId)
+    public async Task<CampaignDispatchResultDto> DispatchAsync(Guid campaignId)
     {
         var campaign = await campaignRepository.GetByIdAsync(campaignId);
         if (campaign == null)
         {
             logger.LogWarning("Dispatch attempted for non-existent campaign {CampaignId}", campaignId);
-            return 0;
+            return new CampaignDispatchResultDto
+            {
+                TotalRecipients = 0,
+                SentCount = 0,
+                FailedCount = 0,
+                Message = $"Campaign {campaignId} not found."
+            };
         }
 
         var isEmailChannel = campaign.Channels.Any(c => c.Equals("Email", StringComparison.OrdinalIgnoreCase));
         if (!isEmailChannel)
         {
             logger.LogInformation("Campaign {CampaignId} does not include Email channel. Skipping email dispatch.", campaignId);
-            return 0;
+            return new CampaignDispatchResultDto
+            {
+                TotalRecipients = 0,
+                SentCount = 0,
+                FailedCount = 0,
+                Message = "Campaign does not include Email channel."
+            };
         }
 
         var recipients = await customerProfileRepository.GetAllActiveContactsAsync(
@@ -32,6 +45,7 @@ public class CampaignDispatchService(
 
         int successCount = 0;
         int failureCount = 0;
+        var errors = new HashSet<string>();
         var processedEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var recipient in recipients)
@@ -39,8 +53,13 @@ public class CampaignDispatchService(
             if (string.IsNullOrWhiteSpace(recipient.User.Email)) continue;
             processedEmails.Add(recipient.User.Email);
 
-            var isSuccess = await TrySendEmailAsync(
+            var (isSuccess, errorMessage) = await TrySendEmailAsync(
                 recipient.User.Email, recipient.User.DisplayName, campaign, campaignId);
+
+            if (!isSuccess && !string.IsNullOrWhiteSpace(errorMessage))
+            {
+                errors.Add(errorMessage);
+            }
 
             var interaction = new MarketingInteraction
             {
@@ -68,8 +87,13 @@ public class CampaignDispatchService(
                 var cleanEmail = email.Trim();
                 if (string.IsNullOrWhiteSpace(cleanEmail) || processedEmails.Contains(cleanEmail)) continue;
 
-                var isSuccess = await TrySendEmailAsync(cleanEmail, cleanEmail, campaign, campaignId);
+                var (isSuccess, errorMessage) = await TrySendEmailAsync(cleanEmail, cleanEmail, campaign, campaignId);
                 processedEmails.Add(cleanEmail);
+
+                if (!isSuccess && !string.IsNullOrWhiteSpace(errorMessage))
+                {
+                    errors.Add(errorMessage);
+                }
 
                 if (isSuccess) successCount++;
                 else failureCount++;
@@ -91,24 +115,55 @@ public class CampaignDispatchService(
             await campaignRepository.UpdateAsync(campaign);
         }
 
-        logger.LogInformation("Completed dispatch for campaign {CampaignId}: {SuccessCount} sent, {FailureCount} failed.",
-            campaignId, successCount, failureCount);
+        var totalRecipients = successCount + failureCount;
+        var errorList = errors.ToList();
 
-        return successCount;
+        string summaryMessage;
+        if (totalRecipients == 0)
+        {
+            summaryMessage = "No active recipients matched the campaign target audience criteria.";
+        }
+        else if (failureCount == 0)
+        {
+            summaryMessage = $"Campaign successfully dispatched to {successCount} recipient(s).";
+        }
+        else if (successCount == 0)
+        {
+            var errorDetails = errorList.Count > 0 ? string.Join("; ", errorList) : "Unknown delivery error";
+            summaryMessage = $"Failed to dispatch campaign to {totalRecipients} recipient(s). Error: {errorDetails}";
+        }
+        else
+        {
+            var errorDetails = errorList.Count > 0 ? string.Join("; ", errorList) : "Unknown delivery error";
+            summaryMessage = $"Partially dispatched: {successCount} sent, {failureCount} failed. Error: {errorDetails}";
+        }
+
+        logger.LogInformation("Completed dispatch for campaign {CampaignId}: {SuccessCount} sent, {FailureCount} failed. Message: {Message}",
+            campaignId, successCount, failureCount, summaryMessage);
+
+        return new CampaignDispatchResultDto
+        {
+            TotalRecipients = totalRecipients,
+            SentCount = successCount,
+            FailedCount = failureCount,
+            Errors = errorList,
+            Message = summaryMessage
+        };
     }
 
-    private async Task<bool> TrySendEmailAsync(string toEmail, string toName, Campaign campaign, Guid campaignId)
+    private async Task<(bool IsSuccess, string? ErrorMessage)> TrySendEmailAsync(
+        string toEmail, string toName, Campaign campaign, Guid campaignId)
     {
         try
         {
             var htmlBody = CampaignEmailBodyBuilder.Build(campaign, toName);
             await emailService.SendAsync(toEmail, toName, campaign.Subject, htmlBody);
-            return true;
+            return (true, null);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed dispatching campaign {CampaignId} to {Email}", campaignId, toEmail);
-            return false;
+            return (false, ex.Message);
         }
     }
 
@@ -137,3 +192,4 @@ public class CampaignDispatchService(
         return null;
     }
 }
+

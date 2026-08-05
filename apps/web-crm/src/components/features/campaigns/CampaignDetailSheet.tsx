@@ -44,7 +44,13 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
     setIsSending(true);
     try {
       const res = await crmClient.campaigns.send(campaignId);
-      onShowToast(res.message || "Campaign email dispatched!");
+      if (res.sentCount === 0) {
+        onShowToast(res.message || "Failed to dispatch email campaign: 0 recipients reached.");
+      } else if (res.failedCount > 0) {
+        onShowToast(`Warning: ${res.message}`);
+      } else {
+        onShowToast(res.message || "Campaign email dispatched!");
+      }
       onRefresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to dispatch email campaign.";

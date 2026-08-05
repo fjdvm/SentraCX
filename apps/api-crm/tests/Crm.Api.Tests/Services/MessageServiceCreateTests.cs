@@ -37,12 +37,6 @@ public class MessageServiceCreateTests
             CreatedAt = DateTime.UtcNow.AddHours(-2),
             UpdatedAt = DateTime.UtcNow.AddHours(-2)
         };
-
-        _ticketRepoMock.Setup(r => r.GetByIdAsync(ticketId)).ReturnsAsync(ticket);
-        _messageRepoMock.Setup(r => r.AddAsync(It.IsAny<Message>())).Returns(Task.CompletedTask);
-        _ticketRepoMock.Setup(r => r.UpdateAsync(It.IsAny<Ticket>())).Returns(Task.CompletedTask);
-        _broadcastMock.Setup(b => b.BroadcastMetricsAsync()).Returns(Task.CompletedTask);
-
         var createdMessage = new Message
         {
             Id = Guid.NewGuid(),
@@ -52,6 +46,13 @@ public class MessageServiceCreateTests
             SentAt = DateTime.UtcNow,
             Sender = new User { Id = "staff-1", DisplayName = "Staff User" }
         };
+
+        _ticketRepoMock.Setup(r => r.GetByIdAsync(ticketId)).ReturnsAsync(ticket);
+        _messageRepoMock.Setup(r => r.AddAsync(It.IsAny<Message>()))
+            .Callback<Message>(m => m.Id = createdMessage.Id)
+            .Returns(Task.CompletedTask);
+        _ticketRepoMock.Setup(r => r.UpdateAsync(It.IsAny<Ticket>())).Returns(Task.CompletedTask);
+        _broadcastMock.Setup(b => b.BroadcastMetricsAsync()).Returns(Task.CompletedTask);
         _messageRepoMock.Setup(r => r.GetByTicketIdAsync(ticketId))
             .ReturnsAsync(new List<Message> { createdMessage });
 

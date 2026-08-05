@@ -16,6 +16,7 @@ import {
   CreateCampaignInput,
   UpdateCampaignInput,
   Template,
+  CampaignDispatchResult,
 } from "@/types/campaign";
 import {
   Promotion,
@@ -189,7 +190,7 @@ export const crmClient = {
         body: JSON.stringify({ promotionIds }),
       }),
     send: (id: string) =>
-      request<{ message: string; sentCount: number }>(`/api/v1/campaigns/${id}/send`, {
+      request<CampaignDispatchResult>(`/api/v1/campaigns/${id}/send`, {
         method: "POST",
       }),
     delete: (id: string) =>

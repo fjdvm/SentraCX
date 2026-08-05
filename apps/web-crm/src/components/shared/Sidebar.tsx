@@ -118,7 +118,7 @@ export function Sidebar() {
                   </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="w-64 bg-popover border-border text-popover-foreground z-[999]"
+                  className="w-64 bg-popover border-border text-popover-foreground z-[99999]"
                   align="start"
                   side="bottom"
                 >

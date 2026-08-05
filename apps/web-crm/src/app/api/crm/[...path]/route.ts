@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 
 // Allow self-signed certificates for the CRM API in development
 if (process.env.NODE_ENV !== "production") {
@@ -24,6 +25,17 @@ async function proxyRequest(request: NextRequest, context: { params: Promise<{ p
     }
   });
 
+  // Inject Authorization Bearer token from NextAuth session if missing from request headers
+  if (!headers["authorization"]) {
+    try {
+      const session = await auth();
+      if (session?.accessToken) {
+        headers["authorization"] = `Bearer ${session.accessToken}`;
+      }
+    } catch {
+      // Ignore if session lookup fails
+    }
+  }
   try {
     const fetchOptions: RequestInit = {
       method: request.method,
