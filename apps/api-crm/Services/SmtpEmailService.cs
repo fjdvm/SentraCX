@@ -16,7 +16,8 @@ public class SmtpEmailService(IOptions<SmtpOptions> options, ILogger<SmtpEmailSe
 
         var message = new MimeMessage();
         var fromAddress = string.IsNullOrWhiteSpace(_options.From) ? "noreply@sentracx.com" : _options.From;
-        message.From.Add(new MailboxAddress("SentraCX", fromAddress));
+        var fromName = string.IsNullOrWhiteSpace(_options.FromName) ? "SentraCX" : _options.FromName;
+        message.From.Add(new MailboxAddress(fromName, fromAddress));
         message.To.Add(new MailboxAddress(toName, toEmail));
         message.Subject = subject;
 

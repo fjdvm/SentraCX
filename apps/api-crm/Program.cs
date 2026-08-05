@@ -99,6 +99,7 @@ builder.Services.Configure<SmtpOptions>(opts =>
     opts.Username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? "";
     opts.Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "";
     opts.From = Environment.GetEnvironmentVariable("SMTP_FROM") ?? "";
+    opts.FromName = Environment.GetEnvironmentVariable("SMTP_FROM_NAME") ?? "";
 });
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<ICampaignDispatchService, CampaignDispatchService>();
