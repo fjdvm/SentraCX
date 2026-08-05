@@ -46,6 +46,7 @@ def crm_client() -> AsyncMock:
         }
     ])
     crm.get_customers = AsyncMock(return_value=[])
+    crm.get_system_state_snapshot = AsyncMock(return_value=None)
     return crm
 
 
