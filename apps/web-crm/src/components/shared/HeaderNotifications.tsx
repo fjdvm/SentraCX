@@ -75,7 +75,7 @@ export function HeaderNotifications() {
                   n.unread ? "bg-accent/40 font-medium" : ""
                 }`}
               >
-                <div className="p-1.5 rounded-full bg-muted border border-border mt-0.5 shrink-0">
+                <div className="p-xs.5 rounded-full bg-muted border border-border mt-0.5 shrink-0">
                   <Icon className="w-3.5 h-3.5 text-foreground" />
                 </div>
                 <div className="flex-1 space-y-0.5 overflow-hidden">

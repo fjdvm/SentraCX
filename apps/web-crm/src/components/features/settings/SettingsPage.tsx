@@ -64,10 +64,10 @@ export function SettingsPage() {
   }, []);
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-6 px-4 md:px-6 space-y-8 flex flex-col justify-center min-h-[calc(100vh-6rem)]">
+    <div className="w-full max-w-4xl mx-auto py-lg px-md md:px-lg space-y-8 flex flex-col justify-center min-h-[calc(100vh-6rem)]">
       {/* Toast Alert */}
       {toastMsg && (
-        <div className="fixed bottom-20 right-6 md:right-10 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium z-[100] shadow-md border border-border animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-20 right-6 md:right-10 bg-primary text-primary-foreground px-md py-sm rounded-lg text-sm font-medium z-[100] shadow-md border border-border animate-in fade-in slide-in-from-bottom-5 duration-300">
           {toastMsg}
         </div>
       )}
@@ -83,12 +83,12 @@ export function SettingsPage() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md border-b border-border pb-sm">
               <TabsList className="bg-muted w-full sm:w-auto flex justify-start overflow-x-auto">
                 <TabsTrigger value="general" className="font-semibold text-sm cursor-pointer">General</TabsTrigger>
                 <TabsTrigger value="notifications" className="font-semibold text-sm cursor-pointer">Notifications</TabsTrigger>
                 <TabsTrigger value="integration" className="font-semibold text-sm cursor-pointer">Integrations</TabsTrigger>
-                <TabsTrigger value="ai-config" className="font-semibold text-sm cursor-pointer flex items-center gap-1.5">
+                <TabsTrigger value="ai-config" className="font-semibold text-sm cursor-pointer flex items-center gap-xs.5">
                   <Cpu className="w-3.5 h-3.5" />
                   AI Thresholds
                 </TabsTrigger>
@@ -99,7 +99,7 @@ export function SettingsPage() {
                   type="submit"
                   className="w-full sm:w-auto self-start sm:self-center"
                 >
-                  <Save className="w-4 h-4 mr-2" />
+                  <Save className="w-4 h-4 mr-sm" />
                   Save Changes
                 </Button>
               )}

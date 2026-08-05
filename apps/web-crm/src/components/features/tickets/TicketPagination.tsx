@@ -19,7 +19,7 @@ export function TicketPagination({ selectedCount, totalCount }: TicketPagination
       <div className="flex items-center gap-lg">
         <div className="flex items-center gap-xs">
           <span>Rows per page</span>
-          <select className="bg-transparent border border-input rounded p-1 text-label-sm outline-none text-foreground font-semibold">
+          <select className="bg-transparent border border-input rounded p-xs text-label-sm outline-none text-foreground font-semibold">
             <option>10</option>
             <option>20</option>
             <option>50</option>

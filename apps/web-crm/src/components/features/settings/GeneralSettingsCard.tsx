@@ -13,8 +13,8 @@ interface GeneralSettingsCardProps {
 export function GeneralSettingsCard({ control }: GeneralSettingsCardProps) {
   return (
     <Card className="bg-card border border-border rounded-xl shadow-none">
-      <CardHeader className="p-4 sm:p-6">
-        <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+      <CardHeader className="p-md sm:p-lg">
+        <CardTitle className="text-lg font-bold text-foreground flex items-center gap-sm">
           <Shield className="w-5 h-5 text-primary" />
           General System Parameters
         </CardTitle>
@@ -22,8 +22,8 @@ export function GeneralSettingsCard({ control }: GeneralSettingsCardProps) {
           Core configurations for the SentraCX tenant.
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <CardContent className="p-md sm:p-lg pt-0 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
           <FormField
             control={control}
             name="systemName"

@@ -14,7 +14,6 @@ import { DashboardChartSummary } from "./DashboardChartSummary";
 import { AttentionFeed } from "./attention-feed";
 import { AtRiskWatchlist } from "./AtRiskWatchlist";
 import { downloadDashboardReport } from "./download-report";
-import { AskSentraCXPanel } from "./ask-sentracx-panel";
 import {
   Select,
   SelectContent,
@@ -23,12 +22,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function Dashboard() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentChartParam = searchParams.get("chart") as "workload" | "revenue" | "sentiment" | "risk" | null;
+  const initialChart = currentChartParam || "workload";
+
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [days, setDays] = useState(7);
-  const [selectedChart, setSelectedChart] = useState<"workload" | "revenue" | "sentiment" | "risk">("workload");
+  const [selectedChart, setSelectedChart] = useState<"workload" | "revenue" | "sentiment" | "risk">(initialChart);
+
+  const handleChartChange = (val: "workload" | "revenue" | "sentiment" | "risk") => {
+    setSelectedChart(val);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("chart", val);
+    router.replace(`/?${params.toString()}`, { scroll: false });
+  };
 
   const { data: summaryData, isLoading: isSummaryLoading } = useDashboardSummary(
     fromDate ? new Date(fromDate).toISOString() : undefined,
@@ -54,14 +66,14 @@ export function Dashboard() {
           <div className="flex items-center gap-xs">
             <input
               type="date"
-              className="text-body-sm px-xs py-1.5 rounded-md border border-border bg-card text-foreground focus:outline-none focus:border-primary"
+              className="text-body-sm px-xs py-xs.5 rounded-md border border-border bg-card text-foreground focus:outline-none focus:border-primary"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
             />
             <span className="text-muted-foreground text-body-sm">to</span>
             <input
               type="date"
-              className="text-body-sm px-xs py-1.5 rounded-md border border-border bg-card text-foreground focus:outline-none focus:border-primary"
+              className="text-body-sm px-xs py-xs.5 rounded-md border border-border bg-card text-foreground focus:outline-none focus:border-primary"
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
             />
@@ -97,12 +109,12 @@ export function Dashboard() {
           <div className="flex flex-wrap items-center gap-sm">
             {/* Time Horizon Selector (on the left) */}
             {(selectedChart === "workload" || selectedChart === "revenue") && (
-              <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/50">
+              <div className="flex items-center bg-muted/60 p-xs rounded-lg border border-border/50">
                 {[7, 14, 30].map((d) => (
                   <button
                     key={d}
                     onClick={() => setDays(d)}
-                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                    className={`px-sm py-xs text-xs font-semibold rounded-md transition-all cursor-pointer ${
                       days === d
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -115,7 +127,7 @@ export function Dashboard() {
             )}
 
             {/* Metric Dropdown Selector (on the right) */}
-            <Select value={selectedChart} onValueChange={(val) => setSelectedChart(val as any)}>
+            <Select value={selectedChart} onValueChange={handleChartChange}>
               <SelectTrigger className="w-[200px] bg-card border-border text-foreground font-medium shadow-none cursor-pointer">
                 <SelectValue placeholder="Select Metric" />
               </SelectTrigger>
@@ -168,9 +180,6 @@ export function Dashboard() {
           <AttentionFeed />
         </div>
       </div>
-
-      {/* Ask SentrAI floating panel */}
-      <AskSentraCXPanel />
     </div>
   );
 }

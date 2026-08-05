@@ -112,7 +112,7 @@ export function SentimentTrendChart({ data, isLoading }: SentimentTrendChartProp
             </div>
             <CardDescription>Daily trend of customer moods</CardDescription>
           </div>
-          <div className="bg-success/15 text-success font-bold text-body-sm px-sm py-1 rounded-full border border-success/35">
+          <div className="bg-success/15 text-success font-bold text-body-sm px-sm py-xs rounded-full border border-success/35">
             😊 {displayPercentage}%
           </div>
         </CardHeader>

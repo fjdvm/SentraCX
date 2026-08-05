@@ -32,7 +32,7 @@ export function CampaignMediaPicker({
       <FormItem>
         <FormLabel>Email Template (Optional)</FormLabel>
         <select
-          className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
+          className="w-full border border-input rounded-md px-sm py-sm text-sm bg-background"
           value={templateId ?? ""}
           onChange={(e) => onTemplateIdChange(e.target.value)}
         >
@@ -47,7 +47,7 @@ export function CampaignMediaPicker({
 
       <div className="space-y-1">
         <Label>Optional Banner Image</Label>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-sm">
           <Input
             type="file"
             accept="image/*"

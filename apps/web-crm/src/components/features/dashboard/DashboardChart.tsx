@@ -18,7 +18,7 @@ export function DashboardChart() {
           Monthly summary of logged support tickets vs resolved tickets.
         </p>
       </CardHeader>
-      <CardContent className="pb-4">
+      <CardContent className="pb-md">
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <AreaChart
             accessibilityLayer

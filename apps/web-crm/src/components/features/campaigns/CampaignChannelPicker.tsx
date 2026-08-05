@@ -19,7 +19,7 @@ export function CampaignChannelPicker({
   return (
     <div>
       <FormLabel>Marketing Channels *</FormLabel>
-      <div className="flex flex-wrap gap-2 mt-1.5">
+      <div className="flex flex-wrap gap-sm mt-xs.5">
         {CHANNELS.map((ch) => {
           const isSelected = selectedChannels.includes(ch);
           return (

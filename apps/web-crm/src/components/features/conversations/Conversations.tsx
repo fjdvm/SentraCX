@@ -188,6 +188,7 @@ export function Conversations({ initialTicketId }: ConversationsProps) {
       />
       <CustomerContextPanel
         ticket={ticket}
+        messages={messages}
         onUseTemplate={(text) => handleSendMessage(text)}
       />
     </div>

@@ -14,13 +14,13 @@ interface KpiRowProps {
 export function KpiRow({ data, isLoading }: KpiRowProps) {
   if (isLoading || !data) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-md">
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md">
+        {Array.from({ length: 4 }).map((_, i) => (
           <Card
             key={i}
             className="bg-card border-border rounded-xl flex flex-col justify-between shadow-none animate-pulse h-[140px]"
           >
-            <CardHeader className="flex flex-row justify-between items-start space-y-0 pb-2 p-lg">
+            <CardHeader className="flex flex-row justify-between items-start space-y-0 pb-sm p-lg">
               <div className="h-4 w-24 bg-muted rounded"></div>
               <div className="w-8 h-8 bg-muted rounded-lg"></div>
             </CardHeader>
@@ -82,7 +82,7 @@ export function KpiRow({ data, isLoading }: KpiRowProps) {
   const activeCampaigns = data.active_campaigns ?? defaultMetric;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-md">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md">
       <KpiCard
         label="Open Support Requests"
         value={activeTickets.value.toLocaleString()}
@@ -123,14 +123,14 @@ export function KpiRow({ data, isLoading }: KpiRowProps) {
         icon={Smile}
         isNegativeBad={false}
       />
-      <KpiCard
+      {/* <KpiCard
         label="Running Promotions"
         value={activeCampaigns.value.toLocaleString()}
         change={formatDelta(activeCampaigns.delta)}
         trend={activeCampaigns.trend}
         icon={Megaphone}
         isNegativeBad={false}
-      />
+      /> */}
     </div>
   );
 }

@@ -80,11 +80,11 @@ export function TicketCreateSheet({ customerId = "00000000-0000-0000-0000-000000
     <Dialog open={isOpen} onOpenChange={(val) => { if (!val) form.reset(); setIsOpen(val); }}>
       <DialogTrigger asChild>
         <Button className="w-full sm:w-auto">
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-4 h-4 mr-sm" />
           Create Ticket
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[90vw] max-w-[90vw] sm:max-w-[80vw] md:max-w-[700px] lg:max-w-[900px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg sm:rounded-xl">
+      <DialogContent className="w-[90vw] max-w-[90vw] sm:max-w-[80vw] md:max-w-[700px] lg:max-w-[900px] max-h-[90vh] overflow-y-auto p-md sm:p-lg rounded-lg sm:rounded-xl">
         <DialogHeader className="space-y-1.5 text-left">
           <DialogTitle className="text-xl sm:text-2xl font-bold tracking-tight">Create Support Ticket</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
@@ -93,7 +93,7 @@ export function TicketCreateSheet({ customerId = "00000000-0000-0000-0000-000000
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-sm">
             <FormField
               control={form.control}
               name="title"
@@ -124,13 +124,13 @@ export function TicketCreateSheet({ customerId = "00000000-0000-0000-0000-000000
 
             <div className="space-y-1">
               <FormLabel>Attachment Image (Optional)</FormLabel>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-sm">
                 <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
                 {isUploading && <Loader2 className="w-4 h-4 animate-spin shrink-0" />}
               </div>
             </div>
 
-            <DialogFooter className="pt-4 flex flex-col-reverse sm:flex-row justify-end gap-2">
+            <DialogFooter className="pt-md flex flex-col-reverse sm:flex-row justify-end gap-sm">
               <Button
                 type="button"
                 variant="outline"

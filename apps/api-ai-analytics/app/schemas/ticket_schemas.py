@@ -57,3 +57,12 @@ class TicketAnalyzeResponse(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0, description="Confidence of predictions")
 
 
+class TicketSmartReplyRequest(BaseModel):
+    """Request schema for generating a smart reply."""
+    ticket_id: str = Field(description="CRM ticket identifier")
+    messages: list[str] = Field(default_factory=list, description="Latest messages in the conversation")
+
+
+class TicketSmartReplyResponse(BaseModel):
+    """Response schema for generating a smart reply."""
+    smart_reply: str = Field(description="Generated smart reply text")

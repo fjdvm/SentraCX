@@ -57,7 +57,7 @@ export function CustomerProfiles() {
       {/* KPI Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-md">
         <Card className="shadow-none border-border">
-          <CardHeader className="flex flex-row justify-between items-start space-y-0 pb-2 p-lg">
+          <CardHeader className="flex flex-row justify-between items-start space-y-0 pb-sm p-lg">
             <span className="text-label-md text-muted-foreground font-medium uppercase tracking-wider">Matching Results</span>
             <Users className="w-4 h-4 text-foreground" />
           </CardHeader>

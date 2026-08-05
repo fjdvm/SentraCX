@@ -16,7 +16,7 @@ export function MobileNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background border-t border-border flex items-center justify-around px-2 z-50">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background border-t border-border flex items-center justify-around px-sm z-50">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;
@@ -24,7 +24,7 @@ export function MobileNav() {
           <Link
             key={item.name}
             href={item.href}
-            className={`flex flex-col items-center gap-1 transition-colors ${
+            className={`flex flex-col items-center gap-xs transition-colors ${
               isActive ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
             }`}
           >

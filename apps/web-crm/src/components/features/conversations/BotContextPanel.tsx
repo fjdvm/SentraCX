@@ -20,7 +20,7 @@ export function BotContextPanel({ botSummary }: BotContextPanelProps) {
         <span className="text-label-sm font-bold text-primary flex items-center gap-xs">
           <Bot className="w-3.5 h-3.5" />
           Bot-First Conversation
-          <Badge variant="secondary" className="text-[10px] font-semibold px-1.5 py-0 ml-xs">
+          <Badge variant="secondary" className="text-[10px] font-semibold px-xs.5 py-0 ml-xs">
             Escalated
           </Badge>
         </span>

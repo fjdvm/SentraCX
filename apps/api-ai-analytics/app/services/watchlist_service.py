@@ -141,6 +141,7 @@ class WatchlistService:
             "account_age_days": account_age_days,
             "total_orders": total_orders,
             "total_order_value": total_order_value,
+            "last_order_date": last_order_date.isoformat() if last_order_date else None,
         }
 
     def _build_customer_entry(self, cust_id: str, score: float, feat: dict, name: str) -> dict:
@@ -183,4 +184,5 @@ class WatchlistService:
             "risk_level": risk_level,
             "contributing_factors": factors,
             "recommended_action": recommended_action,
+            "last_order_date": feat.get("last_order_date"),
         }

@@ -34,7 +34,7 @@ export function CampaignSchedulePicker({
     <div className="space-y-3">
       <div>
         <Label>Schedule Options</Label>
-        <div className="flex gap-2 mt-1.5">
+        <div className="flex gap-sm mt-xs.5">
           {(["SendNow", "Scheduled", "Recurring"] as ScheduleType[]).map((st) => (
             <Button
               type="button"
@@ -51,11 +51,11 @@ export function CampaignSchedulePicker({
       </div>
 
       {scheduleType === "Recurring" && (
-        <div className="space-y-2 border border-border rounded-lg p-3">
+        <div className="space-y-2 border border-border rounded-lg p-sm">
           <Label className="text-xs font-semibold">Recurring Days (Mon/Tue/Wed)</Label>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-sm">
             {DAYS.map((day) => (
-              <label key={day} className="flex items-center gap-1.5 text-xs cursor-pointer">
+              <label key={day} className="flex items-center gap-xs.5 text-xs cursor-pointer">
                 <Checkbox
                   checked={recurrenceDays.includes(day)}
                   onCheckedChange={(checked) => {
@@ -73,14 +73,14 @@ export function CampaignSchedulePicker({
       )}
 
       {scheduleType !== "SendNow" && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-sm">
           <div>
             <Label className="text-xs">Start Date</Label>
             <Input
               type="datetime-local"
               value={startDate ?? ""}
               onChange={(e) => onStartDateChange(e.target.value)}
-              className="mt-1"
+              className="mt-xs"
             />
           </div>
           <div>
@@ -89,7 +89,7 @@ export function CampaignSchedulePicker({
               type="datetime-local"
               value={endDate ?? ""}
               onChange={(e) => onEndDateChange(e.target.value)}
-              className="mt-1"
+              className="mt-xs"
             />
           </div>
         </div>

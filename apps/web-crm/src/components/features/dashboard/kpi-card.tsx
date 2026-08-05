@@ -34,11 +34,11 @@ export function KpiCard({
 
   return (
     <Card className="bg-card border-border rounded-xl flex flex-col justify-between transition-all hover:border-primary/80 duration-300 shadow-none animate-in fade-in h-[140px]">
-      <CardHeader className="flex flex-row justify-between items-start space-y-0 pb-2 p-lg">
+      <CardHeader className="flex flex-row justify-between items-start space-y-0 pb-sm p-lg">
         <span className="text-label-sm text-muted-foreground font-semibold uppercase tracking-wider">
           {label}
         </span>
-        <div className="p-2 bg-muted rounded-lg">
+        <div className="p-sm bg-muted rounded-lg">
           <Icon className="w-4 h-4 text-foreground" />
         </div>
       </CardHeader>

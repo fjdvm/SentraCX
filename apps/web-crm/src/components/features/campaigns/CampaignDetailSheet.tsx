@@ -62,7 +62,7 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
 
   return (
     <Dialog open={!!campaignId} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="w-[100vw] sm:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg">
+      <DialogContent className="w-[100vw] sm:max-w-lg max-h-[90vh] overflow-y-auto p-md sm:p-lg rounded-lg">
         <DialogHeader className="text-left space-y-1">
           <DialogTitle className="text-xl font-bold">{campaign?.title ?? "Campaign Details"}</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -71,17 +71,17 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
         </DialogHeader>
 
         {isLoading ? (
-          <div className="py-8 text-center text-sm text-muted-foreground">Loading campaign details...</div>
+          <div className="py-xl text-center text-sm text-muted-foreground">Loading campaign details...</div>
         ) : campaign ? (
-          <div className="space-y-4 py-2 text-sm">
-            <div className="flex items-center justify-between border-b border-border pb-2">
+          <div className="space-y-4 py-sm text-sm">
+            <div className="flex items-center justify-between border-b border-border pb-sm">
               <span className="text-muted-foreground font-medium">Status</span>
               <CampaignStatusBadge status={campaign.status} />
             </div>
 
-            <div className="flex items-center justify-between border-b border-border pb-2">
+            <div className="flex items-center justify-between border-b border-border pb-sm">
               <span className="text-muted-foreground font-medium">Target Audience</span>
-              <span className="text-xs bg-muted text-foreground px-2 py-0.5 rounded font-medium">
+              <span className="text-xs bg-muted text-foreground px-sm py-0.5 rounded font-medium">
                 {campaign.targetAudience === "Specific"
                   ? `Specific Recipients (${(campaign.targetCustomerIds?.length ?? 0) + (campaign.targetEmails?.length ?? 0)} targeted)`
                   : campaign.targetAudience === "Regular"
@@ -95,9 +95,9 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
             {campaign.targetEmails && campaign.targetEmails.length > 0 && (
               <div className="space-y-1">
                 <span className="text-muted-foreground font-medium block">Typed Specific Emails</span>
-                <div className="flex flex-wrap gap-1 font-mono text-[11px]">
+                <div className="flex flex-wrap gap-xs font-mono text-[11px]">
                   {campaign.targetEmails.map((email) => (
-                    <span key={email} className="bg-muted px-2 py-0.5 rounded text-foreground">
+                    <span key={email} className="bg-muted px-sm py-0.5 rounded text-foreground">
                       {email}
                     </span>
                   ))}
@@ -107,7 +107,7 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
 
             <div className="space-y-1">
               <span className="text-muted-foreground font-medium block">Target Channels</span>
-              <div className="flex flex-wrap gap-1.5 pt-1">
+              <div className="flex flex-wrap gap-xs.5 pt-xs">
                 {campaign.channels.map((ch) => (
                   <CampaignChannelBadge key={ch} channel={ch} />
                 ))}
@@ -116,7 +116,7 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
 
             <div className="space-y-1">
               <span className="text-muted-foreground font-medium block">Description</span>
-              <p className="bg-muted/30 p-2.5 rounded text-xs text-foreground whitespace-pre-wrap">
+              <p className="bg-muted/30 p-sm.5 rounded text-xs text-foreground whitespace-pre-wrap">
                 {campaign.description}
               </p>
             </div>
@@ -129,8 +129,8 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
             )}
 
             {campaign.schedule && (
-              <div className="space-y-1 bg-muted/20 p-2.5 rounded border border-border text-xs">
-                <span className="font-semibold block mb-1">Schedule Strategy ({campaign.schedule.scheduleType})</span>
+              <div className="space-y-1 bg-muted/20 p-sm.5 rounded border border-border text-xs">
+                <span className="font-semibold block mb-xs">Schedule Strategy ({campaign.schedule.scheduleType})</span>
                 {campaign.schedule.recurrenceDays && campaign.schedule.recurrenceDays.length > 0 && (
                   <div>Days: {campaign.schedule.recurrenceDays.join(", ")}</div>
                 )}
@@ -140,9 +140,9 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
             )}
 
 
-            <div className="pt-4 flex flex-wrap justify-end gap-2 border-t border-border">
+            <div className="pt-md flex flex-wrap justify-end gap-sm border-t border-border">
               {campaign.channels.some((ch) => ch.toLowerCase() === "email") && campaign.status === "Active" && (
-                <Button variant="default" disabled={isSending} onClick={handleSendEmail} className="gap-1.5">
+                <Button variant="default" disabled={isSending} onClick={handleSendEmail} className="gap-xs.5">
                   <Mail className="w-4 h-4" />
                   {isSending ? "Sending..." : "Send Email Now"}
                 </Button>
@@ -160,7 +160,7 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
             </div>
           </div>
         ) : (
-          <div className="py-8 text-center text-sm text-destructive">Campaign not found.</div>
+          <div className="py-xl text-center text-sm text-destructive">Campaign not found.</div>
         )}
       </DialogContent>
     </Dialog>

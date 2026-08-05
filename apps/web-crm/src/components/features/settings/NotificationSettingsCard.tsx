@@ -13,8 +13,8 @@ interface NotificationSettingsCardProps {
 export function NotificationSettingsCard({ control }: NotificationSettingsCardProps) {
   return (
     <Card className="bg-card border border-border rounded-xl shadow-none">
-      <CardHeader className="p-4 sm:p-6">
-        <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+      <CardHeader className="p-md sm:p-lg">
+        <CardTitle className="text-lg font-bold text-foreground flex items-center gap-sm">
           <Bell className="w-5 h-5 text-primary" />
           Notification Subscriptions
         </CardTitle>
@@ -22,12 +22,12 @@ export function NotificationSettingsCard({ control }: NotificationSettingsCardPr
           Toggle dispatch settings for staff alerts and client events.
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-4 sm:p-6 pt-0 space-y-6">
+      <CardContent className="p-md sm:p-lg pt-0 space-y-6">
         <FormField
           control={control}
           name="emailAlerts"
           render={({ field }) => (
-            <FormItem className="flex items-center justify-between py-2 space-y-0">
+            <FormItem className="flex items-center justify-between py-sm space-y-0">
               <div className="space-y-0.5">
                 <FormLabel className="text-sm font-bold text-foreground cursor-pointer">
                   Priority Email Alerts
@@ -47,7 +47,7 @@ export function NotificationSettingsCard({ control }: NotificationSettingsCardPr
           control={control}
           name="weeklyReports"
           render={({ field }) => (
-            <FormItem className="flex items-center justify-between py-2 border-t border-border pt-4 space-y-0">
+            <FormItem className="flex items-center justify-between py-sm border-t border-border pt-md space-y-0">
               <div className="space-y-0.5">
                 <FormLabel className="text-sm font-bold text-foreground cursor-pointer">
                   Weekly AI Forecasts

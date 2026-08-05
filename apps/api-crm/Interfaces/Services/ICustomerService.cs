@@ -13,4 +13,5 @@ public interface ICustomerService
     Task<bool> UpdateTypeAsync(Guid id, UpdateCustomerTypeRequestDto dto);
     Task<bool> UpdateNotesAsync(Guid id, UpdateCustomerNotesRequestDto dto);
     Task<bool> SoftDeleteAsync(Guid id);
+    Task<(bool Success, Guid? TicketId, string Message)> ExecuteRetentionActionAsync(Guid customerId, RetentionActionRequestDto dto);
 }

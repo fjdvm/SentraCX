@@ -231,5 +231,13 @@ class CrmClient:
         except Exception:
             return []
 
-
-
+    async def get_system_state_snapshot(self) -> dict:
+        """Fetch deep system-wide context snapshot from CRM API for SentrAI."""
+        url = f"{self._base_url}/api/v1/system-state/snapshot"
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                response = await client.get(url, headers=self._headers())
+                response.raise_for_status()
+                return response.json()
+        except Exception:
+            return {}

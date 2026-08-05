@@ -20,8 +20,8 @@ export function AiRiskThresholdsCard({
 }: AiRiskThresholdsCardProps) {
   return (
     <Card className="bg-card border border-border rounded-xl shadow-none">
-      <CardHeader className="p-4 sm:p-6">
-        <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+      <CardHeader className="p-md sm:p-lg">
+        <CardTitle className="text-base font-bold text-foreground flex items-center gap-sm">
           <Cpu className="w-4 h-4 text-primary" />
           Risk & Anomaly Thresholds
         </CardTitle>
@@ -29,7 +29,7 @@ export function AiRiskThresholdsCard({
           Define critical thresholds for risk scores and anomaly detection filters.
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
+      <CardContent className="p-md sm:p-lg pt-0 space-y-4">
         <div className="space-y-2">
           <label className="text-xs font-bold text-foreground">
             Churn Alert Threshold (0.00 - 1.00)
@@ -48,7 +48,7 @@ export function AiRiskThresholdsCard({
           </p>
         </div>
 
-        <div className="space-y-2 pt-2 border-t border-border/50">
+        <div className="space-y-2 pt-sm border-t border-border/50">
           <label className="text-xs font-bold text-foreground">
             Anomaly Sensitivity (0.00 - 1.00)
           </label>

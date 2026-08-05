@@ -81,4 +81,18 @@ public class CustomersController(ICustomerService customerService) : ControllerB
         var success = await customerService.SoftDeleteAsync(id);
         return success ? NoContent() : NotFound();
     }
+
+    [HttpPost("{id:guid}/retention-action")]
+    public async Task<IActionResult> ExecuteRetentionAction(Guid id, [FromBody] RetentionActionRequestDto dto)
+    {
+        var (success, ticketId, message) = await customerService.ExecuteRetentionActionAsync(id, dto);
+        
+        if (!success)
+        {
+            if (message == "Customer not found") return NotFound(new { message });
+            return BadRequest(new { message });
+        }
+        
+        return Ok(new { ticketId, message });
+    }
 }

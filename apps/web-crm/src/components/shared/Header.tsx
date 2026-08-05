@@ -53,9 +53,9 @@ export function Header() {
   const breadcrumbItems = getBreadcrumbItems(pathname);
 
   return (
-    <header className="sticky top-0 z-50 flex justify-between items-center w-full px-4 sm:px-6 h-16 bg-background border-b border-border">
+    <header className="sticky top-0 z-50 flex justify-between items-center w-full px-md sm:px-lg h-16 bg-background border-b border-border">
       {/* Left: Sidebar Toggle & Breadcrumb */}
-      <div className="flex items-center gap-3 sm:gap-4 flex-1 overflow-hidden">
+      <div className="flex items-center gap-sm sm:gap-md flex-1 overflow-hidden">
         <SidebarTrigger className="h-9 w-9 shrink-0  hover:bg-accent text-foreground transition-all cursor-pointer" />
         <Separator orientation="vertical" className="h-5" /> 
         <Breadcrumb className="overflow-hidden">
@@ -81,7 +81,7 @@ export function Header() {
       </div>
 
       {/* Right: Notifications & Help */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-xs shrink-0">
         <HeaderNotifications />
         <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground w-8 h-8">
           <HelpCircle className="w-4 h-4" />

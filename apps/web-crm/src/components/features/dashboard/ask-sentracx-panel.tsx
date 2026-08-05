@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { aiClient } from "@/lib/api/ai-client";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send, Sparkles, History, HelpCircle, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,12 +18,21 @@ const SUGGESTED_QUERIES = [
 
 export function AskSentraCXPanel() {
   const { data: session } = useSession();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [queryText, setQueryText] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [history, setHistory] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => textareaRef.current?.focus(), 100);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     try {
@@ -56,13 +66,17 @@ export function AskSentraCXPanel() {
     const updatedMessages = [...messages, userMsg];
     saveMessagesToSession(updatedMessages);
     setQueryText("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "40px";
+    }
     setIsLoading(true);
     saveQueryToHistory(trimmed);
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
 
     try {
       const agentId = session?.user?.id || session?.user?.email || undefined;
-      const response = await aiClient.dashboard.ask(trimmed, agentId);
+      const urlContext = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
+      const response = await aiClient.dashboard.ask(trimmed, agentId, urlContext);
       saveMessagesToSession([...updatedMessages, { role: "assistant", type: response.type, content: response.content }]);
     } catch {
       toast.error("Failed to process your request. Please try again.");
@@ -114,7 +128,7 @@ export function AskSentraCXPanel() {
         <div className="p-lg border-b border-border bg-muted/10 space-y-sm shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-sm">
-              <div className="p-1.5 bg-primary/10 rounded-lg text-primary">
+              <div className="p-xs.5 bg-primary/10 rounded-lg text-primary">
                 <Sparkles className="w-5 h-5 text-primary" />
               </div>
               <h2 className="text-headline-sm font-bold text-foreground">Ask SentrAI</h2>
@@ -124,7 +138,7 @@ export function AskSentraCXPanel() {
                 <button
                   onClick={handleClearChat}
                   title="Clear conversation"
-                  className="rounded-sm p-1 opacity-70 transition-opacity hover:opacity-100 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                  className="rounded-sm p-xs opacity-70 transition-opacity hover:opacity-100 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                 >
                   <Trash2 className="h-4 w-4" />
                   <span className="sr-only">Clear conversation</span>
@@ -132,7 +146,7 @@ export function AskSentraCXPanel() {
               )}
               <button
                 onClick={() => setIsOpen(false)}
-                className="rounded-sm p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                className="rounded-sm p-xs opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
               >
                 <X className="h-4 w-4" />
                 <span className="sr-only">Close</span>
@@ -183,13 +197,29 @@ export function AskSentraCXPanel() {
 
         {/* Input pinned to bottom */}
         <div className="p-lg border-t border-border bg-card shrink-0">
-          <form onSubmit={(e) => { e.preventDefault(); handleSend(queryText); }} className="flex items-center gap-sm">
-            <Input
+          <form onSubmit={(e) => { e.preventDefault(); handleSend(queryText); }} className="flex items-end gap-sm">
+            <Textarea
+              ref={textareaRef}
               value={queryText}
-              onChange={(e) => setQueryText(e.target.value)}
+              onChange={(e) => {
+                setQueryText(e.target.value);
+                if (textareaRef.current) {
+                  textareaRef.current.style.height = "40px";
+                  textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend(queryText);
+                }
+              }}
+              rows={1}
               placeholder="Ask anything..."
-              className="flex-1 text-body-sm shadow-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 border-border/80 bg-muted/10 h-10"
+              className="flex-1 text-body-sm shadow-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 border-border/80 bg-muted/10 min-h-[40px] max-h-[120px] py-2 resize-none overflow-y-auto"
               disabled={isLoading}
+              spellCheck={true}
+              autoComplete="off"
             />
             <Button type="submit" size="icon" className="h-10 w-10 shrink-0 bg-primary text-primary-foreground shadow-none cursor-pointer" disabled={!queryText.trim() || isLoading}>
               <Send className="w-4 h-4" />

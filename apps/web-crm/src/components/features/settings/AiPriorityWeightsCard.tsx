@@ -24,8 +24,8 @@ export function AiPriorityWeightsCard({
 
   return (
     <Card className="bg-card border border-border rounded-xl shadow-none">
-      <CardHeader className="p-4 sm:p-6">
-        <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+      <CardHeader className="p-md sm:p-lg">
+        <CardTitle className="text-base font-bold text-foreground flex items-center gap-sm">
           <Cpu className="w-4 h-4 text-primary" />
           Priority Weights (Sum must equal 1.0)
         </CardTitle>
@@ -33,8 +33,8 @@ export function AiPriorityWeightsCard({
           Adjust importance factors utilized in computing urgency ranking scores for incoming support tickets.
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
-        <div className="grid grid-cols-3 gap-3">
+      <CardContent className="p-md sm:p-lg pt-0 space-y-4">
+        <div className="grid grid-cols-3 gap-sm">
           <div className="space-y-1">
             <label className="text-[11px] font-bold text-foreground">Sentiment Weight</label>
             <Input
@@ -87,7 +87,7 @@ export function AiPriorityWeightsCard({
             />
           </div>
         </div>
-        <div className="flex items-center justify-between text-xs font-semibold p-2 bg-muted/50 rounded-md border border-border/50">
+        <div className="flex items-center justify-between text-xs font-semibold p-sm bg-muted/50 rounded-md border border-border/50">
           <span>Current Combined Sum:</span>
           <span className={isSumValid ? "text-success" : "text-destructive"}>
             {combinedSum.toFixed(2)}

@@ -17,8 +17,8 @@ export function AiConfidenceThresholdsCard({
 }: AiConfidenceThresholdsCardProps) {
   return (
     <Card className="bg-card border border-border rounded-xl shadow-none">
-      <CardHeader className="p-4 sm:p-6">
-        <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+      <CardHeader className="p-md sm:p-lg">
+        <CardTitle className="text-base font-bold text-foreground flex items-center gap-sm">
           <Cpu className="w-4 h-4 text-primary" />
           Confidence Thresholds (0.00 - 1.00)
         </CardTitle>
@@ -26,7 +26,7 @@ export function AiConfidenceThresholdsCard({
           Minimum confidence thresholds before AI-generated outputs are accepted; scores below these will fall back to manual verification.
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-4 sm:p-6 pt-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <CardContent className="p-md sm:p-lg pt-0 grid grid-cols-1 sm:grid-cols-2 gap-md">
         <div className="space-y-1">
           <label className="text-xs font-bold text-foreground">Sentiment Analysis Confidence</label>
           <Input

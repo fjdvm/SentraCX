@@ -63,7 +63,7 @@ export function TicketDetailSheet({ ticketId, onClose, onRefresh, onShowToast }:
 
   return (
     <Dialog open={!!ticketId} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="w-[100vw] sm:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg">
+      <DialogContent className="w-[100vw] sm:max-w-lg max-h-[90vh] overflow-y-auto p-md sm:p-lg rounded-lg">
         <DialogHeader className="text-left space-y-1">
           <DialogTitle className="text-xl font-bold">{ticket?.title ?? "Ticket Details"}</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -72,15 +72,15 @@ export function TicketDetailSheet({ ticketId, onClose, onRefresh, onShowToast }:
         </DialogHeader>
 
         {isLoading ? (
-          <div className="py-8 text-center text-sm text-muted-foreground">Loading ticket details...</div>
+          <div className="py-xl text-center text-sm text-muted-foreground">Loading ticket details...</div>
         ) : ticket ? (
-          <div className="space-y-4 py-2 text-sm">
-            <div className="flex items-center justify-between border-b border-border pb-2">
+          <div className="space-y-4 py-sm text-sm">
+            <div className="flex items-center justify-between border-b border-border pb-sm">
               <span className="text-muted-foreground font-medium">Status</span>
               <TicketStatusBadge status={ticket.status} />
             </div>
 
-            <div className="flex items-center justify-between border-b border-border pb-2">
+            <div className="flex items-center justify-between border-b border-border pb-sm">
               <span className="text-muted-foreground font-medium">Category</span>
               {ticket.category && ticket.category !== "Uncategorized" ? (
                 <AiBadge>{ticket.category}</AiBadge>
@@ -89,7 +89,7 @@ export function TicketDetailSheet({ ticketId, onClose, onRefresh, onShowToast }:
               )}
             </div>
 
-            <div className="flex items-center justify-between border-b border-border pb-2">
+            <div className="flex items-center justify-between border-b border-border pb-sm">
               <span className="text-muted-foreground font-medium">Sentiment</span>
               {ticket.sentiment && ticket.sentiment !== "neutral" ? (
                 <AiBadge>{ticket.sentiment}</AiBadge>
@@ -100,7 +100,7 @@ export function TicketDetailSheet({ ticketId, onClose, onRefresh, onShowToast }:
 
             <div className="space-y-1">
               <span className="text-muted-foreground font-medium block">Issue Description</span>
-              <p className="bg-muted/30 p-2.5 rounded text-xs text-foreground whitespace-pre-wrap">
+              <p className="bg-muted/30 p-sm.5 rounded text-xs text-foreground whitespace-pre-wrap">
                 {ticket.description}
               </p>
             </div>
@@ -112,16 +112,16 @@ export function TicketDetailSheet({ ticketId, onClose, onRefresh, onShowToast }:
               </div>
             )}
 
-            <div className="flex justify-between text-xs py-1 border-t border-border">
+            <div className="flex justify-between text-xs py-xs border-t border-border">
               <span className="text-muted-foreground font-medium">Created At</span>
               <span>{new Date(ticket.createdAt).toLocaleString()}</span>
             </div>
 
-            <div className="pt-4 flex flex-wrap justify-end gap-2 border-t border-border">
+            <div className="pt-md flex flex-wrap justify-end gap-sm border-t border-border">
               {(ticket.status === "Claimed" || ticket.status === "Ongoing") && (
                 <Button variant="outline" asChild>
                   <Link href={`/conversations?ticketId=${ticket.id}`}>
-                    <MessageSquare className="w-4 h-4 mr-1.5" /> Message
+                    <MessageSquare className="w-4 h-4 mr-xs.5" /> Message
                   </Link>
                 </Button>
               )}
@@ -139,7 +139,7 @@ export function TicketDetailSheet({ ticketId, onClose, onRefresh, onShowToast }:
             </div>
           </div>
         ) : (
-          <div className="py-8 text-center text-sm text-destructive">Ticket not found.</div>
+          <div className="py-xl text-center text-sm text-destructive">Ticket not found.</div>
         )}
       </DialogContent>
     </Dialog>

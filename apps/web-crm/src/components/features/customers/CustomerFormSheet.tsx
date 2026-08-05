@@ -92,7 +92,7 @@ export function CustomerFormSheet({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-[90vw] max-w-[90vw] sm:max-w-[80vw] md:max-w-[700px] lg:max-w-[900px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg sm:rounded-xl">
+      <DialogContent className="w-[90vw] max-w-[90vw] sm:max-w-[80vw] md:max-w-[700px] lg:max-w-[900px] max-h-[90vh] overflow-y-auto p-md sm:p-lg rounded-lg sm:rounded-xl">
         <DialogHeader className="space-y-1.5 text-left">
           <DialogTitle className="text-xl sm:text-2xl font-bold tracking-tight">Add Customer Profile</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
@@ -101,14 +101,14 @@ export function CustomerFormSheet({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-sm">
             {formError && (
-              <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+              <div className="p-sm text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
                 {formError}
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
               <FormField
                 control={form.control}
                 name="firstName"
@@ -151,7 +151,7 @@ export function CustomerFormSheet({
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
               <FormField
                 control={form.control}
                 name="phoneNumber"
@@ -203,7 +203,7 @@ export function CustomerFormSheet({
               )}
             />
 
-            <DialogFooter className="pt-4 flex flex-col-reverse sm:flex-row justify-end gap-2">
+            <DialogFooter className="pt-md flex flex-col-reverse sm:flex-row justify-end gap-sm">
               <Button
                 type="button"
                 variant="outline"

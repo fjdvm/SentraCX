@@ -12,6 +12,8 @@ from app.schemas.ticket_schemas import (
     TicketResolutionEstimateResponse,
     TicketVolumeForecastResponse,
     ForecastPoint,
+    TicketSmartReplyRequest,
+    TicketSmartReplyResponse,
 )
 from app.services.ticket_analysis_service import (
     TicketAnalysisService,
@@ -102,3 +104,21 @@ async def get_ticket_volume_forecast(
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
+
+@router.post(
+    "/{ticket_id}/smart-reply",
+    response_model=TicketSmartReplyResponse,
+    summary="Generate a smart reply for a ticket",
+    description="Uses AI to generate a contextual smart reply for the agent to send.",
+)
+async def generate_smart_reply(
+    ticket_id: str,
+    request: TicketSmartReplyRequest,
+    service: TicketAnalysisService = Depends(get_ticket_analysis_service)
+) -> TicketSmartReplyResponse:
+    """Generate a smart reply based on the ticket context and message history."""
+    try:
+        reply = await service.generate_smart_reply(ticket_id, request.messages)
+        return TicketSmartReplyResponse(smart_reply=reply)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
