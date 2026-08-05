@@ -86,6 +86,7 @@ public class CustomerProfileRepository(AppDbContext context) : ICustomerProfileR
             .Where(cp => !cp.User.IsDeleted
                       && cp.CustomerType != "Lead"
                       && cp.Status == "Active"
+                      && cp.User.Email != null
                       && cp.User.Email != "");
 
         if (targetCustomerIds != null && targetCustomerIds.Count > 0)
@@ -110,11 +111,18 @@ public class CustomerProfileRepository(AppDbContext context) : ICustomerProfileR
             var normalizedEmails = targetEmails.Select(e => e.Trim().ToLower()).ToList();
             query = query.Where(cp => normalizedEmails.Contains(cp.User.Email.ToLower()));
         }
-        else if (!string.IsNullOrWhiteSpace(targetAudience) && !targetAudience.Equals("All", StringComparison.OrdinalIgnoreCase))
+        else if (!string.IsNullOrWhiteSpace(targetAudience) &&
+                 !targetAudience.Equals("All", StringComparison.OrdinalIgnoreCase) &&
+                 !targetAudience.Equals("Specific", StringComparison.OrdinalIgnoreCase))
         {
             var typeToMatch = targetAudience.Equals("Institutional", StringComparison.OrdinalIgnoreCase)
                 ? "InstitutionalBuyer" : targetAudience;
             query = query.Where(cp => cp.CustomerType.ToLower() == typeToMatch.ToLower());
+        }
+        else if (string.Equals(targetAudience, "Specific", StringComparison.OrdinalIgnoreCase))
+        {
+            // Specific audience with no customer IDs or emails yields 0 customer profile recipients
+            return [];
         }
 
         return await query.ToListAsync();

@@ -30,9 +30,11 @@ public class CampaignDispatchServiceTests
     {
         _campaignRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Campaign?)null);
 
-        var count = await _sut.DispatchAsync(Guid.NewGuid());
+        var result = await _sut.DispatchAsync(Guid.NewGuid());
 
-        Assert.Equal(0, count);
+        Assert.Equal(0, result.SentCount);
+        Assert.Equal(0, result.TotalRecipients);
+        Assert.Contains("not found", result.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -45,9 +47,11 @@ public class CampaignDispatchServiceTests
         };
         _campaignRepoMock.Setup(r => r.GetByIdAsync(campaign.Id)).ReturnsAsync(campaign);
 
-        var count = await _sut.DispatchAsync(campaign.Id);
+        var result = await _sut.DispatchAsync(campaign.Id);
 
-        Assert.Equal(0, count);
+        Assert.Equal(0, result.SentCount);
+        Assert.Equal(0, result.TotalRecipients);
+        Assert.Contains("does not include Email channel", result.Message, StringComparison.OrdinalIgnoreCase);
         _emailServiceMock.Verify(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
@@ -74,9 +78,13 @@ public class CampaignDispatchServiceTests
         _campaignRepoMock.Setup(r => r.GetByIdAsync(campaignId)).ReturnsAsync(campaign);
         _customerRepoMock.Setup(r => r.GetAllActiveContactsAsync(It.IsAny<string?>(), It.IsAny<List<string>?>(), It.IsAny<List<string>?>())).ReturnsAsync(recipients);
 
-        var count = await _sut.DispatchAsync(campaignId);
+        var result = await _sut.DispatchAsync(campaignId);
 
-        Assert.Equal(2, count);
+        Assert.Equal(2, result.SentCount);
+        Assert.Equal(2, result.TotalRecipients);
+        Assert.Equal(0, result.FailedCount);
+        Assert.Empty(result.Errors);
+        Assert.Contains("successfully dispatched to 2", result.Message, StringComparison.OrdinalIgnoreCase);
         _emailServiceMock.Verify(e => e.SendAsync("user1@example.com", "User One", "Hot Savings!", It.IsAny<string>()), Times.Once);
         _emailServiceMock.Verify(e => e.SendAsync("user2@example.com", "User Two", "Hot Savings!", It.IsAny<string>()), Times.Once);
         _interactionRepoMock.Verify(i => i.AddAsync(It.Is<MarketingInteraction>(m => m.IsSuccess == true)), Times.Exactly(2));
@@ -107,9 +115,14 @@ public class CampaignDispatchServiceTests
         _emailServiceMock.Setup(e => e.SendAsync("fail@example.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ThrowsAsync(new Exception("SMTP connection failed"));
 
-        var count = await _sut.DispatchAsync(campaignId);
+        var result = await _sut.DispatchAsync(campaignId);
 
-        Assert.Equal(0, count);
+        Assert.Equal(0, result.SentCount);
+        Assert.Equal(1, result.TotalRecipients);
+        Assert.Equal(1, result.FailedCount);
+        Assert.Single(result.Errors);
+        Assert.Equal("SMTP connection failed", result.Errors[0]);
+        Assert.Contains("Failed to dispatch campaign to 1", result.Message, StringComparison.OrdinalIgnoreCase);
         _interactionRepoMock.Verify(i => i.AddAsync(It.Is<MarketingInteraction>(m => m.IsSuccess == false)), Times.Once);
     }
 
@@ -138,10 +151,41 @@ public class CampaignDispatchServiceTests
         _emailServiceMock.Setup(e => e.SendAsync("fail@example.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ThrowsAsync(new Exception("SMTP error"));
 
-        var count = await _sut.DispatchAsync(campaignId);
+        var result = await _sut.DispatchAsync(campaignId);
 
-        Assert.Equal(1, count);
+        Assert.Equal(1, result.SentCount);
+        Assert.Equal(2, result.TotalRecipients);
+        Assert.Equal(1, result.FailedCount);
+        Assert.Single(result.Errors);
+        Assert.Equal("SMTP error", result.Errors[0]);
+        Assert.Contains("Partially dispatched: 1 sent, 1 failed", result.Message, StringComparison.OrdinalIgnoreCase);
         _interactionRepoMock.Verify(i => i.AddAsync(It.Is<MarketingInteraction>(m => m.IsSuccess == true)), Times.Once);
         _interactionRepoMock.Verify(i => i.AddAsync(It.Is<MarketingInteraction>(m => m.IsSuccess == false)), Times.Once);
+    }
+
+    [Fact]
+    public async Task DispatchAsync_WhenNoMatchingRecipients_ReturnsZeroRecipientsWithInfoMessage()
+    {
+        var campaignId = Guid.NewGuid();
+        var campaign = new Campaign
+        {
+            Id = campaignId,
+            Title = "No Recipients Campaign",
+            Subject = "Testing!",
+            Description = "No recipients",
+            Channels = ["Email"],
+            TargetAudience = "All",
+            CampaignSchedule = new CampaignSchedule { ScheduleType = "SendNow" }
+        };
+
+        _campaignRepoMock.Setup(r => r.GetByIdAsync(campaignId)).ReturnsAsync(campaign);
+        _customerRepoMock.Setup(r => r.GetAllActiveContactsAsync("All", null, null)).ReturnsAsync([]);
+
+        var result = await _sut.DispatchAsync(campaignId);
+
+        Assert.Equal(0, result.SentCount);
+        Assert.Equal(0, result.TotalRecipients);
+        Assert.Equal(0, result.FailedCount);
+        Assert.Contains("No active recipients matched", result.Message, StringComparison.OrdinalIgnoreCase);
     }
 }

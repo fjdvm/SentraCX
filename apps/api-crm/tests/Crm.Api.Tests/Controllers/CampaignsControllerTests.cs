@@ -74,18 +74,27 @@ public class CampaignsControllerTests
     }
 
     [Fact]
-    public async Task Send_WhenEmailChannelPresent_ReturnsOkWithCount()
+    public async Task Send_WhenEmailChannelPresent_ReturnsOkWithResult()
     {
         var id = Guid.NewGuid();
         var campaign = new CampaignResponseDto { Id = id, Channels = ["Email", "InApp"] };
         _campaignServiceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(campaign);
 
         var dispatchMock = new Mock<ICampaignDispatchService>();
-        dispatchMock.Setup(d => d.DispatchAsync(id)).ReturnsAsync(5);
+        var expectedResult = new CampaignDispatchResultDto
+        {
+            TotalRecipients = 5,
+            SentCount = 5,
+            FailedCount = 0,
+            Message = "Campaign successfully dispatched to 5 recipient(s)."
+        };
+        dispatchMock.Setup(d => d.DispatchAsync(id)).ReturnsAsync(expectedResult);
 
         var result = await _sut.Send(id, dispatchMock.Object);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.NotNull(okResult.Value);
+        var returned = Assert.IsType<CampaignDispatchResultDto>(okResult.Value);
+        Assert.Equal(5, returned.SentCount);
+        Assert.Equal(5, returned.TotalRecipients);
     }
 }
