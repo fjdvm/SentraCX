@@ -14,6 +14,7 @@ import { DashboardChartSummary } from "./DashboardChartSummary";
 import { AttentionFeed } from "./attention-feed";
 import { AtRiskWatchlist } from "./AtRiskWatchlist";
 import { downloadDashboardReport } from "./download-report";
+import { AskSentraCXPanel } from "./ask-sentracx-panel";
 import {
   Select,
   SelectContent,
@@ -167,6 +168,9 @@ export function Dashboard() {
           <AttentionFeed />
         </div>
       </div>
+
+      {/* Ask SentrAI floating panel */}
+      <AskSentraCXPanel />
     </div>
   );
 }
