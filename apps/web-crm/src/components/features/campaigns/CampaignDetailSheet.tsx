@@ -139,18 +139,6 @@ export function CampaignDetailSheet({ campaignId, onClose, onRefresh, onShowToas
               </div>
             )}
 
-            {campaign.promotions && campaign.promotions.length > 0 && (
-              <div className="space-y-1">
-                <span className="text-muted-foreground font-medium block">Attached Promotions</span>
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {campaign.promotions.map((p) => (
-                    <span key={p.id} className="text-xs bg-badge-info text-badge-info-foreground px-2 py-0.5 rounded font-medium">
-                      {p.title} ({p.promotionType})
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="pt-4 flex flex-wrap justify-end gap-2 border-t border-border">
               {campaign.channels.some((ch) => ch.toLowerCase() === "email") && campaign.status === "Active" && (

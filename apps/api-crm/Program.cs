@@ -76,7 +76,6 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
 builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
-builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 
 // Services
@@ -87,7 +86,6 @@ builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<ICampaignService, CampaignService>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
-builder.Services.AddScoped<IPromotionService, PromotionService>();
 builder.Services.AddScoped<IDashboardBroadcastService, DashboardBroadcastService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
@@ -110,7 +108,6 @@ builder.Services.AddAiAnalyticsClient(aiAnalyticsUrl);
 
 // Background Jobs
 builder.Services.AddHostedService<CampaignStatusJob>();
-builder.Services.AddHostedService<PromotionStatusJob>();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();

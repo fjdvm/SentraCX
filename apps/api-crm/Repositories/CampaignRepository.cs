@@ -26,8 +26,6 @@ public class CampaignRepository(AppDbContext dbContext) : ICampaignRepository
         return await dbContext.Campaigns
             .Include(c => c.CampaignSchedule)
             .Include(c => c.Template)
-            .Include(c => c.CampaignPromotions)
-                .ThenInclude(cp => cp.Promotion)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
@@ -62,25 +60,5 @@ public class CampaignRepository(AppDbContext dbContext) : ICampaignRepository
             dbContext.Campaigns.Update(campaign);
             await dbContext.SaveChangesAsync();
         }
-    }
-
-    public async Task AttachPromotionsAsync(Guid campaignId, IEnumerable<Guid> promotionIds)
-    {
-        var existing = await dbContext.CampaignPromotions
-            .Where(cp => cp.CampaignId == campaignId)
-            .ToListAsync();
-
-        dbContext.CampaignPromotions.RemoveRange(existing);
-
-        foreach (var promoId in promotionIds.Distinct())
-        {
-            dbContext.CampaignPromotions.Add(new CampaignPromotion
-            {
-                CampaignId = campaignId,
-                PromotionId = promoId
-            });
-        }
-
-        await dbContext.SaveChangesAsync();
     }
 }

@@ -89,7 +89,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           requiredModule = "Conversations";
         } else if (pathname.startsWith("/tickets")) {
           requiredModule = "Tickets";
-        } else if (pathname.startsWith("/campaigns") || pathname.startsWith("/promotions")) {
+        } else if (pathname.startsWith("/campaigns")) {
           requiredModule = "Campaigns";
         } else if (pathname.startsWith("/settings")) {
           // Settings is SuperAdmin/CEO only

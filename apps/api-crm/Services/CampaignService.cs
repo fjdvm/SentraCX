@@ -67,14 +67,6 @@ public class CampaignService(ICampaignRepository campaignRepository) : ICampaign
         return true;
     }
 
-    public async Task<bool> AttachPromotionsAsync(Guid id, List<Guid> promotionIds)
-    {
-        var campaign = await campaignRepository.GetByIdAsync(id);
-        if (campaign == null) return false;
-
-        await campaignRepository.AttachPromotionsAsync(id, promotionIds);
-        return true;
-    }
 
     public async Task<bool> DeleteAsync(Guid id)
     {

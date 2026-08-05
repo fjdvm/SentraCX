@@ -21,5 +21,4 @@ public class Campaign
     public Template? Template { get; set; }
     public CampaignSchedule? CampaignSchedule { get; set; }
     public ICollection<MarketingInteraction> MarketingInteractions { get; set; } = [];
-    public ICollection<CampaignPromotion> CampaignPromotions { get; set; } = [];
 }

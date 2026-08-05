@@ -17,7 +17,6 @@ public class CampaignResponseDto
     public DateTime CreatedAt { get; set; }
 
     public CampaignScheduleResponseDto? Schedule { get; set; }
-    public List<PromotionListResponseDto> Promotions { get; set; } = [];
 }
 
 public class CampaignScheduleResponseDto

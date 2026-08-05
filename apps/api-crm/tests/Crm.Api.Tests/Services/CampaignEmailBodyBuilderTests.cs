@@ -34,7 +34,7 @@ public class CampaignEmailBodyBuilderTests
             Id = Guid.NewGuid(),
             Name = "Promo Template",
             Channel = "Email",
-            ContentHtml = "<h1>Hi {{CustomerName}}</h1><p>{{CampaignDescription}}</p><div>{{PromotionsBlock}}</div>"
+            ContentHtml = "<h1>Hi {{CustomerName}}</h1><p>{{CampaignDescription}}</p>"
         };
 
         var campaign = new Campaign
@@ -51,52 +51,5 @@ public class CampaignEmailBodyBuilderTests
 
         Assert.Contains("<h1>Hi Jane Smith</h1>", html);
         Assert.Contains("<p>Limited time offer</p>", html);
-    }
-
-    [Fact]
-    public void Build_RendersPromotionsBlock_WhenPromotionsAreAttached()
-    {
-        var promo1 = new Promotion
-        {
-            Id = Guid.NewGuid(),
-            Title = "20% OFF Everything",
-            Description = "Applies to all products",
-            PromotionType = "Discount",
-            DiscountValue = 20,
-            VoucherCode = "SUMMER20"
-        };
-
-        var promo2 = new Promotion
-        {
-            Id = Guid.NewGuid(),
-            Title = "Free Shipping",
-            Description = "Orders over $50",
-            PromotionType = "FreeShipping",
-            StartDate = new DateTime(2026, 7, 1),
-            EndDate = new DateTime(2026, 8, 1)
-        };
-
-        var campaign = new Campaign
-        {
-            Id = Guid.NewGuid(),
-            Title = "Promo Festival",
-            Subject = "Huge Deals",
-            Description = "Check out our latest promos!",
-            Channels = ["Email"],
-            CampaignPromotions = new List<CampaignPromotion>
-            {
-                new() { Promotion = promo1 },
-                new() { Promotion = promo2 }
-            }
-        };
-
-        var html = CampaignEmailBodyBuilder.Build(campaign, "Alice");
-
-        Assert.Contains("Special Offers Included", html);
-        Assert.Contains("20% OFF Everything", html);
-        Assert.Contains("SUMMER20", html);
-        Assert.Contains("Discount: 20% off", html);
-        Assert.Contains("Free Shipping", html);
-        Assert.Contains("2026-07-01 to 2026-08-01", html);
     }
 }
