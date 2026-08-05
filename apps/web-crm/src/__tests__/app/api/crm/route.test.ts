@@ -12,11 +12,15 @@ import { GET, POST, PUT, DELETE, PATCH } from "@/app/api/crm/[...path]/route";
 describe("CRM API Proxy Route Handler", () => {
   const originalFetch = global.fetch;
 
+  let consoleErrorSpy: jest.SpyInstance;
+
   beforeEach(() => {
     (auth as jest.Mock).mockResolvedValue({ accessToken: "mock-session-token" });
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => {
     global.fetch = originalFetch;
+    consoleErrorSpy.mockRestore();
     jest.resetAllMocks();
   });
 
