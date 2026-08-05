@@ -38,6 +38,8 @@ describe("useSignalR", () => {
     Object.keys(mockHandlers).forEach((key) => delete mockHandlers[key]);
   });
 
+  const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
+
   it("builds connection and invokes JoinTicket on mount", async () => {
     const { result } = renderHook(() =>
       useSignalR({
@@ -49,7 +51,7 @@ describe("useSignalR", () => {
 
     // Wait for promise resolution in connection.start
     await act(async () => {
-      await Promise.resolve();
+      await flushPromises();
     });
 
     expect(mockConnection.invoke).toHaveBeenCalledWith("JoinStaff");
@@ -64,14 +66,14 @@ describe("useSignalR", () => {
     );
 
     await act(async () => {
-      await Promise.resolve();
+      await flushPromises();
     });
 
     unmount();
 
     // Cleanup defers leave/stop until the start promise settles
     await act(async () => {
-      await Promise.resolve();
+      await flushPromises();
     });
 
     expect(mockConnection.invoke).toHaveBeenCalledWith("LeaveTicket", "ticket-101");
@@ -91,10 +93,12 @@ describe("useSignalR", () => {
     );
 
     await act(async () => {
-      await Promise.resolve();
+      await flushPromises();
     });
 
-    rerender({ ticketId: "ticket-2" });
+    await act(async () => {
+      rerender({ ticketId: "ticket-2" });
+    });
 
     expect(mockConnection.invoke).toHaveBeenCalledWith("LeaveTicket", "ticket-1");
     expect(mockConnection.invoke).toHaveBeenCalledWith("JoinTicket", "ticket-2");
@@ -102,12 +106,16 @@ describe("useSignalR", () => {
 
   it("triggers onReceiveMessage callback when ReceiveMessage event fires", async () => {
     const onReceiveMessage = jest.fn();
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useSignalR({
         ticketId: "ticket-101",
         onReceiveMessage,
       })
     );
+
+    await act(async () => {
+      await flushPromises();
+    });
 
     const testMsg: Message = {
       id: "msg-99",

@@ -1,5 +1,5 @@
 import React from "react";
-import { Mail, BellRing, Share2, Send, Camera } from "lucide-react";
+import { Mail, BellRing } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CampaignChannel } from "@/types/campaign";
 
@@ -19,21 +19,6 @@ export function CampaignChannelBadge({ channel }: CampaignChannelBadgeProps) {
         return {
           icon: <BellRing className="w-3 h-3 mr-1 shrink-0" />,
           className: "bg-badge-warning text-badge-warning-foreground border-transparent font-medium",
-        };
-      case "Facebook":
-        return {
-          icon: <Share2 className="w-3 h-3 mr-1 shrink-0" />,
-          className: "bg-badge-indigo text-badge-indigo-foreground border-transparent font-medium",
-        };
-      case "Twitter":
-        return {
-          icon: <Send className="w-3 h-3 mr-1 shrink-0" />,
-          className: "bg-badge-teal text-badge-teal-foreground border-transparent font-medium",
-        };
-      case "Instagram":
-        return {
-          icon: <Camera className="w-3 h-3 mr-1 shrink-0" />,
-          className: "bg-badge-purple text-badge-purple-foreground border-transparent font-medium",
         };
       default:
         return {
