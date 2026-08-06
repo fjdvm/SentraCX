@@ -70,19 +70,35 @@ export function useConversationTickets(initialTicketId?: string) {
     fetchTickets();
   }, [fetchTickets]);
 
-  // Set initial active ticket once tickets load if not set
+  // Set initial active ticket or clear it if it disappears from the list
   useEffect(() => {
-    if (!activeTicketId && tickets.length > 0) {
-      setActiveTicketId(tickets[0].id);
+    if (isLoading) return; // Wait until fetch is done
+
+    if (tickets.length === 0) {
+      if (activeTicketId) setActiveTicketId(null);
+    } else {
+      if (!activeTicketId) {
+        setActiveTicketId(tickets[0].id);
+      } else {
+        const stillExists = tickets.some((t) => t.id === activeTicketId);
+        if (!stillExists) {
+          setActiveTicketId(tickets[0].id);
+        }
+      }
     }
-  }, [tickets, activeTicketId]);
+  }, [tickets, activeTicketId, isLoading]);
 
   // Sync activeTicketId with URL search params
   useEffect(() => {
-    if (activeTicketId && typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
-      if (url.searchParams.get("ticketId") !== activeTicketId) {
+      const currentParam = url.searchParams.get("ticketId");
+      
+      if (activeTicketId && currentParam !== activeTicketId) {
         url.searchParams.set("ticketId", activeTicketId);
+        window.history.replaceState(null, "", url.toString());
+      } else if (!activeTicketId && currentParam) {
+        url.searchParams.delete("ticketId");
         window.history.replaceState(null, "", url.toString());
       }
     }

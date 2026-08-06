@@ -30,7 +30,11 @@ interface TaskItem {
   actionHref?: string;
 }
 
+import { useSession } from "next-auth/react";
+
 export function AttentionFeed() {
+  const { data: session } = useSession();
+  const currentUserName = session?.user?.name;
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const toastedIds = useRef<Set<string>>(new Set());
@@ -93,7 +97,9 @@ export function AttentionFeed() {
 
       // Unreplied Messages
       const unrepliedTickets = allTickets.filter((t: any) => 
-        (t.status === "Claimed" || t.status === "Ongoing") && t.unreadMessageCount && t.unreadMessageCount > 0
+        (t.status === "Claimed" || t.status === "Ongoing") && 
+        t.unreadMessageCount && t.unreadMessageCount > 0 &&
+        (!t.assignedToName || t.assignedToName === currentUserName)
       );
       unrepliedTickets.forEach((t: any) => {
         newTasks.push({

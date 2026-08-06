@@ -206,36 +206,38 @@ export function ConversationWindow({
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-sm sm:p-md border-t border-border bg-card flex items-end gap-md">
-        <Textarea
-          ref={textareaRef}
-          context="Replying to customer support ticket."
-          placeholder="Type message here..."
-          value={typedMessage}
-          onChange={(e) => {
-            setTypedMessage(e.target.value);
-            if (textareaRef.current) {
-              textareaRef.current.style.height = "40px";
-              textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSubmit(e as unknown as React.FormEvent);
-            }
-          }}
-          rows={1}
-          className="flex-1 bg-muted/50 border-border text-body-sm min-h-[40px] max-h-[120px] py-2 resize-none overflow-y-auto"
-          spellCheck={true}
-          autoComplete="on"
-          data-gramm="true"
-          data-gramm_editor="true"
-        />
-        <Button type="submit" size="icon" className="h-10 w-10 shrink-0 bg-primary text-primary-foreground font-semibold" disabled={!typedMessage.trim()}>
-          <Send className="w-4 h-4 text-primary-foreground" />
-        </Button>
-      </form>
+      {!error && (
+        <form onSubmit={handleSubmit} className="p-sm sm:p-md border-t border-border bg-card flex items-end gap-md">
+          <Textarea
+            ref={textareaRef}
+            context="Replying to customer support ticket."
+            placeholder="Type message here..."
+            value={typedMessage}
+            onChange={(e) => {
+              setTypedMessage(e.target.value);
+              if (textareaRef.current) {
+                textareaRef.current.style.height = "40px";
+                textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e as unknown as React.FormEvent);
+              }
+            }}
+            rows={1}
+            className="flex-1 bg-muted/50 border-border text-body-sm min-h-[40px] max-h-[120px] py-2 resize-none overflow-y-auto"
+            spellCheck={true}
+            autoComplete="on"
+            data-gramm="true"
+            data-gramm_editor="true"
+          />
+          <Button type="submit" size="icon" className="h-10 w-10 shrink-0 bg-primary text-primary-foreground font-semibold" disabled={!typedMessage.trim()}>
+            <Send className="w-4 h-4 text-primary-foreground" />
+          </Button>
+        </form>
+      )}
     </div>
   );
 }

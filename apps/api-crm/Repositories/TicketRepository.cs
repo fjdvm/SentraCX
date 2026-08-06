@@ -8,7 +8,7 @@ namespace Crm.Api.Repositories;
 public class TicketRepository(AppDbContext context) : ITicketRepository
 {
     public async Task<(List<Ticket> Items, int TotalCount)> GetAllAsync(
-        int page, int pageSize, string? status = null, Guid? customerId = null, string? assignedToId = null)
+        int page, int pageSize, string? status = null, Guid? customerId = null, string? assignedToId = null, string? currentUserId = null, bool isSuperUser = false)
     {
         var query = context.Tickets
             .Include(t => t.Customer).ThenInclude(cp => cp.User)
@@ -22,10 +22,18 @@ public class TicketRepository(AppDbContext context) : ITicketRepository
         if (customerId.HasValue)
             query = query.Where(t => t.CustomerId == customerId.Value);
 
-        // TODO (auth): When assignedToId is null, all Claimed/Ongoing tickets are returned (dev mode).
-        //              Once auth is re-enabled, assignedToId will always be set from JWT claims.
+        // If an explicit assignedToId is requested by the client, apply it.
         if (!string.IsNullOrWhiteSpace(assignedToId))
             query = query.Where(t => t.AssignedToId == assignedToId);
+
+        // Enforce visibility rules for authenticated users.
+        // ALL users (including superadmins) can only see:
+        // - Tickets explicitly assigned to them
+        // - Unclaimed tickets
+        if (!string.IsNullOrWhiteSpace(currentUserId))
+        {
+            query = query.Where(t => t.AssignedToId == currentUserId || t.Status == "Unclaimed");
+        }
 
         // TODO (perf): At large ticket volumes, replace the Messages include with a subquery or
         //              a denormalized UnreadMessageCount column to avoid N+1 load.

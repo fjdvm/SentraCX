@@ -76,9 +76,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         if (profile.permissions) {
           try {
-            token.permissions = typeof profile.permissions === "string"
+            const allPerms = typeof profile.permissions === "string"
               ? JSON.parse(profile.permissions)
               : profile.permissions;
+            
+            // Only store CRMS permissions to avoid 431 Request Header Fields Too Large 
+            // caused by the NextAuth session cookie exceeding browser/Node limits.
+            token.permissions = { CRMS: allPerms?.CRMS || {} };
           } catch (e) {
             token.permissions = {};
           }
@@ -107,6 +111,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.role = (token.role as string) ?? "Staff/Employee";
       session.isSuperUser = (token.isSuperUser as boolean) ?? false;
       session.permissions = token.permissions ?? {};
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
+      }
       return session;
     },
     async authorized({ auth, request }) {

@@ -20,7 +20,7 @@ async function proxyRequest(request: NextRequest, context: { params: Promise<{ p
 
   const headers: Record<string, string> = {};
   request.headers.forEach((value, key) => {
-    if (!["host", "connection", "transfer-encoding"].includes(key.toLowerCase())) {
+    if (!["host", "connection", "transfer-encoding", "cookie"].includes(key.toLowerCase())) {
       headers[key] = value;
     }
   });
