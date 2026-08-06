@@ -21,6 +21,12 @@ EnvLoader.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Increase Kestrel limits to handle huge JWT tokens with granular permissions
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestHeadersTotalSize = 131072; // 128 KB
+    serverOptions.Limits.MaxRequestLineSize = 131072;         // 128 KB
+});
 var dbHost = Environment.GetEnvironmentVariable("DATABASE_HOST") ?? "localhost";
 var dbPort = Environment.GetEnvironmentVariable("DATABASE_PORT") ?? "5432";
 var dbName = Environment.GetEnvironmentVariable("DATABASE_NAME") ?? "sentracx_crm";

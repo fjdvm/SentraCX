@@ -73,7 +73,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const session = await auth();
     token = session?.accessToken;
   } else {
-    token = clientAccessToken;
+    // We do NOT attach the token on the client side because it goes to the Next.js proxy
+    // which injects it automatically from the HTTP-only session cookie.
+    // Attaching the massive JWT here causes the Next.js Node server to throw a 431 error.
+    token = undefined;
   }
 
   if (token) {

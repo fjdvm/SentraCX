@@ -7,12 +7,16 @@ import { useSignalR } from "@/hooks/useSignalR";
 import { TicketCreateSheet } from "./TicketCreateSheet";
 import { TicketTable } from "./TicketTable";
 
+import { useSession } from "next-auth/react";
+
 export function Tickets() {
   const [activeTab, setActiveTab] = useState<string>("Unclaimed");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const { data: session } = useSession();
 
-  const { data, isLoading, refetch } = useTickets(page, 20, activeTab);
+  const filterAssignedToId = activeTab !== "Unclaimed" ? session?.user?.id : undefined;
+  const { data, isLoading, refetch } = useTickets(page, 20, activeTab, filterAssignedToId);
 
   const showToast = useCallback((msg: string) => {
     setToastMsg(msg);

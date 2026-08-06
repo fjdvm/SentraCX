@@ -43,6 +43,7 @@ export function useTicket(id: string | null) {
       .catch((err) => {
         if (isMounted) {
           setError(err instanceof Error ? err.message : "Failed to load ticket.");
+          setTicket(null);
           setIsLoading(false);
         }
       });

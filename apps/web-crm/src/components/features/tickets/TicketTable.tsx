@@ -46,6 +46,15 @@ export function TicketTable({
       t.customerName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  React.useEffect(() => {
+    if (selectedTicketId && !isLoading) {
+      const exists = tickets.some((t) => t.id === selectedTicketId);
+      if (!exists) {
+        setSelectedTicketId(null);
+      }
+    }
+  }, [tickets, selectedTicketId, isLoading]);
+
   return (
     <Card className="shadow-none border-border flex flex-col">
       <CardHeader className="pb-md p-lg flex flex-col sm:flex-row sm:items-center justify-around gap-md">

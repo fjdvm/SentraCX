@@ -25,7 +25,7 @@ public class TicketService(
     };
 
     public async Task<PaginatedResponseDto<TicketListResponseDto>> GetAllAsync(
-        int page, int pageSize, string? status = null, Guid? customerId = null, string? assignedToId = null)
+        int page, int pageSize, string? status = null, Guid? customerId = null, string? assignedToId = null, string? currentUserId = null, bool isSuperUser = false)
     {
         // The customerId may be a CustomerProfile.Id (from CRM frontend)
         // or an external User ID (from web-shop). Resolve to CustomerProfile.Id.
@@ -40,7 +40,7 @@ public class TicketService(
             resolvedCustomerId = customer?.Id;
         }
 
-        var (items, totalCount) = await ticketRepo.GetAllAsync(page, pageSize, status, resolvedCustomerId, assignedToId);
+        var (items, totalCount) = await ticketRepo.GetAllAsync(page, pageSize, status, resolvedCustomerId, assignedToId, currentUserId, isSuperUser);
 
         return new PaginatedResponseDto<TicketListResponseDto>
         {

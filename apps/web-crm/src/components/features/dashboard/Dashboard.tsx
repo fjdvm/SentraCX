@@ -172,11 +172,11 @@ export function Dashboard() {
       </div>
 
       {/* Attention & Watchlist grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg items-stretch">
-        <div className="xl:col-span-2 flex flex-col">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg">
+        <div className="xl:col-span-2 flex flex-col h-[500px] min-h-0">
           <AtRiskWatchlist onShowToast={(msg) => toast.success(msg)} />
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col h-[500px] min-h-0">
           <AttentionFeed />
         </div>
       </div>
